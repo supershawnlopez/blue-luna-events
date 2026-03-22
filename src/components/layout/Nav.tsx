@@ -3,8 +3,15 @@
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { NAV_LINKS } from '@/lib/config'
 import { Menu, X } from 'lucide-react'
+
+const NAV_LINKS = [
+  { label: 'Packages', href: '/#packages' },
+  { label: 'Gallery', href: '/gallery' },
+  { label: 'About', href: '/#about' },
+  { label: 'Quinceañeras', href: '/quinceaneras', highlight: 'teal' },
+  { label: 'Graduations ✨', href: '/graduations', highlight: 'gold' },
+]
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
@@ -18,44 +25,51 @@ export default function Nav() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-12 h-20 transition-all duration-300 ${
-        scrolled ? 'bg-ink/93 backdrop-blur-xl border-b border-teal/15' : ''
-      }`}>
-        {/* Logo */}
-        <Link href="/" className="flex items-center">
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 48px', height: '72px',
+        background: scrolled ? 'rgba(13,15,15,0.95)' : 'rgba(13,15,15,0.85)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: scrolled ? '1px solid rgba(91,191,191,0.15)' : '1px solid rgba(255,255,255,0.05)',
+        transition: 'all 0.3s ease',
+      }}>
+        <Link href="/">
           <Image
             src="/images/logo-white.png"
             alt="Blue Luna Events"
             width={180}
-            height={58}
-            className="h-12 w-auto object-contain"
+            height={52}
+            style={{height: '44px', width: 'auto', objectFit: 'contain'}}
             priority
           />
         </Link>
 
-        {/* Desktop nav */}
-        <ul className="hidden lg:flex items-center gap-8">
+        {/* Desktop */}
+        <ul style={{display: 'flex', alignItems: 'center', gap: '32px', listStyle: 'none', margin: 0, padding: 0}} className="hidden lg:flex">
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
-              <Link
-                href={link.href}
-                className={`text-xs font-normal tracking-widest uppercase transition-colors duration-200 ${
-                  link.highlight === 'teal'
-                    ? 'text-teal hover:text-teal-light'
-                    : link.highlight === 'gold'
-                    ? 'text-gold-light hover:text-gold'
-                    : 'text-white/70 hover:text-teal'
-                }`}
-              >
+              <Link href={link.href} style={{
+                fontSize: '0.75rem', fontWeight: 400,
+                color: link.highlight === 'teal' ? '#5BBFBF' : link.highlight === 'gold' ? '#E8CCA0' : 'rgba(255,255,255,0.8)',
+                letterSpacing: '0.12em', textTransform: 'uppercase',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+                transition: 'color 0.2s',
+              }}>
                 {link.label}
               </Link>
             </li>
           ))}
           <li>
-            <Link
-              href="/get-a-quote"
-              className="bg-teal text-ink text-xs font-medium tracking-wide uppercase px-6 py-3 rounded-pill transition-all duration-200 hover:bg-teal-light hover:-translate-y-0.5 shadow-lg shadow-teal/30"
-            >
+            <Link href="/get-a-quote" style={{
+              background: '#5BBFBF', color: '#0D0F0F',
+              fontSize: '0.75rem', fontWeight: 500,
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+              padding: '10px 24px', borderRadius: '999px',
+              textDecoration: 'none', whiteSpace: 'nowrap',
+              transition: 'all 0.2s',
+            }}>
               Get a Quote
             </Link>
           </li>
@@ -63,8 +77,9 @@ export default function Nav() {
 
         {/* Mobile toggle */}
         <button
-          className="lg:hidden text-white p-2"
+          className="lg:hidden"
           onClick={() => setMobileOpen(!mobileOpen)}
+          style={{background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '4px'}}
           aria-label="Toggle menu"
         >
           {mobileOpen ? <X size={22} /> : <Menu size={22} />}
@@ -73,17 +88,26 @@ export default function Nav() {
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="fixed top-20 left-0 right-0 z-40 bg-ink/97 backdrop-blur-xl border-b border-teal/15 flex flex-col px-6 py-6 gap-0">
+        <div style={{
+          position: 'fixed', top: '72px', left: 0, right: 0, zIndex: 99,
+          background: 'rgba(13,15,15,0.98)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(91,191,191,0.15)',
+          padding: '16px 24px 32px',
+          display: 'flex', flexDirection: 'column',
+        }}>
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className={`text-sm tracking-widest uppercase py-4 border-b border-white/6 transition-colors ${
-                link.highlight === 'teal' ? 'text-teal' :
-                link.highlight === 'gold' ? 'text-gold-light' :
-                'text-white/70 hover:text-teal'
-              }`}
+              style={{
+                fontSize: '0.875rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                padding: '14px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                textDecoration: 'none',
+                color: link.highlight === 'teal' ? '#5BBFBF' : link.highlight === 'gold' ? '#E8CCA0' : 'rgba(255,255,255,0.8)',
+              }}
             >
               {link.label}
             </Link>
@@ -91,7 +115,12 @@ export default function Nav() {
           <Link
             href="/get-a-quote"
             onClick={() => setMobileOpen(false)}
-            className="mt-5 bg-teal text-ink text-sm font-medium tracking-wide uppercase py-4 rounded-pill text-center"
+            style={{
+              marginTop: '16px', background: '#5BBFBF', color: '#0D0F0F',
+              fontSize: '0.875rem', fontWeight: 500, letterSpacing: '0.08em',
+              textTransform: 'uppercase', padding: '14px 24px',
+              borderRadius: '999px', textAlign: 'center', textDecoration: 'none',
+            }}
           >
             Get a Quote
           </Link>
