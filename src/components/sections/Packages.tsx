@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { PACKAGES } from '@/lib/config'
 import { Check } from 'lucide-react'

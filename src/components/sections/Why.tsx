@@ -1,3 +1,5 @@
+'use client'
+
 const pillars = [
   { icon: '🎈', title: 'Custom Balloon Artistry', text: 'Every garland, arch, and installation built for your event — your colors, your vision, your moment.' },
   { icon: '📸', title: 'Photo Booth Rentals', text: 'Open-air iPad stations and full booth setups that keep guests entertained all night long.' },

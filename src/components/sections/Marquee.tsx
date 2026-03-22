@@ -1,3 +1,5 @@
+'use client'
+
 import { EVENT_TYPES } from '@/lib/config'
 
 export default function Marquee() {
