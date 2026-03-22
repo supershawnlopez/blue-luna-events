@@ -1,76 +1,85 @@
 'use client'
-
 import Image from 'next/image'
 import Link from 'next/link'
 
 const photos = [
-  { src: '/images/gal-1.jpg', alt: 'Balloon castle installation — Blue Luna Events', label: 'Custom Installation', span: 'tall' },
-  { src: '/images/gal-2.jpg', alt: 'Rose gold balloon arch — Blue Luna Events', label: 'Rose Gold Arch' },
-  { src: '/images/gal-3.jpg', alt: 'Baby shower balloon backdrop — Blue Luna Events', label: 'Baby Shower' },
-  { src: '/images/gal-4.jpg', alt: 'Birthday balloon welcome sign — Blue Luna Events', label: 'Birthday Celebration' },
-  { src: '/images/gal-5.jpg', alt: 'Outdoor balloon arch Tucson — Blue Luna Events', label: 'Outdoor Event' },
+  { src:'/images/gal-1.jpg', alt:'Balloon castle installation Blue Luna Events', label:'Custom Installation', tall:true },
+  { src:'/images/gal-2.jpg', alt:'Rose gold balloon arch Tucson', label:'Rose Gold Arch' },
+  { src:'/images/gal-3.jpg', alt:'Baby shower balloon backdrop', label:'Baby Shower' },
+  { src:'/images/gal-4.jpg', alt:'Birthday balloon welcome sign', label:'Birthday Celebration' },
+  { src:'/images/gal-5.jpg', alt:'Outdoor balloon arch Tucson', label:'Outdoor Event' },
 ]
 
 export default function GalleryPreview() {
   return (
-    <section id="gallery" className="py-28 bg-[#F7F5F2]">
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12">
+    <section id="gallery" style={{padding:'clamp(64px,10vw,120px) 0', background:'#F7F5F2'}}>
+      <div style={{maxWidth:'1280px',margin:'0 auto',padding:'0 24px'}}>
 
         {/* Header */}
-        <div className="flex items-end justify-between mb-12 reveal">
+        <div className="reveal" style={{display:'flex',flexWrap:'wrap',alignItems:'flex-end',justifyContent:'space-between',gap:'16px',marginBottom:'32px'}}>
           <div>
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-6 h-px bg-teal" />
-              <span className="font-mono text-[11px] text-teal tracking-[0.2em] uppercase">Our Work</span>
+            <div style={{display:'inline-flex',alignItems:'center',gap:'10px',marginBottom:'12px'}}>
+              <div style={{width:'24px',height:'1px',background:'#5BBFBF'}} />
+              <span style={{fontFamily:'DM Mono,monospace',fontSize:'11px',color:'#5BBFBF',letterSpacing:'0.18em',textTransform:'uppercase'}}>Our Work</span>
             </div>
-            <h2 className="font-display text-5xl font-light leading-[1.1] text-[#0D0F0F]">
-              Recent <em className="italic text-[#3A8F8F]">Creations</em>
+            <h2 style={{fontFamily:'Cormorant Garamond,Georgia,serif',fontSize:'clamp(2rem,4.5vw,3.2rem)',fontWeight:300,lineHeight:1.1,color:'#0D0F0F'}}>
+              Recent <em style={{fontStyle:'italic',color:'#3A8F8F'}}>Creations</em>
             </h2>
           </div>
-          <Link
-            href="/gallery"
-            className="text-sm text-[#3A8F8F] tracking-wide uppercase border border-[#3A8F8F] rounded-full px-5 py-2.5 hover:text-teal hover:border-teal hover:bg-teal/6 transition-all whitespace-nowrap"
+          <Link href="/gallery" style={{
+            fontSize:'13px',fontWeight:500,color:'#3A8F8F',
+            border:'1.5px solid #3A8F8F',borderRadius:'999px',
+            padding:'10px 20px',whiteSpace:'nowrap',
+            transition:'all 0.2s',minHeight:'unset',
+          }}
+          onMouseEnter={e=>{e.currentTarget.style.background='rgba(58,143,143,0.06)';}}
+          onMouseLeave={e=>{e.currentTarget.style.background='transparent';}}
           >
             View Full Gallery →
           </Link>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 reveal">
-          {/* Tall first item */}
-          <div className="row-span-2 relative rounded-2xl overflow-hidden group cursor-pointer"
-            style={{minHeight: '520px'}}>
-            <Image
-              src={photos[0].src}
-              alt={photos[0].alt}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-[#0D0F0F]/0 group-hover:bg-[#0D0F0F]/55 transition-all duration-300 flex items-end p-5">
-              <span className="font-display text-lg italic text-white font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                {photos[0].label}
-              </span>
-            </div>
-          </div>
-
-          {/* Remaining 4 */}
-          {photos.slice(1).map((photo) => (
-            <div key={photo.src} className="relative rounded-2xl overflow-hidden group cursor-pointer"
-              style={{height: '252px'}}>
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-[#0D0F0F]/0 group-hover:bg-[#0D0F0F]/55 transition-all duration-300 flex items-end p-4">
-                <span className="font-display text-base italic text-white font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {photo.label}
+        {/* Grid — responsive */}
+        <div className="reveal" style={{
+          display:'grid',
+          gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,200px),1fr))',
+          gridAutoRows:'220px',
+          gap:'10px',
+        }}>
+          {photos.map((p,i) => (
+            <div key={i} style={{
+              position:'relative',borderRadius:'14px',overflow:'hidden',
+              gridRow: p.tall ? 'span 2' : 'auto',
+              cursor:'pointer',
+            }}
+            className="gallery-item"
+            >
+              <Image src={p.src} alt={p.alt} fill style={{objectFit:'cover',transition:'transform 0.5s cubic-bezier(0.16,1,0.3,1)'}} />
+              <div className="gallery-overlay" style={{
+                position:'absolute',inset:0,
+                background:'rgba(13,15,15,0)',
+                display:'flex',alignItems:'flex-end',
+                padding:'16px',
+                transition:'background 0.3s',
+              }}>
+                <span style={{
+                  fontFamily:'Cormorant Garamond,serif',
+                  fontSize:'1rem',fontStyle:'italic',
+                  color:'white',fontWeight:300,
+                  opacity:0,transition:'opacity 0.3s',
+                }} className="gallery-label">
+                  {p.label}
                 </span>
               </div>
             </div>
           ))}
         </div>
+
+        <style>{`
+          .gallery-item:hover img { transform: scale(1.05); }
+          .gallery-item:hover .gallery-overlay { background: rgba(13,15,15,0.55) !important; }
+          .gallery-item:hover .gallery-label { opacity: 1 !important; }
+        `}</style>
       </div>
     </section>
   )

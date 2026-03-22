@@ -1,27 +1,24 @@
 'use client'
-
-import { EVENT_TYPES } from '@/lib/config'
+const EVENTS = ['Quinceañeras','Weddings','Graduations','Birthdays','Baby Showers','Bridal Showers','Corporate Events','Sweet 16s','School Events','Holiday Parties']
 
 export default function Marquee() {
-  const doubled = [...EVENT_TYPES, ...EVENT_TYPES]
-
+  const doubled = [...EVENTS, ...EVENTS]
   return (
-    <div className="py-16 bg-[#0D0F0F] overflow-hidden">
-      <p className="font-mono text-[10px] text-white/30 tracking-[0.25em] uppercase text-center mb-9">
+    <div style={{padding:'56px 0', background:'#0D0F0F', overflow:'hidden'}}>
+      <p style={{fontFamily:'DM Mono,monospace',fontSize:'10px',color:'rgba(255,255,255,0.28)',letterSpacing:'0.25em',textTransform:'uppercase',textAlign:'center',marginBottom:'28px'}}>
         Events We Style
       </p>
-      <div
-        className="flex w-max"
-        style={{animation: 'scrollLeft 30s linear infinite'}}
-        onMouseEnter={e => (e.currentTarget.style.animationPlayState = 'paused')}
-        onMouseLeave={e => (e.currentTarget.style.animationPlayState = 'running')}
+      <div style={{display:'flex',width:'max-content',animation:'scrollLeft 28s linear infinite'}}
+        onMouseEnter={e=>(e.currentTarget.style.animationPlayState='paused')}
+        onMouseLeave={e=>(e.currentTarget.style.animationPlayState='running')}
       >
-        {doubled.map((name, i) => (
-          <div key={i} className="flex items-center gap-6 px-9 border-r border-white/7">
-            <span className="font-display text-2xl font-light italic text-white/50 whitespace-nowrap hover:text-teal transition-colors duration-300 cursor-default">
-              {name}
-            </span>
-            <div className="w-1 h-1 rounded-full bg-teal opacity-40" />
+        {doubled.map((name,i) => (
+          <div key={i} style={{display:'flex',alignItems:'center',gap:'20px',padding:'0 32px',whiteSpace:'nowrap',borderRight:'1px solid rgba(255,255,255,0.06)'}}>
+            <span style={{fontFamily:'Cormorant Garamond,Georgia,serif',fontSize:'clamp(1.2rem,2.5vw,1.5rem)',fontWeight:300,fontStyle:'italic',color:'rgba(255,255,255,0.48)',transition:'color 0.3s',cursor:'default'}}
+              onMouseEnter={e=>(e.currentTarget.style.color='#5BBFBF')}
+              onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,0.48)')}
+            >{name}</span>
+            <div style={{width:'4px',height:'4px',borderRadius:'50%',background:'#5BBFBF',opacity:0.35}} />
           </div>
         ))}
       </div>

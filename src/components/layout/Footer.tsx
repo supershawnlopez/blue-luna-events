@@ -1,92 +1,104 @@
 'use client'
-
 import Image from 'next/image'
 import Link from 'next/link'
-import { SITE_CONFIG } from '@/lib/config'
 import { Instagram, Facebook } from 'lucide-react'
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0D0F0F] border-t border-white/6">
-      <div className="max-w-screen-xl mx-auto px-6 md:px-12">
-        {/* Main grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 py-16">
+    <footer style={{background:'#0D0F0F',borderTop:'1px solid rgba(255,255,255,0.06)'}}>
+      <div style={{maxWidth:'1280px',margin:'0 auto',padding:'0 24px'}}>
+
+        {/* Main */}
+        <div style={{
+          display:'grid',
+          gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,200px),1fr))',
+          gap:'40px',
+          padding:'64px 0 48px',
+        }}>
           {/* Brand */}
-          <div>
+          <div style={{gridColumn:'span 1'}}>
             <Image
               src="/images/logo-color.png"
               alt="Blue Luna Events"
-              width={160}
-              height={52}
-              className="h-12 w-auto object-contain mb-5 brightness-0 invert opacity-85"
+              width={200}
+              height={64}
+              style={{height:'56px',width:'auto',objectFit:'contain',marginBottom:'18px',filter:'brightness(0) invert(1)',opacity:0.88}}
             />
-            <p className="text-sm font-light leading-relaxed text-white/38 mb-6">
+            <p style={{fontSize:'13px',fontWeight:300,lineHeight:1.75,color:'rgba(255,255,255,0.38)',marginBottom:'20px'}}>
               Tucson&apos;s premier balloon décor and event styling studio. Quinceañeras, weddings, graduations, birthdays — and everything in between.
             </p>
-            <div className="flex gap-3">
-              <Link href={SITE_CONFIG.instagram} target="_blank"
-                className="w-9 h-9 rounded-full border border-white/12 flex items-center justify-center text-white/40 hover:border-teal hover:text-teal hover:bg-teal/10 transition-all">
-                <Instagram size={14} />
-              </Link>
-              <Link href={SITE_CONFIG.facebook} target="_blank"
-                className="w-9 h-9 rounded-full border border-white/12 flex items-center justify-center text-white/40 hover:border-teal hover:text-teal hover:bg-teal/10 transition-all">
-                <Facebook size={14} />
-              </Link>
+            <div style={{display:'flex',gap:'10px'}}>
+              {[
+                { href:'https://instagram.com/bluelunamagic', Icon: Instagram, label:'Instagram' },
+                { href:'https://facebook.com/bluelunamagic', Icon: Facebook, label:'Facebook' },
+              ].map(({href,Icon,label}) => (
+                <Link key={label} href={href} target="_blank" aria-label={label} style={{
+                  width:'44px',height:'44px',borderRadius:'50%',
+                  border:'1px solid rgba(255,255,255,0.14)',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  color:'rgba(255,255,255,0.45)',
+                  transition:'all 0.2s',minHeight:'unset',
+                }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor='#5BBFBF';e.currentTarget.style.color='#5BBFBF';e.currentTarget.style.background='rgba(91,191,191,0.1)';}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor='rgba(255,255,255,0.14)';e.currentTarget.style.color='rgba(255,255,255,0.45)';e.currentTarget.style.background='transparent';}}
+                >
+                  <Icon size={18} />
+                </Link>
+              ))}
             </div>
           </div>
 
           {/* Services */}
           <div>
-            <p className="font-mono text-[10px] text-white/26 tracking-[0.2em] uppercase mb-5">Services</p>
-            <ul className="flex flex-col gap-2.5">
-              {['Balloon Décor', 'Backdrops & Frames', 'Photo Booth Rental', 'Audio & MC', 'View All Packages'].map((item) => (
-                <li key={item}>
-                  <Link href="/packages" className="text-sm font-light text-white/42 hover:text-teal transition-colors">
-                    {item}
-                  </Link>
-                </li>
+            <p style={{fontFamily:'DM Mono,monospace',fontSize:'10px',color:'rgba(255,255,255,0.25)',letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:'18px'}}>Services</p>
+            <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+              {['Balloon Décor','Backdrops & Frames','Photo Booth Rental','Audio & MC','View All Packages'].map(s => (
+                <Link key={s} href="/#packages" style={{fontSize:'14px',fontWeight:300,color:'rgba(255,255,255,0.45)',transition:'color 0.2s',minHeight:'unset'}}
+                  onMouseEnter={e=>(e.currentTarget.style.color='#5BBFBF')}
+                  onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,0.45)')}
+                >{s}</Link>
               ))}
-            </ul>
+            </div>
           </div>
 
           {/* Events */}
           <div>
-            <p className="font-mono text-[10px] text-white/26 tracking-[0.2em] uppercase mb-5">Events</p>
-            <ul className="flex flex-col gap-2.5">
+            <p style={{fontFamily:'DM Mono,monospace',fontSize:'10px',color:'rgba(255,255,255,0.25)',letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:'18px'}}>Events</p>
+            <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
               {[
-                { label: 'Quinceañeras', href: '/quinceaneras' },
-                { label: 'Weddings', href: '/#packages' },
-                { label: 'Graduations 🎓', href: '/graduations' },
-                { label: 'Birthdays', href: '/#packages' },
-                { label: 'Corporate', href: '/#packages' },
-              ].map((item) => (
-                <li key={item.label}>
-                  <Link href={item.href} className="text-sm font-light text-white/42 hover:text-teal transition-colors">
-                    {item.label}
-                  </Link>
-                </li>
+                {l:'Quinceañeras',h:'/quinceaneras'},
+                {l:'Weddings',h:'/#packages'},
+                {l:'Graduations',h:'/graduations'},
+                {l:'Birthdays',h:'/#packages'},
+                {l:'Corporate',h:'/#packages'},
+              ].map(({l,h}) => (
+                <Link key={l} href={h} style={{fontSize:'14px',fontWeight:300,color:'rgba(255,255,255,0.45)',transition:'color 0.2s',minHeight:'unset'}}
+                  onMouseEnter={e=>(e.currentTarget.style.color='#5BBFBF')}
+                  onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,0.45)')}
+                >{l}</Link>
               ))}
-            </ul>
+            </div>
           </div>
 
           {/* Contact */}
           <div>
-            <p className="font-mono text-[10px] text-white/26 tracking-[0.2em] uppercase mb-5">Contact</p>
-            <div className="flex flex-col gap-3">
+            <p style={{fontFamily:'DM Mono,monospace',fontSize:'10px',color:'rgba(255,255,255,0.25)',letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:'18px'}}>Contact</p>
+            <div style={{display:'flex',flexDirection:'column',gap:'14px'}}>
               {[
-                { label: 'Phone / Text', value: SITE_CONFIG.phone, href: `tel:${SITE_CONFIG.phoneRaw}` },
-                { label: 'Email', value: SITE_CONFIG.email, href: `mailto:${SITE_CONFIG.email}` },
-                { label: 'Location', value: SITE_CONFIG.location, href: undefined },
-                { label: 'Social', value: SITE_CONFIG.instagramHandle, href: SITE_CONFIG.instagram },
-              ].map((item) => (
-                <div key={item.label}>
-                  <p className="font-mono text-[9px] text-white/22 tracking-[0.15em] uppercase mb-0.5">{item.label}</p>
-                  {item.href ? (
-                    <Link href={item.href} className="text-sm font-light text-white/50 hover:text-teal transition-colors">
-                      {item.value}
-                    </Link>
+                {label:'Phone / Text',value:'(520) 222-6142',href:'tel:5202226142'},
+                {label:'Email',value:'monica@bluelunaevents.com',href:'mailto:monica@bluelunaevents.com'},
+                {label:'Location',value:'Tucson, AZ',href:undefined},
+                {label:'Social',value:'@BlueLunaMagic',href:'https://instagram.com/bluelunamagic'},
+              ].map(({label,value,href}) => (
+                <div key={label}>
+                  <p style={{fontFamily:'DM Mono,monospace',fontSize:'9px',color:'rgba(255,255,255,0.2)',letterSpacing:'0.14em',textTransform:'uppercase',marginBottom:'2px'}}>{label}</p>
+                  {href ? (
+                    <Link href={href} style={{fontSize:'13px',fontWeight:300,color:'rgba(255,255,255,0.52)',transition:'color 0.2s',minHeight:'unset'}}
+                      onMouseEnter={e=>(e.currentTarget.style.color='#5BBFBF')}
+                      onMouseLeave={e=>(e.currentTarget.style.color='rgba(255,255,255,0.52)')}
+                    >{value}</Link>
                   ) : (
-                    <span className="text-sm font-light text-white/50">{item.value}</span>
+                    <span style={{fontSize:'13px',fontWeight:300,color:'rgba(255,255,255,0.52)'}}>{value}</span>
                   )}
                 </div>
               ))}
@@ -94,14 +106,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-white/6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="text-[11px] font-light text-white/18">
-            © 2025 Blue Luna Events · Monica Denogean · Tucson, AZ · All rights reserved.
-          </span>
-          <span className="font-mono text-[10px] text-white/14 tracking-widest">
-            BLUELUNAEVENTS.COM
-          </span>
+        {/* Bottom */}
+        <div style={{borderTop:'1px solid rgba(255,255,255,0.06)',padding:'18px 0',display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'space-between',gap:'8px'}}>
+          <span style={{fontSize:'12px',fontWeight:300,color:'rgba(255,255,255,0.18)'}}>© 2025 Blue Luna Events · Monica Denogean · Tucson, AZ · All rights reserved.</span>
+          <span style={{fontFamily:'DM Mono,monospace',fontSize:'10px',color:'rgba(255,255,255,0.14)',letterSpacing:'0.1em'}}>BLUELUNAEVENTS.COM</span>
         </div>
       </div>
     </footer>

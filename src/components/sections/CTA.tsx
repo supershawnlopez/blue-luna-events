@@ -1,46 +1,52 @@
 'use client'
-
 import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
-import { SITE_CONFIG } from '@/lib/config'
+import { ArrowRight, Phone } from 'lucide-react'
 
 export default function CTA() {
   return (
-    <section id="contact" className="py-32 bg-[#FDFCFA] text-center">
-      <div className="max-w-2xl mx-auto px-6">
-        <div className="flex items-center justify-center gap-3 mb-5">
-          <div className="w-6 h-px bg-teal" />
-          <span className="font-mono text-[11px] text-teal tracking-[0.2em] uppercase">Ready to Book?</span>
-          <div className="w-6 h-px bg-teal" />
+    <section id="contact" style={{padding:'clamp(64px,10vw,120px) 0', background:'#FDFCFA', textAlign:'center'}}>
+      <div style={{maxWidth:'640px', margin:'0 auto', padding:'0 24px'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'10px',marginBottom:'16px'}}>
+          <div style={{width:'24px',height:'1px',background:'#5BBFBF'}} />
+          <span style={{fontFamily:'DM Mono,monospace',fontSize:'11px',color:'#5BBFBF',letterSpacing:'0.18em',textTransform:'uppercase'}}>Ready to Book?</span>
+          <div style={{width:'24px',height:'1px',background:'#5BBFBF'}} />
         </div>
-
-        <h2 className="font-display text-5xl md:text-6xl font-light leading-[1.1] text-[#0D0F0F] mb-5 reveal">
-          Let&apos;s Make Your Event <em className="italic text-[#3A8F8F]">Unforgettable</em>
+        <h2 className="reveal" style={{fontFamily:'Cormorant Garamond,Georgia,serif',fontSize:'clamp(2.4rem,5.5vw,4rem)',fontWeight:300,lineHeight:1.1,color:'#0D0F0F',marginBottom:'16px'}}>
+          Let&apos;s Make Your Event <em style={{fontStyle:'italic',color:'#3A8F8F'}}>Unforgettable</em>
         </h2>
-
-        <p className="text-base font-light leading-[1.75] text-[#4A5050] mb-12 reveal rd1">
-          Tell us about your event and we&apos;ll send a custom estimate within 24 hours.
-          A 50% deposit holds your date — availability is limited.
+        <p className="reveal rd1" style={{fontSize:'15px',fontWeight:300,lineHeight:1.75,color:'#4A5050',marginBottom:'36px'}}>
+          Tell us about your event and we&apos;ll send a custom estimate within 24 hours. A 50% deposit holds your date — availability is limited.
         </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8 reveal rd2">
-          <Link
-            href="/get-a-quote"
-            className="inline-flex items-center gap-3 bg-[#0D0F0F] text-white text-sm font-medium tracking-wide uppercase px-10 py-4 rounded-full transition-all duration-300 hover:bg-teal hover:text-[#0D0F0F] hover:-translate-y-0.5 shadow-lg shadow-black/20 w-full sm:w-auto justify-center"
+        <div className="reveal rd2" style={{display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'center',gap:'12px',marginBottom:'20px'}}>
+          <Link href="/get-a-quote" style={{
+            display:'inline-flex',alignItems:'center',gap:'8px',
+            background:'#0D0F0F',color:'white',
+            fontSize:'14px',fontWeight:600,
+            padding:'15px 32px',borderRadius:'999px',
+            boxShadow:'0 4px 20px rgba(0,0,0,0.2)',
+            transition:'all 0.2s',minHeight:'unset',
+          }}
+          onMouseEnter={e=>{e.currentTarget.style.background='#5BBFBF';e.currentTarget.style.color='#0D0F0F';e.currentTarget.style.transform='translateY(-2px)';}}
+          onMouseLeave={e=>{e.currentTarget.style.background='#0D0F0F';e.currentTarget.style.color='white';e.currentTarget.style.transform='translateY(0)';}}
           >
-            Get Your Custom Estimate
-            <ArrowRight size={14} />
+            Get Your Custom Estimate <ArrowRight size={15} />
           </Link>
-          <Link
-            href={`tel:${SITE_CONFIG.phoneRaw}`}
-            className="inline-flex items-center gap-2 border border-[#D4D8D8] text-[#0D0F0F] text-sm font-light tracking-wide uppercase px-8 py-4 rounded-full transition-all duration-200 hover:border-teal hover:text-teal hover:bg-teal/4 w-full sm:w-auto justify-center"
+          <Link href="tel:5202226142" style={{
+            display:'inline-flex',alignItems:'center',gap:'8px',
+            border:'1.5px solid #D4D8D8',color:'#0D0F0F',
+            fontSize:'14px',fontWeight:400,
+            padding:'14px 28px',borderRadius:'999px',
+            transition:'all 0.2s',minHeight:'unset',
+            background:'white',
+          }}
+          onMouseEnter={e=>{e.currentTarget.style.borderColor='#5BBFBF';e.currentTarget.style.color='#3A8F8F';}}
+          onMouseLeave={e=>{e.currentTarget.style.borderColor='#D4D8D8';e.currentTarget.style.color='#0D0F0F';}}
           >
-            📞 Call or Text Monica
+            <Phone size={15} /> Call or Text Monica
           </Link>
         </div>
-
-        <p className="text-sm font-light text-[#8A8F8F] reveal rd3">
-          We respond within <strong className="text-[#3A8F8F] font-normal">a few hours</strong>. Zelle · Check · Cash accepted. Deposit secures your date.
+        <p className="reveal rd3" style={{fontSize:'13px',fontWeight:300,color:'#8A8F8F'}}>
+          We respond within <strong style={{color:'#3A8F8F',fontWeight:500}}>a few hours</strong>. Zelle · Check · Cash accepted.
         </p>
       </div>
     </section>

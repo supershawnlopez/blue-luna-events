@@ -5,125 +5,195 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 
-const NAV_LINKS = [
+const LINKS = [
   { label: 'Packages', href: '/#packages' },
   { label: 'Gallery', href: '/gallery' },
   { label: 'About', href: '/#about' },
-  { label: 'Quinceañeras', href: '/quinceaneras', highlight: 'teal' },
-  { label: 'Graduations ✨', href: '/graduations', highlight: 'gold' },
+  { label: 'Quinceañeras', href: '/quinceaneras', teal: true },
+  { label: 'Graduations', href: '/graduations', gold: true },
 ]
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60)
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
+    const fn = () => setScrolled(window.scrollY > 40)
+    fn()
+    window.addEventListener('scroll', fn, { passive: true })
+    return () => window.removeEventListener('scroll', fn)
+  }, [])
+
+  // Close mobile menu on resize to desktop
+  useEffect(() => {
+    const fn = () => { if (window.innerWidth >= 1024) setOpen(false) }
+    window.addEventListener('resize', fn)
+    return () => window.removeEventListener('resize', fn)
   }, [])
 
   return (
     <>
+      {/* NAV BAR */}
       <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+        height: '68px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 48px', height: '72px',
-        background: scrolled ? 'rgba(13,15,15,0.95)' : 'rgba(13,15,15,0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: scrolled ? '1px solid rgba(91,191,191,0.15)' : '1px solid rgba(255,255,255,0.05)',
-        transition: 'all 0.3s ease',
+        padding: '0 24px',
+        background: 'rgba(13,15,15,0.96)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderBottom: scrolled ? '1px solid rgba(91,191,191,0.2)' : '1px solid rgba(255,255,255,0.06)',
+        transition: 'border-color 0.3s',
       }}>
-        <Link href="/">
+        {/* LOGO — big and proud */}
+        <Link href="/" style={{display:'flex',alignItems:'center',minHeight:'44px'}}>
           <Image
             src="/images/logo-white.png"
             alt="Blue Luna Events"
-            width={180}
-            height={52}
-            style={{height: '44px', width: 'auto', objectFit: 'contain'}}
+            width={220}
+            height={70}
+            style={{
+              height: '52px',
+              width: 'auto',
+              objectFit: 'contain',
+              display: 'block',
+            }}
             priority
           />
         </Link>
 
-        {/* Desktop */}
-        <ul style={{display: 'flex', alignItems: 'center', gap: '32px', listStyle: 'none', margin: 0, padding: 0}} className="hidden lg:flex">
-          {NAV_LINKS.map((link) => (
-            <li key={link.href}>
-              <Link href={link.href} style={{
-                fontSize: '0.75rem', fontWeight: 400,
-                color: link.highlight === 'teal' ? '#5BBFBF' : link.highlight === 'gold' ? '#E8CCA0' : 'rgba(255,255,255,0.8)',
-                letterSpacing: '0.12em', textTransform: 'uppercase',
-                textDecoration: 'none', whiteSpace: 'nowrap',
-                transition: 'color 0.2s',
-              }}>
-                {link.label}
-              </Link>
-            </li>
-          ))}
-          <li>
-            <Link href="/get-a-quote" style={{
-              background: '#5BBFBF', color: '#0D0F0F',
-              fontSize: '0.75rem', fontWeight: 500,
-              letterSpacing: '0.08em', textTransform: 'uppercase',
-              padding: '10px 24px', borderRadius: '999px',
-              textDecoration: 'none', whiteSpace: 'nowrap',
-              transition: 'all 0.2s',
-            }}>
-              Get a Quote
-            </Link>
-          </li>
-        </ul>
-
-        {/* Mobile toggle */}
-        <button
-          className="lg:hidden"
-          onClick={() => setMobileOpen(!mobileOpen)}
-          style={{background: 'none', border: 'none', color: 'white', cursor: 'pointer', padding: '4px'}}
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
-        </button>
-      </nav>
-
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div style={{
-          position: 'fixed', top: '72px', left: 0, right: 0, zIndex: 99,
-          background: 'rgba(13,15,15,0.98)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(91,191,191,0.15)',
-          padding: '16px 24px 32px',
-          display: 'flex', flexDirection: 'column',
-        }}>
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              style={{
-                fontSize: '0.875rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-                padding: '14px 0',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                textDecoration: 'none',
-                color: link.highlight === 'teal' ? '#5BBFBF' : link.highlight === 'gold' ? '#E8CCA0' : 'rgba(255,255,255,0.8)',
-              }}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <Link
-            href="/get-a-quote"
-            onClick={() => setMobileOpen(false)}
-            style={{
-              marginTop: '16px', background: '#5BBFBF', color: '#0D0F0F',
-              fontSize: '0.875rem', fontWeight: 500, letterSpacing: '0.08em',
-              textTransform: 'uppercase', padding: '14px 24px',
-              borderRadius: '999px', textAlign: 'center', textDecoration: 'none',
+        {/* DESKTOP LINKS */}
+        <div style={{display:'flex',alignItems:'center',gap:'8px'}} className="hidden lg:flex">
+          {LINKS.map(l => (
+            <Link key={l.href} href={l.href} style={{
+              fontSize: '13px', fontWeight: 400,
+              color: l.teal ? '#5BBFBF' : l.gold ? '#E8CCA0' : 'rgba(255,255,255,0.78)',
+              letterSpacing: '0.04em',
+              padding: '8px 14px',
+              borderRadius: '8px',
+              transition: 'background 0.15s, color 0.15s',
+              whiteSpace: 'nowrap',
+              minHeight: 'unset',
             }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <Link href="/get-a-quote" style={{
+            marginLeft: '8px',
+            background: '#5BBFBF', color: '#0D0F0F',
+            fontSize: '13px', fontWeight: 600,
+            letterSpacing: '0.02em',
+            padding: '10px 22px',
+            borderRadius: '999px',
+            whiteSpace: 'nowrap',
+            minHeight: 'unset',
+            transition: 'background 0.2s, transform 0.2s',
+            boxShadow: '0 4px 16px rgba(91,191,191,0.3)',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = '#8DD4D4'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = '#5BBFBF'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
             Get a Quote
           </Link>
+        </div>
+
+        {/* HAMBURGER — always visible on mobile */}
+        <button
+          onClick={() => setOpen(!open)}
+          aria-label={open ? 'Close menu' : 'Open menu'}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            width: '44px', height: '44px',
+            background: open ? 'rgba(91,191,191,0.15)' : 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: '10px',
+            color: 'white', cursor: 'pointer',
+            transition: 'background 0.2s',
+            minHeight: 'unset',
+          }}
+          className="lg:hidden"
+        >
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </nav>
+
+      {/* MOBILE MENU — full screen overlay */}
+      {open && (
+        <div style={{
+          position: 'fixed', top: '68px', left: 0, right: 0, bottom: 0,
+          zIndex: 199,
+          background: 'rgba(13,15,15,0.98)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          display: 'flex', flexDirection: 'column',
+          padding: '24px 24px 40px',
+          overflowY: 'auto',
+        }}>
+          {LINKS.map((l, i) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              style={{
+                fontSize: '22px',
+                fontFamily: 'Cormorant Garamond, Georgia, serif',
+                fontWeight: 300,
+                fontStyle: 'italic',
+                color: l.teal ? '#5BBFBF' : l.gold ? '#E8CCA0' : 'rgba(255,255,255,0.88)',
+                padding: '18px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.07)',
+                minHeight: 'unset',
+                opacity: 0,
+                animation: `fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) ${i * 0.06}s forwards`,
+              }}
+            >
+              {l.label}
+            </Link>
+          ))}
+
+          <Link
+            href="/get-a-quote"
+            onClick={() => setOpen(false)}
+            style={{
+              marginTop: '28px',
+              background: '#5BBFBF', color: '#0D0F0F',
+              fontSize: '15px', fontWeight: 600,
+              letterSpacing: '0.04em',
+              padding: '18px 24px',
+              borderRadius: '999px',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(91,191,191,0.35)',
+              minHeight: 'unset',
+              opacity: 0,
+              animation: 'fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 0.3s forwards',
+            }}
+          >
+            Get a Quote →
+          </Link>
+
+          {/* Contact info in mobile menu */}
+          <div style={{
+            marginTop: 'auto', paddingTop: '32px',
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+            opacity: 0,
+            animation: 'fadeUp 0.4s cubic-bezier(0.16,1,0.3,1) 0.36s forwards',
+          }}>
+            <a href="tel:5202226142" style={{
+              display: 'block', color: 'rgba(255,255,255,0.4)',
+              fontSize: '14px', marginBottom: '8px', minHeight: 'unset',
+            }}>
+              (520) 222-6142
+            </a>
+            <a href="mailto:monica@bluelunaevents.com" style={{
+              display: 'block', color: 'rgba(255,255,255,0.4)',
+              fontSize: '14px', minHeight: 'unset',
+            }}>
+              monica@bluelunaevents.com
+            </a>
+          </div>
         </div>
       )}
     </>
