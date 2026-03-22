@@ -52,7 +52,7 @@ export default function GalleryPreview() {
                 display: 'flex', alignItems: 'flex-end', padding: '18px',
                 transition: 'background 0.3s',
               }} className="gal-overlay">
-                <span className="font-display" style={{ fontSize: '1rem', fontStyle: 'italic', color: 'white', fontWeight: 300, opacity: 0, transition: 'opacity 0.3s' }} className="gal-label">
+                <span style={{ fontSize: '1rem', fontStyle: 'italic', color: 'white', fontWeight: 300, opacity: 0, transition: 'opacity 0.3s' }} className="gal-label font-display">
                   {p.label}
                 </span>
               </div>
