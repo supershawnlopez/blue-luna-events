@@ -116,7 +116,7 @@ export default function Hero() {
               border: '1px solid rgba(91,191,191,0.3)',
               borderRadius: '16px', padding: '14px 18px',
             }}>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', color: '#5BBFBF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 600 }}>Summer 2025</p>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', color: '#5BBFBF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px', fontWeight: 600 }}>Summer 2026</p>
               <p className="font-display" style={{ fontSize: '1.3rem', fontWeight: 600, color: 'white', lineHeight: 1 }}>Booking Now</p>
               <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '3px' }}>Limited dates available</p>
             </div>

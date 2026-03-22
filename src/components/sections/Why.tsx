@@ -30,13 +30,15 @@ export default function Why() {
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: 'rgba(255,255,255,0.55)', lineHeight: 1.75, marginBottom: '32px' }}>
               We&apos;re not just a balloon company. Blue Luna Events is the only studio in the Tucson area combining balloon décor, photo booth, professional audio, and MC services — one team, one seamless experience.
             </p>
+
+            {/* Stats — Inter font, readable */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1px', background: 'rgba(255,255,255,0.07)', borderRadius: '16px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)' }}>
               {STATS.map(s => (
-                <div key={s.n} style={{ background: '#141818', padding: '22px 18px' }}>
-                  <p className="font-display" style={{ fontSize: '2rem', fontWeight: 600, color: 'white', lineHeight: 1, marginBottom: '5px' }}>
+                <div key={s.n} style={{ background: '#141818', padding: '20px 18px' }}>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.7rem', fontWeight: 700, color: 'white', lineHeight: 1, marginBottom: '5px', letterSpacing: '-0.02em' }}>
                     {s.n}
                   </p>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', fontWeight: 300, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.04em' }}>{s.l}</p>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', fontWeight: 400, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em' }}>{s.l}</p>
                 </div>
               ))}
             </div>

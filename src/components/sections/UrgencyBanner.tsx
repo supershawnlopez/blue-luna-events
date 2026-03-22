@@ -24,7 +24,7 @@ export default function UrgencyBanner() {
         }}>
           <GraduationCap size={14} color="#5BBFBF" />
           <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 700, color: '#5BBFBF', letterSpacing: '0.08em', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
-            Graduation 2025
+            Graduation 2026
           </span>
         </div>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
