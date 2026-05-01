@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Sparkles, Camera, Crown, Check, ArrowRight } from 'lucide-react'
 import { BookingSheet } from '@/components/sections/Packages'
+import { PACKAGE_CATALOG, type Package } from '@/lib/config'
 
 const FEATURES = [
   { icon: Sparkles, title: 'Custom Luxury Garlands', text: 'Floor-to-ceiling balloon garlands in your exact colors — rose gold, blush, champagne, or anything you envision.' },
@@ -12,36 +13,9 @@ const FEATURES = [
   { icon: Crown, title: 'Columns & Entrance Displays', text: 'Grand balloon columns flanking the entrance set the tone before guests even walk in the door.' },
 ]
 
-const PACKAGES = [
-  {
-    tier: '01', name: 'Starter',
-    tagline: 'Beautiful and budget-friendly for intimate quinceañeras',
-    price: '$450', color: 'gray', image: '/images/gal-3.jpg',
-    features: ['Up to 10 ft luxury garland', 'Custom color palette', '1 shimmer backdrop', 'Standard delivery & setup'],
-    cta: 'Book Starter',
-  },
-  {
-    tier: '02', name: 'Classic', badge: 'Most Popular',
-    tagline: 'The full quinceañera experience Tucson families love',
-    price: '$950', color: 'teal', image: '/images/gal-2.jpg',
-    features: ['Up to 20 ft luxury garland', 'Shimmer backdrop + frame', '2 balloon columns with toppers', '3 premium centerpieces', 'Premium delivery, setup & takedown'],
-    cta: 'Book Classic',
-  },
-  {
-    tier: '03', name: 'Signature',
-    tagline: 'Elevated elegance for a truly unforgettable quinceañera',
-    price: '$1,600', color: 'rose', image: '/images/hero-sec.jpg',
-    features: ['Up to 30 ft luxury garland', 'Dual shimmer backdrops', '4 balloon columns with custom toppers', '6 premium centerpieces', 'Marquee letters', 'Premium delivery, setup & takedown'],
-    cta: 'Book Signature',
-  },
-  {
-    tier: '04', name: 'Grand Experience',
-    tagline: 'The ultimate quinceañera — photo booth, audio & MC included',
-    price: '$2,800', color: 'gold', image: '/images/hero-main.jpg',
-    features: ['Everything in Signature', 'Photo booth rental (4 hrs)', 'Professional audio setup', 'MC services for full event', "Tucson's only all-in-one studio"],
-    cta: 'Book Grand Experience',
-  },
-]
+const PACKAGES: Package[] = PACKAGE_CATALOG.filter(
+  p => Array.isArray(p.eventTypes) && p.eventTypes.includes('quinceanera')
+)
 
 const FAQS = [
   { q: 'How much does quinceañera balloon décor cost in Tucson?', a: 'Our quinceañera packages start at $450 for the Starter and go up to $2,800 for the Grand Experience with photo booth, audio, and MC. Most Tucson families choose the Classic ($950) or Signature ($1,600) package.' },
@@ -51,7 +25,7 @@ const FAQS = [
 ]
 
 export default function Quinceaneras() {
-  const [selectedPkg, setSelectedPkg] = useState<{ name: string; price: string; image: string } | null>(null)
+  const [selectedPkg, setSelectedPkg] = useState<Package | null>(null)
 
   return (
     <div style={{ minHeight: '100vh', background: '#FDFCFA' }}>
@@ -108,8 +82,8 @@ export default function Quinceaneras() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,260px),1fr))', gap: '18px', marginBottom: '32px' }}>
-            {PACKAGES.map((pkg, i) => (
-              <div key={pkg.name} className="card" style={{ overflow: 'hidden', cursor: 'pointer', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }} onClick={() => setSelectedPkg(pkg)}>
+            {PACKAGES.map((pkg) => (
+              <div key={pkg.id} className="card" style={{ overflow: 'hidden', cursor: 'pointer', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }} onClick={() => setSelectedPkg(pkg)}>
                 <div style={{ position: 'relative', height: '140px' }}>
                   <Image src={pkg.image} alt={pkg.name} fill style={{ objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.4)' }} />
@@ -117,12 +91,12 @@ export default function Quinceaneras() {
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: pkg.color === 'teal' ? 'linear-gradient(90deg,#5BBFBF,#8DD4D4)' : pkg.color === 'gold' ? 'linear-gradient(90deg,#C9A96E,#E8CCA0)' : pkg.color === 'rose' ? 'linear-gradient(90deg,#F9A8D4,#FBCFE8)' : 'linear-gradient(90deg,#E5E7EB,#D1D5DB)' }} />
                 </div>
                 <div style={{ padding: '20px' }}>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '3px' }}>Tier {pkg.tier}</p>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '9px', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '3px' }}>{pkg.tier}</p>
                   <h3 className="font-display" style={{ fontSize: '1.4rem', fontWeight: 400, color: '#0D0F0F', marginBottom: '3px' }}>{pkg.name}</h3>
                   <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 300, color: '#6B7280', marginBottom: '14px', lineHeight: 1.4 }}>{pkg.tagline}</p>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px', marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid #F3F4F6' }}>
                     <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', color: '#9CA3AF' }}>from</span>
-                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.9rem', fontWeight: 700, color: '#0D0F0F', lineHeight: 1, letterSpacing: '-0.02em' }}>{pkg.price}</span>
+                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.9rem', fontWeight: 700, color: '#0D0F0F', lineHeight: 1, letterSpacing: '-0.02em' }}>${pkg.price.toLocaleString()}</span>
                   </div>
                   <ul style={{ listStyle: 'none', marginBottom: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {pkg.features.map(f => (

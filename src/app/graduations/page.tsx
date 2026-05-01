@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Palette, Camera, Zap, Check, ArrowRight, GraduationCap } from 'lucide-react'
 import { BookingSheet } from '@/components/sections/Packages'
+import { PACKAGE_CATALOG, type Package } from '@/lib/config'
 
 const FEATURES = [
   { icon: Palette, title: 'School Color Palettes', text: "We match your grad's school colors perfectly — garlands, backdrops, and centerpieces all coordinated." },
@@ -12,29 +13,9 @@ const FEATURES = [
   { icon: Zap, title: 'Fast Turnaround', text: 'Need it quick? We accommodate rush bookings. Call us today — dates are filling fast.' },
 ]
 
-const PACKAGES = [
-  {
-    tier: '01', name: 'Celebrate',
-    tagline: 'Backyard parties and budget-conscious grads',
-    price: '$299', color: 'gray', image: '/images/gal-5.jpg',
-    features: ['Up to 8 ft balloon garland', 'Custom school colors', 'Standard delivery & setup', '1 centerpiece'],
-    cta: 'Book Celebrate',
-  },
-  {
-    tier: '02', name: 'Classic', badge: 'Most Popular',
-    tagline: 'The perfect grad party setup — festive and memorable',
-    price: '$550', color: 'teal', image: '/images/gal-4.jpg',
-    features: ['Up to 15 ft balloon garland', 'Shimmer backdrop', '2 balloon columns', '2 centerpieces', 'Standard delivery & setup'],
-    cta: 'Book Classic',
-  },
-  {
-    tier: '03', name: 'Grand',
-    tagline: 'Full wow factor — the grad party of the year',
-    price: '$950', color: 'gold', image: '/images/hero-main.jpg',
-    features: ['Up to 20 ft luxury garland', 'Shimmer backdrop + frame', '2 balloon columns with toppers', '3 premium centerpieces', 'Photo booth rental (2 hrs)', 'Premium delivery, setup & takedown'],
-    cta: 'Book Grand',
-  },
-]
+const PACKAGES: Package[] = PACKAGE_CATALOG.filter(
+  p => Array.isArray(p.eventTypes) && p.eventTypes.includes('graduation')
+)
 
 const FAQS = [
   { q: 'How much does a graduation party balloon setup cost in Tucson?', a: 'Graduation setups start at $299 for the Celebrate package. Most families choose the Classic at $550. For a full party experience with photo booth, the Grand package is $950.' },
@@ -44,7 +25,7 @@ const FAQS = [
 ]
 
 export default function Graduations() {
-  const [selectedPkg, setSelectedPkg] = useState<{ name: string; price: string; image: string } | null>(null)
+  const [selectedPkg, setSelectedPkg] = useState<Package | null>(null)
 
   return (
     <div style={{ minHeight: '100vh', background: '#FDFCFA' }}>
@@ -112,7 +93,7 @@ export default function Graduations() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,280px),1fr))', gap: '18px', marginBottom: '32px' }}>
             {PACKAGES.map(pkg => (
-              <div key={pkg.name} className="card" style={{ overflow: 'hidden', cursor: 'pointer', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }} onClick={() => setSelectedPkg(pkg)}>
+              <div key={pkg.id} className="card" style={{ overflow: 'hidden', cursor: 'pointer', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }} onClick={() => setSelectedPkg(pkg)}>
                 <div style={{ position: 'relative', height: '160px' }}>
                   <Image src={pkg.image} alt={pkg.name} fill style={{ objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.35)' }} />
@@ -124,7 +105,7 @@ export default function Graduations() {
                   <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 300, color: '#6B7280', marginBottom: '14px', lineHeight: 1.4 }}>{pkg.tagline}</p>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px', marginBottom: '14px', paddingBottom: '14px', borderBottom: '1px solid #F3F4F6' }}>
                     <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', color: '#9CA3AF' }}>from</span>
-                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.9rem', fontWeight: 700, color: '#0D0F0F', lineHeight: 1, letterSpacing: '-0.02em' }}>{pkg.price}</span>
+                    <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.9rem', fontWeight: 700, color: '#0D0F0F', lineHeight: 1, letterSpacing: '-0.02em' }}>${pkg.price.toLocaleString()}</span>
                   </div>
                   <ul style={{ listStyle: 'none', marginBottom: '18px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {pkg.features.map(f => (

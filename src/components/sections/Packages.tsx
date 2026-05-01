@@ -4,37 +4,16 @@ import { useState } from 'react'
 import Image from 'next/image'
 import { Check, X, ArrowRight, Phone, Mail, Calendar, User } from 'lucide-react'
 import { submitLead } from '@/lib/actions'
+import { HOMEPAGE_PACKAGES, type Package } from '@/lib/config'
 
-const PACKAGES = [
-  {
-    tier: '01', name: 'Essential',
-    tagline: 'Birthdays, baby showers & intimate celebrations',
-    price: '$350', color: 'gray', image: '/images/gal-4.jpg',
-    features: ['Up to 12 ft balloon garland','Custom color palette','Standard delivery & setup','Up to 2 centerpieces'],
-    cta: 'Book Essential',
-  },
-  {
-    tier: '02', name: 'Signature', badge: 'Most Popular',
-    tagline: 'Quinceañeras, weddings & milestone events',
-    price: '$900', color: 'teal', image: '/images/gal-2.jpg',
-    features: ['Up to 20 ft luxury garland','Shimmer backdrop + frame','2 balloon columns with toppers','3 premium centerpieces','Premium delivery, setup & takedown'],
-    cta: 'Book Signature',
-  },
-  {
-    tier: '03', name: 'Luxury',
-    tagline: 'Full event transformation with photo booth & MC',
-    price: '$1,800', color: 'gold', image: '/images/hero-main.jpg',
-    features: ['Everything in Signature','Photo booth rental (4 hrs)','Professional audio setup','MC services included',"Tucson's only all-in-one studio"],
-    cta: 'Book Luxury',
-  },
-]
-
-export function BookingSheet({ pkg, onClose }: { pkg: { name: string; price: string; image: string } | null; onClose: () => void }) {
+export function BookingSheet({ pkg, onClose }: { pkg: Package | null; onClose: () => void }) {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [form, setForm] = useState({ name: '', phone: '', email: '', event_date: '' })
 
   if (!pkg) return null
+
+  const priceDisplay = `$${pkg.price.toLocaleString()}`
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,7 +21,7 @@ export function BookingSheet({ pkg, onClose }: { pkg: { name: string; price: str
     const result = await submitLead({
       ...form,
       event_type: pkg!.name + ' Package',
-      vision: `Interested in the ${pkg!.name} package (from ${pkg!.price})`,
+      vision: `Interested in the ${pkg!.name} package (from ${priceDisplay})`,
     })
     if (result.success) setDone(true)
     setLoading(false)
@@ -67,14 +46,13 @@ export function BookingSheet({ pkg, onClose }: { pkg: { name: string; price: str
             </div>
           ) : (
             <>
-              {/* Clean white package header */}
               <div style={{ borderRadius: '16px', border: '1.5px solid #E5E7EB', overflow: 'hidden', marginBottom: '24px' }}>
                 <div style={{ position: 'relative', height: '120px' }}>
                   <Image src={pkg.image} alt={pkg.name} fill style={{ objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.5)' }} />
                   <div style={{ position: 'absolute', inset: 0, padding: '16px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
                     <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', fontWeight: 700, color: '#5BBFBF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>{pkg.name} Package</p>
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.8rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>from {pkg.price}</p>
+                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1.8rem', fontWeight: 700, color: 'white', lineHeight: 1 }}>from {priceDisplay}</p>
                   </div>
                 </div>
                 <div style={{ background: '#FAFAFA', padding: '12px 20px', borderTop: '1px solid #E5E7EB' }}>
@@ -105,7 +83,7 @@ export function BookingSheet({ pkg, onClose }: { pkg: { name: string; price: str
 }
 
 export default function Packages() {
-  const [selectedPkg, setSelectedPkg] = useState<{ name: string; price: string; image: string } | null>(null)
+  const [selectedPkg, setSelectedPkg] = useState<Package | null>(null)
 
   return (
     <section id="packages" style={{ padding: 'clamp(64px,10vw,120px) 0', background: '#FDFCFA' }}>
@@ -123,8 +101,8 @@ export default function Packages() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,300px),1fr))', gap: '20px' }}>
-          {PACKAGES.map((pkg, i) => (
-            <div key={pkg.name} className={`card reveal reveal-delay-${i+1}`} style={{ overflow: 'hidden', cursor: 'pointer', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }} onClick={() => setSelectedPkg(pkg)}>
+          {HOMEPAGE_PACKAGES.map((pkg, i) => (
+            <div key={pkg.id} className={`card reveal reveal-delay-${i+1}`} style={{ overflow: 'hidden', cursor: 'pointer', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }} onClick={() => setSelectedPkg(pkg)}>
               <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
                 <Image src={pkg.image} alt={pkg.name} fill style={{ objectFit: 'cover', transition: 'transform 0.5s' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(13,15,15,0.6) 100%)' }} />
@@ -132,13 +110,13 @@ export default function Packages() {
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: pkg.color === 'teal' ? 'linear-gradient(90deg,#5BBFBF,#8DD4D4)' : pkg.color === 'gold' ? 'linear-gradient(90deg,#C9A96E,#E8CCA0)' : 'linear-gradient(90deg,#E5E7EB,#D1D5DB)' }} />
               </div>
               <div style={{ padding: '24px' }}>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>Tier {pkg.tier}</p>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>{pkg.tier}</p>
                 <h3 className="font-display" style={{ fontSize: '1.6rem', fontWeight: 400, color: '#0D0F0F', marginBottom: '3px' }}>{pkg.name}</h3>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 300, color: '#6B7280', marginBottom: '18px', lineHeight: 1.5 }}>{pkg.tagline}</p>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '18px', paddingBottom: '18px', borderBottom: '1px solid #F3F4F6' }}>
                   <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: '#9CA3AF' }}>from</span>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '2.2rem', fontWeight: 700, color: '#0D0F0F', lineHeight: 1, letterSpacing: '-0.02em' }}>{pkg.price}</span>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: '#9CA3AF', paddingBottom: '4px' }}>installed</span>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '2.2rem', fontWeight: 700, color: '#0D0F0F', lineHeight: 1, letterSpacing: '-0.02em' }}>${pkg.price.toLocaleString()}</span>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: '#9CA3AF', paddingBottom: '4px' }}>{pkg.priceNote}</span>
                 </div>
                 <ul style={{ listStyle: 'none', marginBottom: '22px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {pkg.features.map(f => (

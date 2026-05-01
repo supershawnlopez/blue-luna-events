@@ -1,0 +1,172 @@
+{
+  "_meta": {
+    "business": "Blue Luna Events",
+    "owner": "Monica Denogean",
+    "version": "1.0.0",
+    "currency": "USD",
+    "notes": "All prices in USD. Photo booth and audio/MC pricing TBD."
+  },
+
+  "garlands": {
+    "_label": "Balloon Garlands",
+    "_unit": "per foot",
+    "basic":   { "id": "garland_basic",   "label": "Basic Garland",   "rate_per_ft": 25 },
+    "full":    { "id": "garland_full",    "label": "Full Garland",    "rate_per_ft": 35 },
+    "luxury":  { "id": "garland_luxury",  "label": "Luxury Garland",  "rate_per_ft": 45 },
+    "_note": "Custom lengths available. Round up to nearest foot. price = rate_per_ft × footage"
+  },
+
+  "columns": {
+    "_label": "Balloon Columns",
+    "_unit": "per column",
+    "rate_per_ft": 25,
+    "presets": {
+      "6ft":  { "id": "column_6ft",  "label": "6 ft Column",  "height_ft": 6, "base_price": 150 },
+      "7ft":  { "id": "column_7ft",  "label": "7 ft Column",  "height_ft": 7, "base_price": 175 },
+      "8ft":  { "id": "column_8ft",  "label": "8 ft Column",  "height_ft": 8, "base_price": 200 }
+    },
+    "custom_topper": {
+      "id": "column_topper",
+      "label": "Custom Topper",
+      "add_per_column": 25
+    },
+    "_note": "Pairs = price × 2. Custom heights = rate_per_ft × height_ft"
+  },
+
+  "specialty": {
+    "_label": "Specialty Balloon Designs",
+    "bouquet_small":      { "id": "bouquet_small",  "label": "Balloon Bouquet (5–7 balloons)",   "price": 35 },
+    "bouquet_large":      { "id": "bouquet_large",  "label": "Balloon Bouquet (10–12 balloons)", "price": 50 },
+    "centerpiece_basic":  { "id": "cp_basic",       "label": "Balloon Centerpiece — Basic",      "price": 25 },
+    "centerpiece_premium":{ "id": "cp_premium",     "label": "Balloon Centerpiece — Premium",    "price": 45 },
+    "marquee_small":      { "id": "mq_small",       "label": "Marquee Number/Letter — Small",    "price": 75 },
+    "marquee_large":      { "id": "mq_large",       "label": "Marquee Number/Letter — Large",    "price": 150 }
+  },
+
+  "backdrops": {
+    "_label": "Backdrops & Frames",
+    "shimmer_with_frame": {
+      "id": "backdrop_shimmer",
+      "label": "Shimmer Backdrop + Frame",
+      "price": 115,
+      "colors": ["White", "Silver", "Gold"]
+    },
+    "hoop_frame_only": {
+      "id": "backdrop_hoop",
+      "label": "Hoop Frame Only (client provides draping)",
+      "price": 45
+    },
+    "rectangle_frame_only": {
+      "id": "backdrop_rect",
+      "label": "Rectangle Frame Only (client provides draping)",
+      "price": 70
+    }
+  },
+
+  "delivery": {
+    "_label": "Delivery & Setup",
+    "standard": {
+      "id": "delivery_standard",
+      "label": "Standard Delivery & Setup",
+      "price": 100,
+      "includes": ["delivery", "setup"]
+    },
+    "premium": {
+      "id": "delivery_premium",
+      "label": "Premium Service",
+      "price": 130,
+      "includes": ["delivery", "setup", "same_day_takedown"]
+    },
+    "setup_only": {
+      "id": "delivery_setup_only",
+      "label": "Setup Only / Client Pickup",
+      "price": 50,
+      "includes": ["setup"]
+    },
+    "next_day_pickup": {
+      "id": "delivery_next_day_pickup",
+      "label": "Next-Day Pickup",
+      "price": 50,
+      "includes": ["next_day_takedown"]
+    }
+  },
+
+  "fees": {
+    "_label": "Surcharges & Fees",
+    "rush": {
+      "id": "fee_rush",
+      "label": "Rush Fee",
+      "amount": 75,
+      "condition": "Booking placed under 48 hours before event"
+    },
+    "distance": {
+      "id": "fee_distance",
+      "label": "Distance Fee",
+      "free_within_miles": 20,
+      "rate_per_mile_over": 1.50,
+      "base_address": "459 S. Camino Seco, Tucson, AZ 85710",
+      "base_address_is_private": true,
+      "_note": "NEVER print base_address on client documents. Only show 'Tucson, AZ'. Fee = (miles - 20) × 1.50, rounded up to nearest mile."
+    }
+  },
+
+  "photo_booth": {
+    "_label": "Photo Booth (Pricing TBD)",
+    "ipad_selfie_2hr":    { "id": "pb_ipad_2hr",   "label": "iPad Selfie Station (2 hrs)",    "price": null },
+    "ipad_selfie_4hr":    { "id": "pb_ipad_4hr",   "label": "iPad Selfie Station (4 hrs)",    "price": null },
+    "open_air_2hr":       { "id": "pb_open_2hr",   "label": "Open-Air Photo Booth (2 hrs)",   "price": null },
+    "open_air_4hr":       { "id": "pb_open_4hr",   "label": "Open-Air Photo Booth (4 hrs)",   "price": null },
+    "booth_backdrop_bundle": { "id": "pb_bundle",  "label": "Photo Booth + Backdrop Bundle",  "price": null }
+  },
+
+  "audio_mc": {
+    "_label": "Audio / MC Services (Pricing TBD)",
+    "audio_setup":  { "id": "audio_setup",  "label": "Audio / Speaker Setup",   "price": null },
+    "mc_per_hour":  { "id": "mc_hourly",    "label": "MC Services (per hour)",   "price": null },
+    "audio_mc_bundle": { "id": "audio_mc_bundle", "label": "Audio + MC Bundle", "price": null }
+  },
+
+  "payment_schedule": {
+    "_label": "Payment Schedule Rules",
+    "deposit": {
+      "percent": 50,
+      "due_days_before_event": 14,
+      "label": "Deposit",
+      "description": "Due 2 weeks before your event. Secures your date, materials, and team.",
+      "non_refundable_after_days": 7
+    },
+    "balance": {
+      "percent": 50,
+      "due_days_before_event": 7,
+      "label": "Final Payment",
+      "description": "Due 1 week before your event. Confirms all final details and delivery."
+    },
+    "methods": ["Zelle", "Check", "Cash"],
+    "check_payable_to": "Blue Luna Events",
+    "zelle_to": "monica@bluelunaevents.com"
+  },
+
+  "estimate_rules": {
+    "valid_days": 30,
+    "document_label": "Estimate",
+    "client_label": "Client",
+    "file_naming": "ESTIMATE_[EventType]_[ClientLastName]_[YYYY].pdf"
+  },
+
+  "invoice_rules": {
+    "document_label": "Invoice",
+    "file_naming": "INVOICE_[EventType]_[ClientLastName]_[InvoiceNum].pdf"
+  },
+
+  "company": {
+    "name": "Blue Luna Events",
+    "founder": "Monica Denogean",
+    "phone": "520-222-6142",
+    "email": "monica@bluelunaevents.com",
+    "website": "www.bluelunaevents.com",
+    "location_public": "Tucson, AZ",
+    "brand_teal": "#5BBFBF",
+    "instagram": "@BlueLunaMagic",
+    "facebook": "@BlueLunaMagic"
+  }
+}

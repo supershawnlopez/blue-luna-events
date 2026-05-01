@@ -5,7 +5,6 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Types for our database tables
 export type Lead = {
   id?: string
   created_at?: string
@@ -18,6 +17,16 @@ export type Lead = {
   vision?: string
   budget_range?: string
   status?: 'new' | 'contacted' | 'quoted' | 'booked' | 'completed'
+  // Configurator fields — all optional for backwards compat with BookingSheet
+  package_id?: string
+  package_name?: string
+  add_ons?: string        // JSON stringified string[]
+  quoted_total?: number
+  is_consultation?: boolean
+  deposit_paid?: boolean
+  deposit_amount?: number
+  stripe_payment_intent_id?: string
+  source?: 'configurator' | 'direct'
 }
 
 export type GalleryPhoto = {
