@@ -103,15 +103,15 @@ function PriceSummary({ packageId, addOnIds }: { packageId: string | null; addOn
       </div>
       {result.isConsultation && (
         <div style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.3)', borderRadius: '10px', padding: '10px 14px', marginTop: '10px' }}>
-          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 500, color: '#3A8F8F', lineHeight: 1.5 }}>
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 500, color: '#5BBFBF', lineHeight: 1.5 }}>
             <Sparkles size={12} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} />
-            This is a premium event — Monica will reach out personally to finalize your custom quote.
+            Custom event — Monica will reach out personally within 2 hours to finalize your pricing.
           </p>
         </div>
       )}
       {!result.isConsultation && (
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: '#9CA3AF', marginTop: '6px' }}>
-          50% deposit ({formatPrice(result.deposit)}) due 2 weeks before · Balance 1 week before
+          50% deposit to book · Balance due 1 week before event
         </p>
       )}
     </div>
@@ -129,7 +129,7 @@ function Step1({ state, dispatch }: { state: ConfigState; dispatch: React.Dispat
   return (
     <div>
       <h2 className="font-display" style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 300, color: '#0D0F0F', marginBottom: '8px' }}>
-        What are we <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>celebrating?</em>
+        What are we <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>celebrating?</em>
       </h2>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 300, color: '#6B7280', marginBottom: '32px' }}>Choose your event type to see tailored packages and pricing.</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%,160px),1fr))', gap: '12px' }}>
@@ -170,7 +170,7 @@ function Step2({ state, dispatch }: { state: ConfigState; dispatch: React.Dispat
   return (
     <div>
       <h2 className="font-display" style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 300, color: '#0D0F0F', marginBottom: '8px' }}>
-        Choose your <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>base package</em>
+        Choose your <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>base package</em>
       </h2>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 300, color: '#6B7280', marginBottom: '32px' }}>You can add more in the next step. Select what fits your vision.</p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -240,7 +240,7 @@ function Step3({ state, dispatch }: { state: ConfigState; dispatch: React.Dispat
   return (
     <div>
       <h2 className="font-display" style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 300, color: '#0D0F0F', marginBottom: '8px' }}>
-        Personalize your <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>setup</em>
+        Personalize your <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>setup</em>
       </h2>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 300, color: '#6B7280', marginBottom: '24px' }}>Optional add-ons. Select as many as you like — or skip to the next step.</p>
 
@@ -281,7 +281,7 @@ function Step3({ state, dispatch }: { state: ConfigState; dispatch: React.Dispat
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }}>
                   <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 600, color: '#0D0F0F' }}>{addOn.label}</span>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 700, color: checked ? '#3A8F8F' : '#0D0F0F', flexShrink: 0 }}>+{formatPrice(addOn.price)}</span>
+                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 700, color: checked ? '#5BBFBF' : '#0D0F0F', flexShrink: 0 }}>+{formatPrice(addOn.price)}</span>
                 </div>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', fontWeight: 300, color: '#6B7280', marginTop: '3px', lineHeight: 1.4 }}>{addOn.description}</p>
                 {addOn.socialProof && (
@@ -301,6 +301,7 @@ function Step3({ state, dispatch }: { state: ConfigState; dispatch: React.Dispat
 function Step4({ state }: { state: ConfigState }) {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
+  const [submitError, setSubmitError] = useState(false)
   const [form, setForm] = useState({ name: '', phone: '', email: '', event_date: '', venue: '' })
 
   const result = state.packageId ? computeTotal(state.packageId, state.addOnIds) : null
@@ -310,9 +311,18 @@ function Step4({ state }: { state: ConfigState }) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!result || !selectedPkg) return
+    const cleanName = form.name.trim()
+    const cleanPhone = form.phone.trim()
+    const cleanEmail = form.email.trim()
+    if (!cleanName || !cleanPhone || !cleanEmail) return
     setLoading(true)
-    await submitLead({
-      ...form,
+    setSubmitError(false)
+    const response = await submitLead({
+      name: cleanName,
+      phone: cleanPhone,
+      email: cleanEmail,
+      event_date: form.event_date,
+      venue: form.venue,
       event_type: state.eventTypeId ?? 'unknown',
       vision: selectedAddOns.length > 0
         ? `Package: ${selectedPkg.name}. Add-ons: ${selectedAddOns.map(a => a.label).join(', ')}`
@@ -327,7 +337,8 @@ function Step4({ state }: { state: ConfigState }) {
       source: 'configurator',
     })
     setLoading(false)
-    setDone(true)
+    if (response.success) setDone(true)
+    else setSubmitError(true)
   }
 
   if (done) {
@@ -353,7 +364,7 @@ function Step4({ state }: { state: ConfigState }) {
   return (
     <div>
       <h2 className="font-display" style={{ fontSize: 'clamp(1.8rem,3vw,2.6rem)', fontWeight: 300, color: '#0D0F0F', marginBottom: '8px' }}>
-        Almost there — <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>tell us about you</em>
+        Almost there — <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>tell us about you</em>
       </h2>
       <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.9rem', fontWeight: 300, color: '#6B7280', marginBottom: '28px' }}>Takes 30 seconds. Monica reviews every request personally.</p>
 
@@ -417,6 +428,11 @@ function Step4({ state }: { state: ConfigState }) {
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: '#9CA3AF', textAlign: 'center', lineHeight: 1.5 }}>
           No charge now — Monica confirms your date and sends a deposit link.
         </p>
+        {submitError && (
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: '#EF4444', textAlign: 'center', lineHeight: 1.5 }}>
+            Something went wrong — please try again or call/text Monica directly at (520) 222-6142.
+          </p>
+        )}
       </form>
     </div>
   )

@@ -17,7 +17,7 @@ const REVIEWS = [
     loc: 'Oro Valley, AZ',
     event: 'Graduation Party · 2025',
     init: 'D',
-    bg: '#3A8F8F',
+    bg: '#5BBFBF',
   },
   {
     text: "She listened to exactly the vibe I was going for, suggested a color palette I hadn't even thought of, and showed up early to set up. By the time guests arrived it looked like a styled shoot. Every single person asked who did the décor.",
@@ -48,7 +48,7 @@ export default function Reviews() {
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
             <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 300, color: '#0D0F0F', lineHeight: 1.05 }}>
               They Were Nervous.<br />
-              <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>Then They Saw the Room.</em>
+              <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Then They Saw the Room.</em>
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ display: 'flex', gap: '2px' }}>

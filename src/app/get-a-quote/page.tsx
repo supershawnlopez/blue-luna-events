@@ -14,10 +14,13 @@ export default function GetAQuote() {
           <div className="eyebrow-line" /><span className="eyebrow-text">Transparent Pricing</span><div className="eyebrow-line" />
         </div>
         <h1 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 300, color: '#0D0F0F', lineHeight: 1.1, marginBottom: '12px' }}>
-          Build Your <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>Package</em>
+          Build Your <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Package</em>
         </h1>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: '#6B7280', maxWidth: '420px', margin: '0 auto', lineHeight: 1.7 }}>
           Pick your event, choose a base package, and add extras. See your price in real time — no waiting, no surprises.
+        </p>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 400, color: '#9CA3AF', marginTop: '8px' }}>
+          Packages from $299 — most events fall between $500–$1,800.
         </p>
       </div>
       <PackageConfigurator />

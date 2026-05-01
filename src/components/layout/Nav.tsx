@@ -8,7 +8,6 @@ import { X, Menu, Instagram, Facebook, ArrowRight } from 'lucide-react'
 const LINKS = [
   { label: 'Packages', href: '/#packages' },
   { label: 'Gallery', href: '/gallery' },
-  { label: 'About', href: '/#about' },
   { label: 'Quinceañeras', href: '/quinceaneras', color: '#5BBFBF' },
   { label: 'Graduations', href: '/graduations', color: '#E8CCA0' },
 ]

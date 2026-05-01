@@ -24,7 +24,7 @@ export default function GalleryPreview() {
           <div>
             <div className="eyebrow"><div className="eyebrow-line" /><span className="eyebrow-text">Portfolio</span></div>
             <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 300, color: '#0D0F0F', lineHeight: 1.05, marginBottom: '10px' }}>
-              Rooms We&apos;ve <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>Transformed</em>
+              Rooms We&apos;ve <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Transformed</em>
             </h2>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 300, color: '#6B7280', lineHeight: 1.6 }}>
               Every setup you see was built for a real Tucson family, on a real date that mattered.
@@ -33,7 +33,7 @@ export default function GalleryPreview() {
           <Link href="/gallery" style={{
             display: 'inline-flex', alignItems: 'center', gap: '6px',
             fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 500,
-            color: '#3A8F8F', border: '1.5px solid #3A8F8F', borderRadius: '999px',
+            color: '#5BBFBF', border: '1.5px solid #5BBFBF', borderRadius: '999px',
             padding: '10px 22px', textDecoration: 'none', transition: 'all 0.2s', whiteSpace: 'nowrap',
           }}>
             View Full Gallery <ArrowRight size={13} />

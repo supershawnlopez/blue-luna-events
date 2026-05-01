@@ -31,7 +31,7 @@ export function computeTotal(
   // Consultation path: total at or above threshold, OR 4+ add-ons (high-complexity booking)
   const isConsultation = total >= PRICING_RULES.consultationThreshold || addOnIds.length >= 4
 
-  const deposit = Math.round(total * (PRICING_RULES.depositPercent / 100))
+  const deposit = isConsultation ? 0 : Math.round(total * (PRICING_RULES.depositPercent / 100))
 
   return { packagePrice, addOnsTotal, subtotal, rushFee, total, deposit, isConsultation }
 }

@@ -58,7 +58,7 @@ async function sendLeadNotification(data: Lead, vision: string) {
   const isConsultation = data.is_consultation ?? false
   const total = data.quoted_total ? `$${data.quoted_total.toLocaleString()}` : null
   const deposit = data.deposit_amount ? `$${data.deposit_amount.toLocaleString()}` : null
-  const addOnsParsed: string[] = data.add_ons ? JSON.parse(data.add_ons) : []
+  const addOnsParsed: string[] = data.add_ons ? (() => { try { return JSON.parse(data.add_ons!) } catch { return [] } })() : []
 
   const subject = isConsultation
     ? `🌙 New Consultation Request — ${data.name} (${data.event_type})`

@@ -77,9 +77,6 @@ export default function Hero() {
             <Link href="/get-a-quote" className="btn-primary" style={{ fontSize: '0.85rem', padding: '15px 32px' }}>
               Build Your Package <ArrowRight size={15} />
             </Link>
-            <Link href="/gallery" className="btn-ghost" style={{ fontSize: '0.85rem', padding: '14px 28px' }}>
-              See Our Work
-            </Link>
           </div>
         </div>
       </div>

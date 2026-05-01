@@ -14,7 +14,7 @@ export default function ProcessStrip() {
             <div className="eyebrow-line" /><span className="eyebrow-text">How It Works</span><div className="eyebrow-line" />
           </div>
           <h2 className="font-display" style={{ fontSize: 'clamp(1.8rem,3.5vw,2.8rem)', fontWeight: 300, color: '#0D0F0F', marginTop: '8px' }}>
-            Three steps to <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>your perfect event</em>
+            Three steps to <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>your perfect event</em>
           </h2>
         </div>
 

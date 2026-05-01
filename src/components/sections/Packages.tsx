@@ -92,7 +92,7 @@ export default function Packages() {
           <div className="eyebrow"><div className="eyebrow-line" /><span className="eyebrow-text">Your Experience</span></div>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
             <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 300, color: '#0D0F0F', lineHeight: 1.1 }}>
-              Every Detail. <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>Handled.</em>
+              Every Detail. <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Handled.</em>
             </h2>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: '#6B7280', maxWidth: '420px', lineHeight: 1.7 }}>
               From intimate backyard parties to full quinceañera productions — every package includes professional installation.
@@ -136,7 +136,7 @@ export default function Packages() {
         </div>
 
         <p className="reveal" style={{ fontFamily: 'Inter, sans-serif', textAlign: 'center', marginTop: '28px', fontSize: '0.85rem', fontWeight: 300, color: '#6B7280' }}>
-          Need something custom? <a href="/get-a-quote" style={{ color: '#3A8F8F', borderBottom: '1px solid #3A8F8F' }}>Tell us your vision</a> and we&apos;ll build it. <strong style={{ color: '#0D0F0F', fontWeight: 500 }}>Zelle · Check · Cash accepted.</strong>
+          Need something custom? <a href="/get-a-quote" style={{ color: '#5BBFBF', borderBottom: '1px solid #5BBFBF' }}>Tell us your vision</a> and we&apos;ll build it. <strong style={{ color: '#0D0F0F', fontWeight: 500 }}>Zelle · Check · Cash accepted.</strong>
         </p>
       </div>
       {selectedPkg && <BookingSheet pkg={selectedPkg} onClose={() => setSelectedPkg(null)} />}
