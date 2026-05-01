@@ -89,13 +89,13 @@ export default function Packages() {
     <section id="packages" style={{ padding: 'clamp(64px,10vw,120px) 0', background: '#FDFCFA' }}>
       <div className="container">
         <div style={{ marginBottom: '52px' }} className="reveal">
-          <div className="eyebrow"><div className="eyebrow-line" /><span className="eyebrow-text">Transparent Pricing</span></div>
+          <div className="eyebrow"><div className="eyebrow-line" /><span className="eyebrow-text">Your Experience</span></div>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
             <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 300, color: '#0D0F0F', lineHeight: 1.1 }}>
-              Choose Your <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>Experience</em>
+              Every Detail. <em style={{ fontStyle: 'italic', color: '#3A8F8F' }}>Handled.</em>
             </h2>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: '#6B7280', maxWidth: '420px', lineHeight: 1.7 }}>
-              Every package includes professional installation. Not sure which fits? We build custom — just reach out.
+              From intimate backyard parties to full quinceañera productions — every package includes professional installation.
             </p>
           </div>
         </div>
