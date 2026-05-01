@@ -5,7 +5,7 @@ import { ArrowRight, Phone } from 'lucide-react'
 
 export default function CTA() {
   return (
-    <section id="contact" style={{ padding: 'clamp(80px,12vw,140px) 0', background: '#0D0F0F', position: 'relative', overflow: 'hidden' }}>
+    <section id="contact" style={{ padding: 'clamp(64px,9vw,110px) 0', background: '#0D0F0F', position: 'relative', overflow: 'hidden' }}>
       {/* Subtle glow */}
       <div style={{
         position: 'absolute', top: '50%', left: '50%',
@@ -26,7 +26,7 @@ export default function CTA() {
 
           <h2 className="font-display reveal" style={{
             fontSize: 'clamp(2.4rem,5vw,4rem)',
-            fontWeight: 300, color: 'white',
+            fontWeight: 400, color: 'white',
             lineHeight: 1.0, marginBottom: '24px',
           }}>
             Your Date Won&apos;t Wait.<br />

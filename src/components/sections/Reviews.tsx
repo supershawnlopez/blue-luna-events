@@ -39,14 +39,14 @@ function Stars() {
 
 export default function Reviews() {
   return (
-    <section id="reviews" style={{ padding: 'clamp(80px,12vw,140px) 0', background: '#FDFCFA', overflow: 'hidden' }}>
+    <section id="reviews" style={{ padding: 'clamp(56px,8vw,96px) 0', background: '#FDFCFA', overflow: 'hidden' }}>
       <div className="container">
 
         {/* Header */}
         <div style={{ marginBottom: '56px' }} className="reveal">
           <div className="eyebrow"><div className="eyebrow-line" /><span className="eyebrow-text">What Families Say</span></div>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-            <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 300, color: '#0D0F0F', lineHeight: 1.05 }}>
+            <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3.2rem)', fontWeight: 400, color: '#0D0F0F', lineHeight: 1.05 }}>
               They Were Nervous.<br />
               <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Then They Saw the Room.</em>
             </h2>
@@ -66,7 +66,7 @@ export default function Reviews() {
               <Stars />
               <p style={{
                 fontFamily: 'Cormorant Garamond, Georgia, serif',
-                fontSize: '1.05rem', fontWeight: 300, fontStyle: 'italic',
+                fontSize: '1.1rem', fontWeight: 400, fontStyle: 'italic',
                 color: '#0D0F0F', lineHeight: 1.75, marginBottom: '24px',
               }}>
                 &ldquo;{r.text}&rdquo;
@@ -134,16 +134,6 @@ export default function Reviews() {
         </div>
 
       </div>
-      <style>{`
-        .reviews-desktop { display: grid !important; }
-        .reviews-mobile { display: none !important; }
-        @media (max-width: 768px) {
-          .reviews-desktop { display: none !important; }
-          .reviews-mobile { display: block !important; }
-        }
-        .reviews-mobile > div::-webkit-scrollbar { display: none; }
-        .reviews-mobile > div { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
     </section>
   )
 }

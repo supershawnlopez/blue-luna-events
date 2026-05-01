@@ -176,14 +176,14 @@ body {
   border: none;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
-  box-shadow: 0 4px 20px rgba(91,191,191,0.35);
+  box-shadow: 0 2px 10px rgba(91,191,191,0.2);
   white-space: nowrap;
   text-decoration: none;
 }
 .btn-primary:hover {
   background: var(--teal-l);
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(91,191,191,0.5);
+  box-shadow: 0 6px 20px rgba(91,191,191,0.3);
 }
 .btn-primary:active { transform: translateY(0); }
 
@@ -298,3 +298,41 @@ body {
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
+
+/* ── NAV ── */
+.nav-desktop { display: flex !important; }
+.nav-mobile-btn { display: none !important; }
+.nav-fullscreen { display: flex !important; }
+@media (max-width: 1023px) {
+  .nav-desktop { display: none !important; }
+  .nav-mobile-btn { display: flex !important; }
+}
+@media (min-width: 1024px) {
+  .nav-fullscreen { display: none !important; }
+}
+
+/* ── REVIEWS ── */
+.reviews-desktop { display: grid !important; }
+.reviews-mobile { display: none !important; }
+@media (max-width: 768px) {
+  .reviews-desktop { display: none !important; }
+  .reviews-mobile { display: block !important; }
+}
+.reviews-mobile > div::-webkit-scrollbar { display: none; }
+.reviews-mobile > div { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── GALLERY GRID ── */
+@media (max-width: 640px) {
+  .gallery-grid {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto !important;
+  }
+  .gallery-grid > div:first-child { grid-row: auto !important; height: 220px; }
+  .gallery-grid > div { height: 160px; }
+}
+.gallery-grid > div:hover img { transform: scale(1.04); }
+.gallery-grid > div:hover .gal-overlay { background: rgba(13,15,15,0.35) !important; }
+
+/* ── BOOKING SHEET ANIMATIONS ── */
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }

@@ -46,7 +46,7 @@ export default function Hero() {
 
           <h1 className="font-display" style={{
             fontSize: 'clamp(3.2rem, 6.5vw, 5.5rem)',
-            fontWeight: 300,
+            fontWeight: 400,
             lineHeight: 1.0,
             color: 'white',
             marginBottom: '24px',
@@ -60,9 +60,9 @@ export default function Hero() {
           <p style={{
             fontFamily: 'Inter, sans-serif',
             fontSize: 'clamp(0.95rem, 1.5vw, 1.05rem)',
-            fontWeight: 300,
+            fontWeight: 400,
             lineHeight: 1.8,
-            color: 'rgba(255,255,255,0.62)',
+            color: 'rgba(255,255,255,0.72)',
             maxWidth: '460px',
             marginBottom: '40px',
             animation: 'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.35s both',

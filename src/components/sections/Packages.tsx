@@ -77,7 +77,6 @@ export function BookingSheet({ pkg, onClose }: { pkg: Package | null; onClose: (
           )}
         </div>
       </div>
-      <style>{`@keyframes fadeIn{from{opacity:0}to{opacity:1}}@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}`}</style>
     </>
   )
 }
@@ -86,12 +85,12 @@ export default function Packages() {
   const [selectedPkg, setSelectedPkg] = useState<Package | null>(null)
 
   return (
-    <section id="packages" style={{ padding: 'clamp(64px,10vw,120px) 0', background: '#FDFCFA' }}>
+    <section id="packages" style={{ padding: 'clamp(56px,8vw,96px) 0', background: '#FDFCFA' }}>
       <div className="container">
         <div style={{ marginBottom: '52px' }} className="reveal">
           <div className="eyebrow"><div className="eyebrow-line" /><span className="eyebrow-text">Your Experience</span></div>
           <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-            <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 300, color: '#0D0F0F', lineHeight: 1.1 }}>
+            <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 400, color: '#0D0F0F', lineHeight: 1.1 }}>
               Every Detail. <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Handled.</em>
             </h2>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: '#6B7280', maxWidth: '420px', lineHeight: 1.7 }}>
@@ -103,7 +102,7 @@ export default function Packages() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,300px),1fr))', gap: '20px' }}>
           {HOMEPAGE_PACKAGES.map((pkg, i) => (
             <div key={pkg.id} className={`card reveal reveal-delay-${i+1}`} style={{ overflow: 'hidden', cursor: 'pointer', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }} onClick={() => setSelectedPkg(pkg)}>
-              <div style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
+              <div style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
                 <Image src={pkg.image} alt={pkg.name} fill style={{ objectFit: 'cover', transition: 'transform 0.5s' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(13,15,15,0.6) 100%)' }} />
                 {pkg.badge && <div style={{ position: 'absolute', top: '12px', right: '12px', background: '#5BBFBF', color: '#0D0F0F', fontFamily: 'Inter, sans-serif', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '4px 12px', borderRadius: '999px' }}>{pkg.badge}</div>}

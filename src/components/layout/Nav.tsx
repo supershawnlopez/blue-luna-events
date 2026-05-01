@@ -231,18 +231,6 @@ export default function Nav() {
         </div>
       </div>
 
-      <style>{`
-        .nav-desktop { display: flex !important; }
-        .nav-mobile-btn { display: none !important; }
-        .nav-fullscreen { display: flex !important; }
-        @media (max-width: 1023px) {
-          .nav-desktop { display: none !important; }
-          .nav-mobile-btn { display: flex !important; }
-        }
-        @media (min-width: 1024px) {
-          .nav-fullscreen { display: none !important; }
-        }
-      `}</style>
     </>
   )
 }

@@ -68,18 +68,6 @@ export default function GalleryPreview() {
         </div>
 
       </div>
-      <style>{`
-        @media(max-width: 640px) {
-          .gallery-grid {
-            grid-template-columns: 1fr 1fr !important;
-            grid-template-rows: auto !important;
-          }
-          .gallery-grid > div:first-child { grid-row: auto !important; height: 220px; }
-          .gallery-grid > div { height: 160px; }
-        }
-        .gallery-grid > div:hover img { transform: scale(1.04); }
-        .gallery-grid > div:hover .gal-overlay { background: rgba(13,15,15,0.35) !important; }
-      `}</style>
     </section>
   )
 }
