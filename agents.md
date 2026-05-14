@@ -104,7 +104,45 @@ Done when:
 - No secrets exposed client-side
 - All form submissions confirmed in Supabase
 
-### 6) Steve Jobs Agent
+### 6) Image / Media Agent
+Owns:
+- Sourcing or generating product photos for the custom builder (Step3Custom)
+- Each à la carte option in PackageConfigurator.tsx needs a visual reference image
+- Images must match Blue Luna's luxury, teal-accented brand aesthetic
+
+Task (Phase 2A):
+Generate or source **15–20 images** for the following components:
+
+| Component | Options needed |
+|---|---|
+| Balloon Garland | basic tier, full tier, luxury tier (one photo each showing style difference) |
+| Backdrop | shimmer wall, hoop frame, rectangle frame |
+| Balloon Columns | 6ft, 7ft, 8ft — ideally with toppers shown |
+| Marquee Letters | large size example, small size example |
+| Centerpieces | basic centerpiece, premium centerpiece |
+| Bouquets | small 5–7 balloon bouquet, large 10–12 balloon bouquet |
+
+Image requirements:
+- Clean background preferred (white, cream, or event venue setting)
+- Teal/white/neutral balloons match the brand best
+- Square or portrait crop — will display in ~200px wide pill/card UI
+- File format: JPG or WebP, under 200KB each
+- Suggested naming: `garland-basic.jpg`, `backdrop-shimmer.jpg`, `column-6ft.jpg`, etc.
+- Place in: `public/images/components/`
+
+Sources to try (in order):
+1. Monica's Instagram `@BlueLunaMagic` — real photos of her work (best option, authentic)
+2. Generate with DALL·E / Midjourney / ChatGPT using: "professional balloon décor studio photo, [component], white and teal balloons, clean bright background, luxury event styling, no text"
+3. Stock photo fallback (Unsplash/Pexels) — balloon décor category
+
+Once images are placed in `public/images/components/`, hand off to Claude Code to wire them into `src/components/ui/PackageConfigurator.tsx` Step3Custom component.
+
+Done when:
+- All 15–20 images are in `public/images/components/`
+- Each image clearly represents its component option
+- File sizes are optimized (under 200KB each)
+
+### 7) Steve Jobs Agent
 Owns:
 - Simplicity audits: remove any UI or copy that does not help a visitor book faster
 - Challenge every section: "does this need to exist?"

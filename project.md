@@ -60,10 +60,14 @@ Built this site for his client Monica Denogean as part of a portfolio of resella
 | `src/components/ui/ScrollReveal.tsx` | Scroll animation trigger |
 | `src/lib/config.ts` | **All business data** — SITE_CONFIG, PACKAGE_CATALOG, ADD_ONS, PRICING_RULES, CONFIGURATOR_EVENT_TYPES, getPackagesForEvent(), HOMEPAGE_PACKAGES |
 | `src/lib/pricing.ts` | `computeTotal()`, `computeCustomTotal()`, `CustomBuild` type, all rate constants |
-| `src/lib/actions.ts` | `submitLead()` server action → Supabase insert |
-| `src/lib/supabase.ts` | Supabase client + Lead and GalleryPhoto types |
+| `src/lib/actions.ts` | `submitLead()` server action → Supabase insert + fires both Resend emails |
+| `src/lib/supabase.ts` | Supabase client + Lead type (all fields) + GalleryPhoto type |
+| `src/app/api/stripe/checkout/route.ts` | Creates Stripe Checkout session for 50% deposit |
+| `src/app/api/stripe/webhook/route.ts` | Handles `checkout.session.completed` → marks `deposit_paid=true` in Supabase |
+| `src/app/booking-confirmed/page.tsx` | Post-payment success page with next-steps guide |
 | `public/images/` | hero-main.jpg, hero-sec.jpg, gal-1 through gal-5, logos, icon |
 | `netlify.toml` | Build config — do not touch |
+| `.claude/settings.json` | Claude Code Stop hook — reminds AI to update docs at session end |
 
 ---
 
@@ -84,19 +88,19 @@ Built this site for his client Monica Denogean as part of a portfolio of resella
 | vision | text | optional |
 | budget_range | text | optional |
 | status | text | new / contacted / quoted / booked / completed |
-| package_id | text | ⚠ PENDING schema update |
-| package_name | text | ⚠ PENDING schema update |
-| add_ons | text | JSON stringified array — ⚠ PENDING |
-| quoted_total | numeric | ⚠ PENDING |
-| is_consultation | boolean | ⚠ PENDING |
-| deposit_paid | boolean | default false — ⚠ PENDING |
-| deposit_amount | numeric | ⚠ PENDING |
-| stripe_payment_intent_id | text | ⚠ PENDING |
-| source | text | 'configurator' or 'direct' — ⚠ PENDING |
-| custom_build | jsonb | à la carte build config — ⚠ PENDING |
-| custom_request | text | customer free-text for custom items — ⚠ PENDING |
+| package_id | text | configurator package selection |
+| package_name | text | human-readable package name |
+| add_ons | text | JSON stringified string[] of add-on IDs |
+| quoted_total | numeric | live-computed total from configurator |
+| is_consultation | boolean | true if total ≥ $1,200 or luxury tier |
+| deposit_paid | boolean | default false — flipped true by Stripe webhook |
+| deposit_amount | numeric | 50% of quoted_total |
+| stripe_payment_intent_id | text | set by webhook on checkout.session.completed |
+| source | text | 'configurator' or 'direct' |
+| custom_build | jsonb | à la carte component selections (CustomBuild type) |
+| custom_request | text | customer free-text for custom items |
 
-**⚠ Schema update not yet run.** SQL is in CHANGELOG.md (May 13 session). Shawn pastes it in Supabase SQL Editor.
+**✅ Schema live as of May 14, 2026.** All columns exist in Supabase.
 
 **Table: `gallery_photos`** — defined in `supabase.ts` as `GalleryPhoto` type but not yet built. Gallery page uses hardcoded local images.
 
@@ -139,12 +143,25 @@ Built this site for his client Monica Denogean as part of a portfolio of resella
 
 ## ENVIRONMENT VARIABLES
 
-Required in Netlify dashboard and in `.env.local` for local dev:
+All required in Netlify dashboard (Site config → Environment variables) AND in `.env.local` for local dev.
 
 ```
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=   # pk_test_... or pk_live_...
+STRIPE_SECRET_KEY=                     # sk_test_... or sk_live_...
+STRIPE_WEBHOOK_SECRET=                 # whsec_... from Stripe dashboard → Webhooks
+
+# Resend
+RESEND_API_KEY=                        # re_... from resend.com → API Keys
 ```
+
+**Stripe webhook endpoint:** `https://[your-domain]/api/stripe/webhook`
+**Stripe webhook event:** `checkout.session.completed`
+**Resend sending domains:** `bluelunaevents.com` — DNS records must be verified in Resend dashboard.
 
 ---
 
@@ -159,50 +176,65 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 ---
 
 ## CURRENT STATE
+*Last updated: May 14, 2026*
 
 | Feature | Status |
 |---|---|
-| Homepage | ✅ Built — needs full redesign |
-| Quinceañeras landing page | ✅ Built — needs redesign |
-| Graduations landing page | ✅ Built — needs redesign |
-| Gallery page | ✅ Built (hardcoded 7 photos) — needs redesign |
-| Package configurator (/get-a-quote) | ✅ Built — dual path (premade package + à la carte custom) |
+| Homepage | ✅ Built — Phase 2 design rebuild queued |
+| Quinceañeras landing page | ✅ Built — Phase 2 design rebuild queued |
+| Graduations landing page | ✅ Built — Phase 2 design rebuild queued |
+| Gallery page | ✅ Built (hardcoded 7 photos) — Phase 2 redesign queued |
+| Package configurator (/get-a-quote) | ✅ Built — 4-step dual path (package + à la carte custom build) |
 | Real-time pricing engine | ✅ Built — computeTotal() + computeCustomTotal() |
-| Lead capture (Supabase) | ✅ Working — schema update pending for full configurator fields |
-| Lead notification to Monica | ❌ Not built |
-| Stripe deposit | ❌ Not built |
-| Admin leads dashboard | ❌ Not built |
-| Dynamic gallery (Supabase) | ❌ Not built |
-| Email auto-reply on quote | ❌ Not built |
+| Lead capture (Supabase) | ✅ Full schema live — all configurator fields including custom_build, custom_request |
+| Monica email notification | ✅ Built — Resend, branded HTML, reply-to = client, call/text CTAs |
+| Client confirmation email | ✅ Built — Resend, personalized by event type, order summary, next steps |
+| Stripe deposit flow | ✅ Built — Checkout session, webhook, /booking-confirmed page |
+| Component photos in custom builder | ❌ Phase 2 — needs images sourced/generated |
+| Google Calendar date availability | ❌ Decision pending (manual vs. API) |
+| Admin leads dashboard | ❌ Phase 3 |
+| Dynamic gallery (Supabase) | ❌ Phase 3 |
 
 ---
 
 ## WORK QUEUE
 
-### ⚙️ Phase 1 — Configurator + Lead Automation (ACTIVE)
+### ⚙️ Phase 1 — Configurator + Lead Automation ✅ COMPLETE (May 14, 2026)
 - [x] config.ts — single source of truth for all packages, add-ons, pricing rules
 - [x] pricing.ts — computeTotal(), computeCustomTotal(), CustomBuild type, rate constants
 - [x] PackageConfigurator.tsx — 4-step dual-path (premade package + à la carte custom build)
 - [x] get-a-quote/page.tsx — replaced with PackageConfigurator
-- [ ] **Supabase schema update** — run SQL in Supabase SQL Editor (CHANGELOG.md May 13)
-- [ ] **actions.ts** — insert all configurator fields after schema update
-- [ ] Lead notification — Resend email to Monica on new lead
-- [ ] Stripe Checkout — 50% deposit for non-consultation bookings
-- [ ] Phase 2: component photos in custom builder
+- [x] Supabase schema — all columns live including custom_build (jsonb) + custom_request (text)
+- [x] actions.ts — full insert of all fields, returns leadId, fires both emails
+- [x] Monica email notification — Resend, branded HTML, reply-to = client email
+- [x] Client confirmation email — Resend, personalized by event type, order summary, next steps
+- [x] Stripe Checkout — /api/stripe/checkout + /api/stripe/webhook + /booking-confirmed
+- [ ] **PENDING TEST** — end-to-end live test with Stripe test card 4242 4242 4242 4242
 
-### 🎨 Phase 2 — Design Rebuild (BACKLOG — after Phase 1 is complete)
-- [ ] Lock design decisions with Shawn (colors, fonts, sections, reference sites, logo)
+### 🖼️ Phase 2A — Component Photos in Custom Builder (NEXT)
+- [ ] Source or generate photos for each à la carte option (15–20 images)
+  - Garland: basic, full, luxury tier samples
+  - Backdrops: shimmer, hoop frame, rectangle frame
+  - Columns: 6ft, 7ft, 8ft with and without toppers
+  - Marquee letters: large and small size comparison
+  - Centerpieces: basic and premium examples
+  - Bouquets: small (5–7 balloons) and large (10–12 balloons)
+- [ ] Add images to Step3Custom component in PackageConfigurator.tsx
+- [ ] Image Agent handoff brief: see AGENTS.md → Image Agent section
+
+### 🎨 Phase 2B — Full Design Rebuild (BACKLOG)
+- [ ] Lock design decisions with Shawn (reference sites, logo finalization)
 - [ ] Rebuild `globals.css` — clean design tokens, utility classes
-- [ ] Rebuild `Nav.tsx`
-- [ ] Rebuild `Hero.tsx`
+- [ ] Rebuild `Nav.tsx`, `Hero.tsx`
 - [ ] Rebuild `Packages.tsx` + `BookingSheet`
 - [ ] Rebuild `Reviews.tsx`, `Why.tsx`, `CTA.tsx`, `GalleryPreview.tsx`, `Footer.tsx`
 - [ ] Rebuild `gallery/page.tsx`, `quinceaneras/page.tsx`, `graduations/page.tsx`
+- [ ] Google Calendar date availability (decision first: manual list vs. API)
 
 ### ⚙️ Phase 3 — Admin + Automation (BACKLOG)
 - [ ] Admin dashboard: password-protected page to view/manage leads
 - [ ] Dynamic gallery: connect to Supabase `gallery_photos` table
-- [ ] Email auto-reply to quote requester
+- [ ] Next.js upgrade — 14.2 → 16.x (clears remaining npm audit vulnerabilities)
 
 ---
 

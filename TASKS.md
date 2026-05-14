@@ -76,10 +76,19 @@ Exit criteria:
 
 ## NEXT (in order)
 
-1. Google Calendar date availability — once approach is decided
-2. Phase 2: component photos in custom builder
-3. Next.js upgrade (14.2 → 16.x) — own session, test build after
-4. Design rebuild — Phase 2 (after Phase 1 fully tested)
+1. Component photos for custom builder — Image Agent task (see AGENTS.md → Image Agent)
+   - Source or generate 15–20 images for à la carte options in Step3Custom
+   - Place in: `public/images/components/`
+   - Hand off to Claude Code to wire into PackageConfigurator.tsx
+   - Full brief in AGENTS.md
+
+2. Google Calendar date availability — once approach is decided
+   (Option A: manual Supabase booked_dates list — simple, fast to build)
+   (Option B: Google Calendar API — real availability, complex)
+
+3. Full design rebuild — Phase 2B (after photos + calendar decision)
+
+4. Next.js upgrade (14.2 → 16.x) — own session, test build after
 
 ---
 
