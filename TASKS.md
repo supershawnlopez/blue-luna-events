@@ -36,71 +36,55 @@ Exit criteria:
 
 ## NOW (MAX 3)
 
-1. ✅ Consolidate package data into config.ts (single source of truth)
+1. Supabase schema update — leads table new columns
+- Owner: Shawn (manual step — paste SQL in Supabase SQL editor)
+- Status: PENDING SHAWN ACTION
+- SQL is in CHANGELOG.md (May 13 session) — includes package fields + custom_build (jsonb) + custom_request (text)
+- After running: Function Agent updates src/lib/actions.ts to insert all fields
+
+2. Update src/lib/actions.ts — full configurator insert
 - Owner: Function Agent
-- Status: DONE — `src/lib/config.ts` is now canonical. PACKAGE_CATALOG (10 packages),
-  ADD_ONS (9 add-ons), PRICING_RULES, CONFIGURATOR_EVENT_TYPES, getPackagesForEvent()
-- Remaining: update Packages.tsx, quinceaneras/page.tsx, graduations/page.tsx to import
-  from config.ts instead of their local PACKAGES arrays
+- Status: BLOCKED on #1 (schema must exist first)
+- Fields to insert: package_id, package_name, add_ons, quoted_total, is_consultation, deposit_paid, deposit_amount, source, custom_build, custom_request
 
-2. Update 3 component files to import from config.ts
-- Owner: UI Agent
-- Status: IN PROGRESS (next immediate task)
-- Files: src/components/sections/Packages.tsx, src/app/quinceaneras/page.tsx,
-  src/app/graduations/page.tsx
-- Action: Remove local PACKAGES arrays, import HOMEPAGE_PACKAGES / getPackagesForEvent()
-
-3. Supabase schema + type updates
+3. Resend email notification to Monica
 - Owner: Function Agent
 - Status: Not started
-- New columns needed on `leads` table:
-  - package_id (text)
-  - package_name (text)
-  - add_ons (text — JSON stringified array)
-  - quoted_total (numeric)
-  - is_consultation (boolean)
-  - deposit_paid (boolean, default false)
-  - deposit_amount (numeric)
-  - stripe_payment_intent_id (text)
-  - source (text — 'configurator' | 'direct')
-- After schema: update Lead type in supabase.ts, update submitLead in actions.ts
+- Netlify function or Next.js route handler
+- Triggers on new lead submission
+- Sends to monica@bluelunaevents.com with full package + pricing details
+
+---
+
+## COMPLETED (Phase 1 core — do not reopen)
+
+- ✅ config.ts consolidation — PACKAGE_CATALOG, ADD_ONS, PRICING_RULES, CONFIGURATOR_EVENT_TYPES, getPackagesForEvent()
+- ✅ Packages.tsx, quinceaneras/page.tsx, graduations/page.tsx — import from config.ts
+- ✅ src/lib/pricing.ts — computeTotal(), computeCustomTotal(), CustomBuild type, all rate constants, formatPrice()
+- ✅ src/lib/supabase.ts — Lead type extended with configurator fields
+- ✅ src/components/ui/PackageConfigurator.tsx — 4-step dual-path configurator (package + à la carte custom build)
+- ✅ src/app/get-a-quote/page.tsx — uses PackageConfigurator
 
 ---
 
 ## NEXT (in order)
 
-1. Build src/lib/pricing.ts — computeTotal(packageId, addOnIds) pure function
-   - Must match client-side display exactly
-   - Used by configurator UI + server-side verification in submitLead
-   - Apply PRICING_RULES: rush fee, distance fee logic
-
-2. Build PackageConfigurator.tsx
-   - useReducer state machine
-   - Step 1: Event Type (from CONFIGURATOR_EVENT_TYPES)
-   - Step 2: Base Package (filtered by event type via getPackagesForEvent())
-   - Step 3: Add-Ons (filtered by event type, show upgrade math trap)
-   - Step 4: Details (name, phone, email, event date, venue) + summary + CTA
-   - Upgrade nudge: "Add [X] to reach Signature — save $Y"
-   - framer-motion for step transitions (already installed)
-
-3. Replace /get-a-quote/page.tsx with PackageConfigurator
-   - Remove old QuoteForm component (or keep as fallback — decide with Shawn)
-
-4. Resend email notification
-   - Netlify function or Next.js route handler
-   - Triggers on new lead submission
-   - Sends to monica@bluelunaevents.com with full package details
-
-5. Stripe Checkout integration
+1. Stripe Checkout integration
    - 50% deposit on non-consultation bookings
-   - After configurator Step 4 submit, redirect to Stripe Checkout
-   - On Stripe success: mark deposit_paid = true in Supabase
+   - After configurator Step 4 submit → redirect to Stripe Checkout
+   - On success: mark deposit_paid = true in Supabase
    - On cancel: lead still saved, Monica follows up manually
+   - Blocker: verify Stripe keys are in Netlify env vars
 
-6. Google Calendar date availability (confirm approach with Shawn first)
-   - Option A: Supabase-backed booked_dates array, Monica updates manually
-   - Option B: Google Calendar API integration — show availability in Step 4
-   - Shawn to decide
+2. Phase 2 — component photos in custom builder
+   - Add product photos to each à la carte option (garland tiers, backdrops, columns, etc.)
+   - Source: Monica's Instagram content
+   - Goal: help clients visualize what they're building
+
+3. Google Calendar date availability (confirm approach with Shawn first)
+   - Option A: Supabase-backed booked_dates list, Monica updates manually (simple)
+   - Option B: Google Calendar API — show real availability in Step 4 (complex)
+   - Decision needed from Shawn before building
 
 ---
 

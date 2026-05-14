@@ -55,9 +55,11 @@ Built this site for his client Monica Denogean as part of a portfolio of resella
 | `src/components/layout/Nav.tsx` | Sticky top nav + full-screen mobile menu |
 | `src/components/layout/Footer.tsx` | Footer with contact + social |
 | `src/components/sections/` | All homepage sections (Hero, Packages, Reviews, etc.) |
-| `src/components/ui/QuoteForm.tsx` | Full 8-field quote form |
+| `src/components/ui/QuoteForm.tsx` | Legacy quote form — no longer used on /get-a-quote |
+| `src/components/ui/PackageConfigurator.tsx` | **4-step dual-path configurator** — package or à la carte custom build |
 | `src/components/ui/ScrollReveal.tsx` | Scroll animation trigger |
-| `src/lib/config.ts` | **All business data** — SITE_CONFIG, PACKAGES, EVENT_TYPES, NAV_LINKS |
+| `src/lib/config.ts` | **All business data** — SITE_CONFIG, PACKAGE_CATALOG, ADD_ONS, PRICING_RULES, CONFIGURATOR_EVENT_TYPES, getPackagesForEvent(), HOMEPAGE_PACKAGES |
+| `src/lib/pricing.ts` | `computeTotal()`, `computeCustomTotal()`, `CustomBuild` type, all rate constants |
 | `src/lib/actions.ts` | `submitLead()` server action → Supabase insert |
 | `src/lib/supabase.ts` | Supabase client + Lead and GalleryPhoto types |
 | `public/images/` | hero-main.jpg, hero-sec.jpg, gal-1 through gal-5, logos, icon |
@@ -82,6 +84,19 @@ Built this site for his client Monica Denogean as part of a portfolio of resella
 | vision | text | optional |
 | budget_range | text | optional |
 | status | text | new / contacted / quoted / booked / completed |
+| package_id | text | ⚠ PENDING schema update |
+| package_name | text | ⚠ PENDING schema update |
+| add_ons | text | JSON stringified array — ⚠ PENDING |
+| quoted_total | numeric | ⚠ PENDING |
+| is_consultation | boolean | ⚠ PENDING |
+| deposit_paid | boolean | default false — ⚠ PENDING |
+| deposit_amount | numeric | ⚠ PENDING |
+| stripe_payment_intent_id | text | ⚠ PENDING |
+| source | text | 'configurator' or 'direct' — ⚠ PENDING |
+| custom_build | jsonb | à la carte build config — ⚠ PENDING |
+| custom_request | text | customer free-text for custom items — ⚠ PENDING |
+
+**⚠ Schema update not yet run.** SQL is in CHANGELOG.md (May 13 session). Shawn pastes it in Supabase SQL Editor.
 
 **Table: `gallery_photos`** — defined in `supabase.ts` as `GalleryPhoto` type but not yet built. Gallery page uses hardcoded local images.
 
@@ -151,9 +166,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 | Quinceañeras landing page | ✅ Built — needs redesign |
 | Graduations landing page | ✅ Built — needs redesign |
 | Gallery page | ✅ Built (hardcoded 7 photos) — needs redesign |
-| Get-a-quote page | ✅ Built — needs redesign |
-| Lead capture (Supabase) | ✅ Working |
+| Package configurator (/get-a-quote) | ✅ Built — dual path (premade package + à la carte custom) |
+| Real-time pricing engine | ✅ Built — computeTotal() + computeCustomTotal() |
+| Lead capture (Supabase) | ✅ Working — schema update pending for full configurator fields |
 | Lead notification to Monica | ❌ Not built |
+| Stripe deposit | ❌ Not built |
 | Admin leads dashboard | ❌ Not built |
 | Dynamic gallery (Supabase) | ❌ Not built |
 | Email auto-reply on quote | ❌ Not built |
@@ -162,24 +179,27 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
 ## WORK QUEUE
 
-### 🎨 Phase 1 — Design Rebuild (ACTIVE)
+### ⚙️ Phase 1 — Configurator + Lead Automation (ACTIVE)
+- [x] config.ts — single source of truth for all packages, add-ons, pricing rules
+- [x] pricing.ts — computeTotal(), computeCustomTotal(), CustomBuild type, rate constants
+- [x] PackageConfigurator.tsx — 4-step dual-path (premade package + à la carte custom build)
+- [x] get-a-quote/page.tsx — replaced with PackageConfigurator
+- [ ] **Supabase schema update** — run SQL in Supabase SQL Editor (CHANGELOG.md May 13)
+- [ ] **actions.ts** — insert all configurator fields after schema update
+- [ ] Lead notification — Resend email to Monica on new lead
+- [ ] Stripe Checkout — 50% deposit for non-consultation bookings
+- [ ] Phase 2: component photos in custom builder
+
+### 🎨 Phase 2 — Design Rebuild (BACKLOG — after Phase 1 is complete)
 - [ ] Lock design decisions with Shawn (colors, fonts, sections, reference sites, logo)
 - [ ] Rebuild `globals.css` — clean design tokens, utility classes
 - [ ] Rebuild `Nav.tsx`
 - [ ] Rebuild `Hero.tsx`
 - [ ] Rebuild `Packages.tsx` + `BookingSheet`
-- [ ] Rebuild `Reviews.tsx`
-- [ ] Rebuild `Why.tsx`
-- [ ] Rebuild `CTA.tsx`
-- [ ] Rebuild `GalleryPreview.tsx`
-- [ ] Rebuild `Footer.tsx`
-- [ ] Rebuild `gallery/page.tsx`
-- [ ] Rebuild `quinceaneras/page.tsx`
-- [ ] Rebuild `graduations/page.tsx`
-- [ ] Rebuild `get-a-quote/page.tsx`
+- [ ] Rebuild `Reviews.tsx`, `Why.tsx`, `CTA.tsx`, `GalleryPreview.tsx`, `Footer.tsx`
+- [ ] Rebuild `gallery/page.tsx`, `quinceaneras/page.tsx`, `graduations/page.tsx`
 
-### ⚙️ Phase 2 — Backend
-- [ ] Lead notification: Netlify function → email/SMS to Monica on new lead
+### ⚙️ Phase 3 — Admin + Automation (BACKLOG)
 - [ ] Admin dashboard: password-protected page to view/manage leads
 - [ ] Dynamic gallery: connect to Supabase `gallery_photos` table
 - [ ] Email auto-reply to quote requester

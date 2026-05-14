@@ -4,6 +4,63 @@
 
 ---
 
+## Session: May 13, 2026
+**AI:** Claude Code (Sonnet 4.6)
+**Worked on:** À la carte custom build path — dual-mode configurator
+
+### ✅ Completed This Session
+- **Rewrote `src/lib/pricing.ts`** — added custom build pricing layer on top of existing package pricing:
+  - `CustomBuild` type: garlandTier + garlandFt, backdrop, columnSize + columnQty + columnToppers, marqueeSize + marqueeQty, centerpieceType + centerpieceQty, bouquetSmall, bouquetLarge, delivery
+  - `emptyCustomBuild` default state
+  - Rate constants: `GARLAND_RATES`, `BACKDROP_PRICES`, `COLUMN_PRICES`, `MARQUEE_PRICES`, `CENTERPIECE_PRICES`, `DELIVERY_PRICES`
+  - `computeCustomTotal(build: CustomBuild): number` — pure function, no side effects
+  - `formatPrice()` unchanged; `computeTotal()` unchanged
+- **Rewrote `src/components/ui/PackageConfigurator.tsx`** — dual-path configurator:
+  - Step 2: Package cards (unchanged) + new "Build My Own" dashed card — both auto-advance to Step 3
+  - Step 3A (`Step3Package`): premade package base box + add-on checkboxes + `CustomRequestField`
+  - Step 3B (`Step3Custom`): full à la carte component builder — garland (tier pills + footage stepper), backdrop (radio), columns (size pills + qty stepper + toppers checkbox), marquee (size pills + qty stepper), centerpieces (type pills + qty stepper), bouquets (checkboxes), delivery (radio)
+  - Sticky running total bar on Step 3 when total > $0
+  - `CustomRequestField`: shared textarea — "Describe it — painted wood signs, character cutouts, themed backdrops..." — for custom items Monica prices manually
+  - Step 4: itemized summary differs by path (package summary vs. component breakdown), smart CTA (consultation vs. deposit)
+  - State machine: `startMode: 'package' | 'custom' | null` drives which Step 3 renders
+- Committed and pushed: `8f469c44` — Netlify auto-deploy triggered
+
+### ⏳ Still Pending
+- **Supabase schema:** leads table still needs new columns (SQL below — Shawn runs in Supabase SQL editor)
+  - Now includes `custom_build` (jsonb) and `custom_request` (text) for the à la carte path
+- **`src/lib/actions.ts`:** after schema runs, uncomment full insert (package + custom build fields)
+- Resend email notification to Monica on new lead
+- Stripe Checkout for 50% deposit (non-consultation bookings)
+- Google Calendar date availability approach (decision needed)
+- Phase 2: add photos to each component in the custom builder (Monica's Instagram content)
+
+### Supabase SQL to run (paste in Supabase SQL Editor → New query):
+```sql
+ALTER TABLE leads
+  ADD COLUMN IF NOT EXISTS package_id              text,
+  ADD COLUMN IF NOT EXISTS package_name            text,
+  ADD COLUMN IF NOT EXISTS add_ons                 text,
+  ADD COLUMN IF NOT EXISTS quoted_total            numeric,
+  ADD COLUMN IF NOT EXISTS is_consultation         boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS deposit_paid            boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS deposit_amount          numeric,
+  ADD COLUMN IF NOT EXISTS stripe_payment_intent_id text,
+  ADD COLUMN IF NOT EXISTS source                  text,
+  ADD COLUMN IF NOT EXISTS custom_build            jsonb,
+  ADD COLUMN IF NOT EXISTS custom_request          text;
+```
+After running: update `src/lib/actions.ts` to insert all fields (package_id, package_name, add_ons, quoted_total, is_consultation, deposit_paid, deposit_amount, source, custom_build, custom_request).
+
+### 🔜 Next (In Order)
+1. **Shawn: run Supabase SQL above** — enables full lead data capture for both paths
+2. Update `src/lib/actions.ts` — insert all configurator fields after schema update
+3. Build Resend email to Monica on new lead (Netlify function or Next.js route handler)
+4. Wire Stripe Checkout — 50% deposit redirect for non-consultation path
+5. Test live configurator on Netlify (both package and custom paths end-to-end)
+6. Phase 2: component photos in builder (Monica's Instagram content)
+
+---
+
 ## Session: May 1, 2026 (Session 3)
 **AI:** Claude Code (Sonnet 4.6)
 **Worked on:** Package configurator build — complete Phase 1 core
