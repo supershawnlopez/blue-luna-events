@@ -27,6 +27,8 @@ export type Lead = {
   deposit_amount?: number
   stripe_payment_intent_id?: string
   source?: 'configurator' | 'direct'
+  custom_build?: Record<string, unknown>
+  custom_request?: string
 }
 
 export type GalleryPhoto = {

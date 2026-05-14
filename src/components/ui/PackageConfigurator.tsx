@@ -677,10 +677,42 @@ function Step4({ state }: { state: ConfigState }) {
       deposit_amount: deposit,
       deposit_paid: false,
       source: 'configurator',
+      custom_build: !isPackage ? (state.customBuild as Record<string, unknown>) : undefined,
+      custom_request: state.customRequest || undefined,
     })
-    setLoading(false)
-    if (response.success) setDone(true)
-    else setSubmitError(true)
+
+    if (!response.success) {
+      setLoading(false)
+      setSubmitError(true)
+      return
+    }
+
+    if (isConsultation) {
+      setLoading(false)
+      setDone(true)
+      return
+    }
+
+    // Non-consultation: redirect to Stripe Checkout for deposit
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leadId: response.leadId,
+          deposit,
+          name: cleanName,
+          email: cleanEmail,
+          packageName: pkg?.name ?? 'Custom Build',
+          eventType: state.eventTypeId ?? 'event',
+        }),
+      })
+      const { url } = await res.json()
+      window.location.href = url
+    } catch {
+      setLoading(false)
+      setSubmitError(true)
+    }
   }
 
   if (done) {

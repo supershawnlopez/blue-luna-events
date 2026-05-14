@@ -16,7 +16,7 @@ export async function submitLead(data: Lead) {
     vision = `Package: ${data.package_name}.${data.vision ? ' ' + data.vision : ''}`
   }
 
-  const { error } = await supabase
+  const { data: inserted, error } = await supabase
     .from('leads')
     .insert([{
       name: data.name,
@@ -38,7 +38,11 @@ export async function submitLead(data: Lead) {
       deposit_amount: data.deposit_amount,
       stripe_payment_intent_id: data.stripe_payment_intent_id,
       source: data.source ?? 'direct',
+      custom_build: data.custom_build ?? null,
+      custom_request: data.custom_request ?? null,
     }])
+    .select('id')
+    .single()
 
   if (error) {
     console.error('Lead submission error:', error)
@@ -48,7 +52,7 @@ export async function submitLead(data: Lead) {
   // Fire-and-forget — won't fail the lead submission if Resend isn't configured yet
   sendLeadNotification(data, vision).catch(err => console.error('Notification error:', err))
 
-  return { success: true }
+  return { success: true, leadId: inserted.id as string }
 }
 
 async function sendLeadNotification(data: Lead, vision: string) {

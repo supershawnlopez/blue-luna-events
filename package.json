@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^9.5.0",
     "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/supabase-js": "^2.99.3",
     "framer-motion": "^12.38.0",
@@ -17,7 +18,8 @@
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "^7.72.0",
-    "resend": "^4.0.0"
+    "resend": "^4.0.0",
+    "stripe": "^22.1.1"
   },
   "devDependencies": {
     "@netlify/plugin-nextjs": "^5.15.9",

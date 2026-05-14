@@ -108,6 +108,9 @@ Exit criteria:
 3. Dynamic gallery (Supabase-backed, Monica manages photos without code deploy)
 4. Email auto-reply to quote requester on submission
 5. bl_pricing.json — decide: add to .gitignore? (contains private home address)
+6. Next.js upgrade — currently on 14.2, needs upgrade to 16.x to fix 5 remaining npm audit
+   vulnerabilities (DoS, XSS, cache poisoning). Deferred — low risk for this site type but
+   must be done before any future launch hardening. Run as its own session, test build after.
 
 ---
 
