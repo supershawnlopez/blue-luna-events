@@ -36,23 +36,25 @@ Exit criteria:
 
 ## NOW (MAX 3)
 
-1. Supabase schema update — leads table new columns
-- Owner: Shawn (manual step — paste SQL in Supabase SQL editor)
-- Status: PENDING SHAWN ACTION
-- SQL is in CHANGELOG.md (May 13 session) — includes package fields + custom_build (jsonb) + custom_request (text)
-- After running: Function Agent updates src/lib/actions.ts to insert all fields
+1. End-to-end live test — full Stripe + email flow
+- Owner: Shawn
+- Status: PENDING TEST
+- Use Stripe test card: 4242 4242 4242 4242, any future date, any CVV
+- Go through configurator on Netlify → submit → Stripe Checkout → confirm → check /booking-confirmed
+- Check Monica's inbox + client inbox for both emails
+- Check Supabase leads table: deposit_paid should flip to true after payment
 
-2. Update src/lib/actions.ts — full configurator insert
-- Owner: Function Agent
-- Status: BLOCKED on #1 (schema must exist first)
-- Fields to insert: package_id, package_name, add_ons, quoted_total, is_consultation, deposit_paid, deposit_amount, source, custom_build, custom_request
+2. Google Calendar date availability — approach decision
+- Owner: Shawn decides
+- Status: DECISION NEEDED
+- Option A: Supabase-backed booked_dates list, Monica updates manually (simple, fast)
+- Option B: Google Calendar API — real availability in Step 4 (complex, powerful)
 
-3. Resend email notification to Monica
-- Owner: Function Agent
-- Status: Not started
-- Netlify function or Next.js route handler
-- Triggers on new lead submission
-- Sends to monica@bluelunaevents.com with full package + pricing details
+3. Phase 2: component photos in custom builder
+- Owner: Function Agent (after Shawn sources photos)
+- Status: WAITING ON PHOTOS
+- Add Monica's Instagram photos to each à la carte option in Step3Custom
+- Source: @BlueLunaMagic Instagram
 
 ---
 
@@ -61,40 +63,29 @@ Exit criteria:
 - ✅ config.ts consolidation — PACKAGE_CATALOG, ADD_ONS, PRICING_RULES, CONFIGURATOR_EVENT_TYPES, getPackagesForEvent()
 - ✅ Packages.tsx, quinceaneras/page.tsx, graduations/page.tsx — import from config.ts
 - ✅ src/lib/pricing.ts — computeTotal(), computeCustomTotal(), CustomBuild type, all rate constants, formatPrice()
-- ✅ src/lib/supabase.ts — Lead type extended with configurator fields
+- ✅ src/lib/supabase.ts — Lead type extended with all configurator fields incl. custom_build + custom_request
 - ✅ src/components/ui/PackageConfigurator.tsx — 4-step dual-path configurator (package + à la carte custom build)
 - ✅ src/app/get-a-quote/page.tsx — uses PackageConfigurator
+- ✅ Supabase schema — all new columns live (ALTER TABLE run May 14)
+- ✅ actions.ts — full insert of all fields, returns leadId
+- ✅ Stripe Checkout — /api/stripe/checkout + /api/stripe/webhook + /booking-confirmed
+- ✅ Resend emails — Monica notification + client confirmation (both with world-class HTML design)
+- ✅ .claude/settings.json — Stop hook for end-of-session doc updates
 
 ---
 
 ## NEXT (in order)
 
-1. Stripe Checkout integration
-   - 50% deposit on non-consultation bookings
-   - After configurator Step 4 submit → redirect to Stripe Checkout
-   - On success: mark deposit_paid = true in Supabase
-   - On cancel: lead still saved, Monica follows up manually
-   - Blocker: verify Stripe keys are in Netlify env vars
-
-2. Phase 2 — component photos in custom builder
-   - Add product photos to each à la carte option (garland tiers, backdrops, columns, etc.)
-   - Source: Monica's Instagram content
-   - Goal: help clients visualize what they're building
-
-3. Google Calendar date availability (confirm approach with Shawn first)
-   - Option A: Supabase-backed booked_dates list, Monica updates manually (simple)
-   - Option B: Google Calendar API — show real availability in Step 4 (complex)
-   - Decision needed from Shawn before building
+1. Google Calendar date availability — once approach is decided
+2. Phase 2: component photos in custom builder
+3. Next.js upgrade (14.2 → 16.x) — own session, test build after
+4. Design rebuild — Phase 2 (after Phase 1 fully tested)
 
 ---
 
 ## BLOCKED
 
-1. Stripe setup
-- Blocker: Need to verify if Stripe keys are already in Netlify env vars
-- Action: Shawn to check Netlify dashboard → Site Settings → Environment Variables
-
-2. Google Calendar approach
+1. Google Calendar approach
 - Blocker: Decision needed from Shawn — manual Supabase list vs. Google Calendar API
 
 ---
