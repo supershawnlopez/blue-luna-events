@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"systemMessage\": \"BEFORE ENDING THIS SESSION: Update CHANGELOG.md (new session entry at top), TASKS.md (move completed items, update NOW board), and PROJECT.md (current state table) in the blue-luna-events project. This keeps progress safe across disconnects.\"}'",
+            "shell": "powershell"
+          }
+        ]
+      }
+    ]
+  }
+}
