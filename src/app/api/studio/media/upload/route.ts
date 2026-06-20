@@ -24,6 +24,8 @@ export async function POST(req: NextRequest) {
 
   const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
 
+  const event_type = form.get('event_type') as string | null
+
   const { data, error } = await supabase
     .from('gallery_media')
     .insert([{
@@ -34,8 +36,9 @@ export async function POST(req: NextRequest) {
       show_on_website: false,
       social_export: false,
       file_size: file.size,
+      event_type: event_type ?? null,
     }])
-    .select('id, url')
+    .select('*')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

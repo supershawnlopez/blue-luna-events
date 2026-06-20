@@ -1,235 +1,299 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Camera, Upload, Heart, Star, ChevronLeft, X, Check } from 'lucide-react'
+import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2 } from 'lucide-react'
 
 type MediaItem = {
   id: string
   url: string
   type: 'photo' | 'video'
+  event_type?: string | null
   show_on_website: boolean
   social_export: boolean
-  caption?: string
+  file_name: string
+  created_at: string
 }
+
+const EVENT_TYPES = [
+  { id: 'quinceanera', label: 'Quinceañera', emoji: '👑' },
+  { id: 'graduation',  label: 'Graduation',  emoji: '🎓' },
+  { id: 'birthday',    label: 'Birthday',     emoji: '🎂' },
+  { id: 'baby_shower', label: 'Baby Shower',  emoji: '🍼' },
+  { id: 'wedding',     label: 'Wedding',      emoji: '💍' },
+  { id: 'corporate',   label: 'Corporate',    emoji: '💼' },
+  { id: 'other',       label: 'Other',        emoji: '🎈' },
+]
 
 type Filter = 'all' | 'website' | 'social'
 
+function getLabel(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.label ?? 'Tag it' }
+function getEmoji(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.emoji ?? '🏷️' }
+
 export default function StudioMedia() {
-  const [filter, setFilter] = useState<Filter>('all')
-  const [media, setMedia] = useState<MediaItem[]>([]) // populated from Supabase once connected
-  const [uploading, setUploading] = useState(false)
+  const [media, setMedia]                   = useState<MediaItem[]>([])
+  const [loading, setLoading]               = useState(true)
+  const [filter, setFilter]                 = useState<Filter>('all')
+  const [pendingFiles, setPendingFiles]     = useState<File[]>([])
+  const [showTypeSheet, setShowTypeSheet]   = useState(false)
+  const [uploading, setUploading]           = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [editingTypeId, setEditingTypeId]   = useState<string | null>(null)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const fileRef   = useRef<HTMLInputElement>(null)
+  const cameraRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    fetch('/api/studio/media')
+      .then(r => r.json())
+      .then(d => { setMedia(Array.isArray(d) ? d : []); setLoading(false) })
+      .catch(() => setLoading(false))
+  }, [])
+
+  function onFilesChosen(files: FileList | null) {
+    if (!files?.length) return
+    setPendingFiles(Array.from(files))
+    setShowTypeSheet(true)
+  }
+
+  async function startUpload(eventType: string) {
+    setShowTypeSheet(false)
+    setUploading(true)
+    for (let i = 0; i < pendingFiles.length; i++) {
+      const form = new FormData()
+      form.append('file', pendingFiles[i])
+      form.append('event_type', eventType)
+      const res = await fetch('/api/studio/media/upload', { method: 'POST', body: form })
+      if (res.ok) {
+        const item = await res.json()
+        setMedia(prev => [item, ...prev])
+      }
+      setUploadProgress(Math.round(((i + 1) / pendingFiles.length) * 100))
+    }
+    setUploading(false)
+    setPendingFiles([])
+    setUploadProgress(0)
+    if (fileRef.current)   fileRef.current.value = ''
+    if (cameraRef.current) cameraRef.current.value = ''
+  }
+
+  async function toggle(id: string, field: 'show_on_website' | 'social_export', current: boolean) {
+    setMedia(prev => prev.map(m => m.id === id ? { ...m, [field]: !current } : m))
+    fetch(`/api/studio/media/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ [field]: !current }),
+    })
+  }
+
+  async function changeType(id: string, eventType: string) {
+    setEditingTypeId(null)
+    setMedia(prev => prev.map(m => m.id === id ? { ...m, event_type: eventType } : m))
+    fetch(`/api/studio/media/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_type: eventType }),
+    })
+  }
+
+  async function deleteItem(id: string) {
+    setConfirmDeleteId(null)
+    setMedia(prev => prev.filter(m => m.id !== id))
+    fetch(`/api/studio/media/${id}`, { method: 'DELETE' })
+  }
 
   const filtered = media.filter(m => {
     if (filter === 'website') return m.show_on_website
-    if (filter === 'social') return m.social_export
+    if (filter === 'social')  return m.social_export
     return true
   })
 
-  async function handleFiles(files: FileList) {
-    setUploading(true)
-    setUploadProgress(0)
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      const form = new FormData()
-      form.append('file', file)
-      await fetch('/api/studio/media/upload', { method: 'POST', body: form })
-      setUploadProgress(Math.round(((i + 1) / files.length) * 100))
-    }
-    setUploading(false)
-    // TODO: reload media list from Supabase
-  }
-
-  async function toggleWebsite(id: string, current: boolean) {
-    // TODO: update gallery_media set show_on_website = !current where id = id
-    setMedia(prev => prev.map(m => m.id === id ? { ...m, show_on_website: !current } : m))
-  }
-
-  async function toggleSocial(id: string, current: boolean) {
-    // TODO: update gallery_media set social_export = !current where id = id
-    setMedia(prev => prev.map(m => m.id === id ? { ...m, social_export: !current } : m))
-  }
-
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
-      {/* Header */}
-      <div style={{ padding: '56px 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <Link href="/studio" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
-              <ChevronLeft size={18} />
-            </Link>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 600, color: 'white', letterSpacing: '-0.01em' }}>My Work</h1>
-          </div>
 
-          {/* Upload buttons */}
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*,video/*"
-              multiple
-              capture="environment"
-              style={{ display: 'none' }}
-              onChange={e => e.target.files && handleFiles(e.target.files)}
-            />
-            <button
-              onClick={() => {
-                if (fileInputRef.current) {
-                  fileInputRef.current.removeAttribute('capture')
-                  fileInputRef.current.click()
-                }
-              }}
-              style={{
-                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                background: '#5BBFBF', color: '#0D0F0F', border: 'none', borderRadius: '12px',
-                padding: '14px', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
-              }}
-            >
-              <Upload size={17} /> Upload Photos
-            </button>
-            <button
-              onClick={() => {
-                if (fileInputRef.current) {
-                  fileInputRef.current.setAttribute('capture', 'environment')
-                  fileInputRef.current.click()
-                }
-              }}
-              style={{
-                flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                background: 'rgba(91,191,191,0.12)', color: '#5BBFBF',
-                border: '1.5px solid rgba(91,191,191,0.3)', borderRadius: '12px',
-                padding: '14px', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
-              }}
-            >
-              <Camera size={17} /> Take Photo
-            </button>
+      <input ref={fileRef} type="file" multiple accept="image/*,video/*"
+        style={{ display: 'none' }} onChange={e => onFilesChosen(e.target.files)} />
+      <input ref={cameraRef} type="file" accept="image/*,video/*" capture="environment"
+        style={{ display: 'none' }} onChange={e => onFilesChosen(e.target.files)} />
+
+      {/* Header */}
+      <div style={{ padding: '56px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Link href="/studio" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>
+                <ChevronLeft size={18} />
+              </Link>
+              <div>
+                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: 0 }}>Studio</p>
+                <h1 style={{ fontSize: '1.4rem', fontWeight: 600, color: 'white', margin: 0 }}>My Work</h1>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => cameraRef.current?.click()}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '9px 13px', color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                <Camera size={14} /> Shoot
+              </button>
+              <button onClick={() => fileRef.current?.click()}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#5BBFBF', border: 'none', borderRadius: '10px', padding: '9px 13px', color: '#0D0F0F', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+                <Upload size={14} /> Upload
+              </button>
+            </div>
           </div>
 
           {uploading && (
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '99px', height: '4px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', background: '#5BBFBF', width: `${uploadProgress}%`, transition: 'width 0.3s' }} />
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Uploading {pendingFiles.length} file{pendingFiles.length !== 1 ? 's' : ''}…</span>
+                <span style={{ fontSize: '0.75rem', color: '#5BBFBF', fontWeight: 700 }}>{uploadProgress}%</span>
               </div>
-              <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', marginTop: '8px' }}>
-                Uploading… {uploadProgress}%
-              </p>
+              <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px' }}>
+                <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#5BBFBF', borderRadius: '99px', transition: 'width 0.3s ease' }} />
+              </div>
             </div>
           )}
 
-          {/* Filter tabs */}
-          <div style={{ display: 'flex', gap: '6px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {(['all', 'website', 'social'] as Filter[]).map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                style={{
-                  padding: '8px 18px', borderRadius: '99px', border: 'none', cursor: 'pointer',
-                  background: filter === f ? '#5BBFBF' : 'rgba(255,255,255,0.06)',
-                  color: filter === f ? '#0D0F0F' : 'rgba(255,255,255,0.5)',
-                  fontWeight: 600, fontSize: '0.78rem', letterSpacing: '0.04em', textTransform: 'capitalize',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {f === 'all' ? 'All' : f === 'website' ? '❤️ On Website' : '⭐ Social Queue'}
+              <button key={f} onClick={() => setFilter(f)}
+                style={{ padding: '6px 13px', borderRadius: '999px', border: filter === f ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: filter === f ? 'rgba(91,191,191,0.12)' : 'transparent', color: filter === f ? '#5BBFBF' : 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                {f === 'all' ? `All (${media.length})` : f === 'website' ? `❤️ Website (${media.filter(m => m.show_on_website).length})` : `⭐ Social (${media.filter(m => m.social_export).length})`}
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Media grid */}
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 24px 0' }}>
-        {filtered.length === 0 ? (
+      {/* Grid */}
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '12px 20px' }}>
+        {loading ? (
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', padding: '60px 0', fontSize: '0.9rem' }}>Loading…</p>
+        ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <Camera size={40} color="rgba(255,255,255,0.1)" style={{ marginBottom: '16px' }} />
-            <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>
-              {filter === 'all' ? 'No photos yet' : filter === 'website' ? 'No photos on your website yet' : 'No photos in your social queue'}
+            <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.88rem', marginBottom: '20px' }}>
+              {filter === 'all' ? 'No photos or videos yet.' : `Nothing tagged for ${filter === 'website' ? 'the website' : 'social'} yet.`}
             </p>
-            <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.2)' }}>
-              {filter === 'all' ? 'Upload some of your work to get started' : 'Tap ❤️ on a photo to add it'}
-            </p>
+            {filter === 'all' && (
+              <button onClick={() => fileRef.current?.click()}
+                style={{ background: '#5BBFBF', border: 'none', borderRadius: '10px', padding: '12px 24px', color: '#0D0F0F', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}>
+                Upload Your First Photo or Video
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '3px' }}>
             {filtered.map(item => (
-              <div key={item.id} style={{ position: 'relative', aspectRatio: '1/1', background: 'rgba(255,255,255,0.04)' }}>
-                <Image src={item.url} alt="" fill style={{ objectFit: 'cover' }} />
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)',
-                }} />
-                <div style={{ position: 'absolute', bottom: '6px', left: '6px', display: 'flex', gap: '4px' }}>
-                  <button
-                    onClick={() => toggleWebsite(item.id, item.show_on_website)}
-                    style={{
-                      width: '30px', height: '30px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                      background: item.show_on_website ? '#5BBFBF' : 'rgba(0,0,0,0.5)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                    title="Show on website"
-                  >
-                    <Heart size={14} color={item.show_on_website ? '#0D0F0F' : 'rgba(255,255,255,0.7)'} fill={item.show_on_website ? '#0D0F0F' : 'none'} />
+              <div key={item.id} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', background: '#1A1A1A' }}>
+
+                {item.type === 'video' ? (
+                  <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    muted playsInline preload="metadata" />
+                ) : (
+                  <Image src={item.url} alt={item.file_name} fill style={{ objectFit: 'cover' }} sizes="200px" />
+                )}
+
+                {item.type === 'video' && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                    <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Play size={13} color="white" fill="white" />
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 45%)' }} />
+
+                {/* Event type badge */}
+                <button onClick={() => setEditingTypeId(editingTypeId === item.id ? null : item.id)}
+                  style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', border: 'none', borderRadius: '5px', padding: '3px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                  <span style={{ fontSize: '8px' }}>{getEmoji(item.event_type)}</span>
+                  <span style={{ fontSize: '8px', fontWeight: 700, color: item.event_type ? 'white' : 'rgba(255,255,255,0.45)' }}>{getLabel(item.event_type)}</span>
+                </button>
+
+                {/* Delete */}
+                <button onClick={() => setConfirmDeleteId(item.id)}
+                  style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '5px', padding: '4px', cursor: 'pointer', display: 'flex' }}>
+                  <Trash2 size={10} color="rgba(255,255,255,0.45)" />
+                </button>
+
+                {/* Heart + Star */}
+                <div style={{ position: 'absolute', bottom: '5px', left: '5px', right: '5px', display: 'flex', justifyContent: 'space-between' }}>
+                  <button onClick={() => toggle(item.id, 'show_on_website', item.show_on_website)}
+                    style={{ background: item.show_on_website ? 'rgba(239,68,68,0.85)' : 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '6px', padding: '5px 6px', cursor: 'pointer', display: 'flex' }}>
+                    <Heart size={12} color="white" fill={item.show_on_website ? 'white' : 'none'} />
                   </button>
-                  <button
-                    onClick={() => toggleSocial(item.id, item.social_export)}
-                    style={{
-                      width: '30px', height: '30px', borderRadius: '8px', border: 'none', cursor: 'pointer',
-                      background: item.social_export ? '#C9A96E' : 'rgba(0,0,0,0.5)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}
-                    title="Add to social export"
-                  >
-                    <Star size={14} color={item.social_export ? '#0D0F0F' : 'rgba(255,255,255,0.7)'} fill={item.social_export ? '#0D0F0F' : 'none'} />
+                  <button onClick={() => toggle(item.id, 'social_export', item.social_export)}
+                    style={{ background: item.social_export ? 'rgba(234,179,8,0.85)' : 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '6px', padding: '5px 6px', cursor: 'pointer', display: 'flex' }}>
+                    <Star size={12} color="white" fill={item.social_export ? 'white' : 'none'} />
                   </button>
                 </div>
+
+                {/* Inline event type picker */}
+                {editingTypeId === item.id && (
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', padding: '6px', gap: '3px', overflowY: 'auto', zIndex: 10 }}>
+                    {EVENT_TYPES.map(et => (
+                      <button key={et.id} onClick={() => changeType(item.id, et.id)}
+                        style={{ display: 'flex', alignItems: 'center', gap: '6px', background: item.event_type === et.id ? 'rgba(91,191,191,0.18)' : 'rgba(255,255,255,0.04)', border: item.event_type === et.id ? '1px solid rgba(91,191,191,0.5)' : '1px solid rgba(255,255,255,0.07)', borderRadius: '5px', padding: '5px 7px', cursor: 'pointer' }}>
+                        <span style={{ fontSize: '11px' }}>{et.emoji}</span>
+                        <span style={{ fontSize: '9px', fontWeight: 700, color: 'white' }}>{et.label}</span>
+                        {item.event_type === et.id && <Check size={9} color="#5BBFBF" style={{ marginLeft: 'auto' }} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Delete confirm */}
+                {confirmDeleteId === item.id && (
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', zIndex: 10 }}>
+                    <p style={{ fontSize: '10px', color: 'white', fontWeight: 700, textAlign: 'center', margin: 0 }}>Delete this?</p>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button onClick={() => deleteItem(item.id)}
+                        style={{ background: '#ef4444', border: 'none', borderRadius: '6px', padding: '6px 10px', color: 'white', fontSize: '9px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>
+                      <button onClick={() => setConfirmDeleteId(null)}
+                        style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '6px', padding: '6px 10px', color: 'white', fontSize: '9px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
-
-        <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(91,191,191,0.06)', border: '1px solid rgba(91,191,191,0.15)', borderRadius: '12px' }}>
-          <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
-            <strong style={{ color: 'rgba(91,191,191,0.9)' }}>❤️ Heart</strong> a photo to publish it to your website gallery automatically.<br />
-            <strong style={{ color: 'rgba(201,169,110,0.9)' }}>⭐ Star</strong> a photo to add it to your Social Export queue.
-          </p>
-        </div>
       </div>
 
+      {/* Event type bottom sheet */}
+      {showTypeSheet && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)' }} onClick={() => setShowTypeSheet(false)} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '20px 20px 0 0', padding: '16px 20px 44px' }}>
+            <div style={{ width: '32px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 16px' }} />
+            <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 4px' }}>What type of event?</p>
+            <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', margin: '0 0 16px' }}>
+              {pendingFiles.length} file{pendingFiles.length !== 1 ? 's' : ''} ready to upload
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+              {EVENT_TYPES.map(et => (
+                <button key={et.id} onClick={() => startUpload(et.id)}
+                  style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '13px 14px', cursor: 'pointer' }}>
+                  <span style={{ fontSize: '18px' }}>{et.emoji}</span>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'white' }}>{et.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Bottom nav */}
-      <nav style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'rgba(13,15,15,0.95)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255,255,255,0.08)',
-        padding: '12px 0 env(safe-area-inset-bottom, 12px)',
-        display: 'flex', zIndex: 100,
-      }}>
-        {[
-          { href: '/studio/media', icon: Camera, label: 'My Work', active: true },
-          { href: '/studio/estimates', icon: FileText, label: 'Estimates', active: false },
-          { href: '/studio/exports', icon: Sparkles, label: 'Export', active: false },
-        ].map(({ href, label, active }) => (
-          <Link key={href} href={href} style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-            textDecoration: 'none', color: active ? '#5BBFBF' : 'rgba(255,255,255,0.4)',
-            fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
-          }}>
-            {label === 'My Work' ? <Camera size={22} /> : label === 'Estimates' ? <FileText size={22} /> : <Sparkles size={22} />}
-            {label}
-          </Link>
-        ))}
-      </nav>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(13,15,15,0.97)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '10px 24px env(safe-area-inset-bottom,10px)' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', justifyContent: 'space-around' }}>
+          {[['My Work', '/studio/media'], ['Estimates', '/studio/estimates'], ['Export', '/studio/exports']].map(([label, href]) => (
+            <Link key={href} href={href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', color: href === '/studio/media' ? '#5BBFBF' : 'rgba(255,255,255,0.3)', textDecoration: 'none', fontSize: '10px', fontWeight: 600, letterSpacing: '0.04em' }}>
+              <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: href === '/studio/media' ? '#5BBFBF' : 'transparent' }} />
+              {label}
+            </Link>
+          ))}
+        </div>
+      </div>
     </div>
   )
-}
-
-function FileText({ size, ...props }: { size: number; [key: string]: unknown }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-}
-
-function Sparkles({ size, ...props }: { size: number; [key: string]: unknown }) {
-  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 3l.5 1.5L7 5l-1.5.5L5 7l-.5-1.5L3 5l1.5-.5z"/><path d="M19 13l.5 1.5L21 15l-1.5.5L19 17l-.5-1.5L17 15l1.5-.5z"/></svg>
 }
