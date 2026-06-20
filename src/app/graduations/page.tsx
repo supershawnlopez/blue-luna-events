@@ -2,9 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
 import { Palette, Camera, Zap, Check, ArrowRight, GraduationCap } from 'lucide-react'
-import { BookingSheet } from '@/components/sections/Packages'
 import { PACKAGE_CATALOG, type Package } from '@/lib/config'
 
 const FEATURES = [
@@ -25,8 +23,6 @@ const FAQS = [
 ]
 
 export default function Graduations() {
-  const [selectedPkg, setSelectedPkg] = useState<Package | null>(null)
-
   return (
     <div style={{ minHeight: '100vh', background: '#FDFCFA' }}>
       {/* Hero */}
@@ -93,7 +89,7 @@ export default function Graduations() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,280px),1fr))', gap: '18px', marginBottom: '32px' }}>
             {PACKAGES.map(pkg => (
-              <div key={pkg.id} className="card" style={{ overflow: 'hidden', cursor: 'pointer', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }} onClick={() => setSelectedPkg(pkg)}>
+              <div key={pkg.id} className="card" style={{ overflow: 'hidden', border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB', boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined }}>
                 <div style={{ position: 'relative', height: '160px' }}>
                   <Image src={pkg.image} alt={pkg.name} fill style={{ objectFit: 'cover' }} />
                   <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.35)' }} />
@@ -115,9 +111,9 @@ export default function Graduations() {
                       </li>
                     ))}
                   </ul>
-                  <button onClick={() => setSelectedPkg(pkg)} style={{ width: '100%', padding: '12px', background: pkg.color === 'teal' ? '#5BBFBF' : pkg.color === 'gold' ? 'linear-gradient(135deg,#C9A96E,#E8CCA0)' : 'transparent', color: '#0D0F0F', border: pkg.color === 'gray' ? '1.5px solid #E5E7EB' : 'none', borderRadius: '10px', cursor: 'pointer', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                  <Link href="/get-a-quote" style={{ width: '100%', padding: '12px', background: pkg.color === 'teal' ? '#5BBFBF' : pkg.color === 'gold' ? 'linear-gradient(135deg,#C9A96E,#E8CCA0)' : 'transparent', color: '#0D0F0F', border: pkg.color === 'gray' ? '1.5px solid #E5E7EB' : 'none', borderRadius: '10px', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}>
                     {pkg.cta} <ArrowRight size={13} />
-                  </button>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -152,7 +148,6 @@ export default function Graduations() {
         </div>
       </div>
 
-      {selectedPkg && <BookingSheet pkg={selectedPkg} onClose={() => setSelectedPkg(null)} />}
     </div>
   )
 }
