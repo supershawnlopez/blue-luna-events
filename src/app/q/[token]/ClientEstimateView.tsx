@@ -120,12 +120,12 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
             <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#9CA3AF', margin: 0 }}>Event Details</p>
           </div>
           <div style={{ padding: '4px 0' }}>
-            {[
+            {([
               { label: 'Name', value: est.client_name },
-              est.event_type && { label: 'Event', value: est.event_type },
-              est.event_date && { label: 'Date', value: est.event_date },
-              est.venue && { label: 'Venue', value: est.venue },
-            ].filter(Boolean).map((row: { label: string; value: string } | false | undefined, i) => row && (
+              est.event_type ? { label: 'Event', value: est.event_type } : null,
+              est.event_date ? { label: 'Date', value: est.event_date } : null,
+              est.venue ? { label: 'Venue', value: est.venue } : null,
+            ].filter((row): row is { label: string; value: string } => row !== null)).map((row, i) => (
               <div key={i} style={{ display: 'flex', padding: '10px 20px', borderBottom: '1px solid #F9FAFB' }}>
                 <p style={{ width: '90px', fontSize: '12px', fontWeight: 600, color: '#9CA3AF', flexShrink: 0, margin: 0 }}>{row.label}</p>
                 <p style={{ fontSize: '13px', fontWeight: 500, color: '#0D0F0F', margin: 0 }}>{row.value}</p>
