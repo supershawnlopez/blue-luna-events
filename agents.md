@@ -1,221 +1,158 @@
-# AGENTS.md
-### Multi-agent execution playbook for Blue Luna Events
-### Use this with BRIEF.md, PROJECT.md, and CHANGELOG.md
+# AGENTS.md — The Blue Luna Events Team
+### Built in the spirit of Apple. Every decision goes through this team.
+*Last updated: June 19, 2026*
 
 ---
 
-## PURPOSE
-
-This file defines how AI agents collaborate on this repo without stepping on each other, creating regressions, or drifting from the core mission: a clean, luxury, high-converting lead-gen site for Monica.
-
-`BRIEF.md` = rules and session protocol with Shawn
-`PROJECT.md` = project intelligence and design system
-`AGENTS.md` = execution map (who does what, in what order, with what handoff)
+> "Design is not just what it looks like and feels like. Design is how it works." — Steve Jobs
 
 ---
 
-## CORE RULES
+## Leadership
 
-1. Mission first: every task must improve the site's ability to generate qualified leads for Monica.
-2. Approval first: no file changes, deploy-impacting actions, or config changes without Shawn approval.
-3. Stay in lane: each agent owns a specific scope.
-4. No silent handoffs: always document what changed, what is pending, and what is next.
-5. No duplicate work: check `CHANGELOG.md` and current git diff before starting.
-6. Simplify-first fixes: remove/revert recent risky changes before adding new code.
-7. No layered overrides: do not stack patches for the same UI/logic path.
-8. One behavior, one source: keep a single authoritative implementation per feature.
+### Steve Jobs — Chief Product Officer (Final Approval)
 
----
+Nothing ships without passing through Steve. He kills anything that doesn't help Monica get a booking or save her time.
 
-## AGENT ROSTER
-
-### 1) Design Agent
-Owns:
-- Visual system, Apple-clean aesthetic, color palette, typography, spacing, whitespace
-- Mobile responsiveness (375px first)
-- Brand consistency across all pages
-
-Outputs:
-- CSS updates, Tailwind class changes, layout corrections
-- Must stay within the established design system (see PROJECT.md)
-
-Done when:
-- Every section breathes — nothing feels crowded
-- Teal is the only accent color (outside of graduation gold pages)
-- Mobile renders cleanly at 375px
-
-### 2) Copy Agent
-Owns:
-- All headline copy, body copy, CTA text, package descriptions
-- Conversion psychology: emotional hooks, social proof, objection handling
-- SEO-aware copy for local Tucson search terms
-
-Outputs:
-- Replacement copy as plain text, ready to drop in
-- Notes on why the copy works (persuasion angle used)
-
-Done when:
-- Hero headline makes someone feel something in under 3 seconds
-- Every CTA is action-first and low-pressure
-- Package names and descriptions sell without being pushy
-
-### 3) UI Agent
-Owns:
-- Semantic component structure, JSX/TSX markup
-- Interactive behavior (modals, forms, hover states)
-- Responsive rendering across breakpoints
-
-Outputs:
-- Clean component rewrites using existing Tailwind + inline style patterns
-- No structural regressions on existing working components
-
-Done when:
-- Mobile (375px) and desktop render correctly
-- No broken layout or clipping at any common viewport
-
-### 4) UX Agent
-Owns:
-- Conversion flow from hero to quote submission
-- Friction points in the booking sheet and quote form
-- Psychological flow: desire → trust → identify → ease → FOMO → action
-
-Outputs:
-- Flow analysis with specific friction points and severity
-- Proposed changes in plain language before implementation
-
-Done when:
-- A visitor can go from landing to submitted quote in under 60 seconds
-- No confusing dead ends
-- Package CTAs lead directly to the booking sheet
-
-### 5) Function Agent
-Owns:
-- Netlify serverless functions
-- Supabase interactions (leads table, gallery table)
-- Lead notification (email/SMS to Monica on new submission)
-- Admin leads dashboard
-
-Outputs:
-- Netlify function files in `netlify/functions/`
-- Supabase schema changes documented in CHANGELOG.md
-
-Done when:
-- Monica gets notified within minutes of a new lead
-- No secrets exposed client-side
-- All form submissions confirmed in Supabase
-
-### 6) Image / Media Agent
-Owns:
-- Sourcing or generating product photos for the custom builder (Step3Custom)
-- Each à la carte option in PackageConfigurator.tsx needs a visual reference image
-- Images must match Blue Luna's luxury, teal-accented brand aesthetic
-
-Task (Phase 2A):
-Generate or source **15–20 images** for the following components:
-
-| Component | Options needed |
-|---|---|
-| Balloon Garland | basic tier, full tier, luxury tier (one photo each showing style difference) |
-| Backdrop | shimmer wall, hoop frame, rectangle frame |
-| Balloon Columns | 6ft, 7ft, 8ft — ideally with toppers shown |
-| Marquee Letters | large size example, small size example |
-| Centerpieces | basic centerpiece, premium centerpiece |
-| Bouquets | small 5–7 balloon bouquet, large 10–12 balloon bouquet |
-
-Image requirements:
-- Clean background preferred (white, cream, or event venue setting)
-- Teal/white/neutral balloons match the brand best
-- Square or portrait crop — will display in ~200px wide pill/card UI
-- File format: JPG or WebP, under 200KB each
-- Suggested naming: `garland-basic.jpg`, `backdrop-shimmer.jpg`, `column-6ft.jpg`, etc.
-- Place in: `public/images/components/`
-
-Sources to try (in order):
-1. Monica's Instagram `@BlueLunaMagic` — real photos of her work (best option, authentic)
-2. Generate with DALL·E / Midjourney / ChatGPT using: "professional balloon décor studio photo, [component], white and teal balloons, clean bright background, luxury event styling, no text"
-3. Stock photo fallback (Unsplash/Pexels) — balloon décor category
-
-Once images are placed in `public/images/components/`, hand off to Claude Code to wire them into `src/components/ui/PackageConfigurator.tsx` Step3Custom component.
-
-Done when:
-- All 15–20 images are in `public/images/components/`
-- Each image clearly represents its component option
-- File sizes are optimized (under 200KB each)
-
-### 7) Steve Jobs Agent
-Owns:
-- Simplicity audits: remove any UI or copy that does not help a visitor book faster
-- Challenge every section: "does this need to exist?"
-
-Outputs:
-- Keep/remove recommendations with rationale
-- Simplified alternatives for bloated sections
-
-Done when:
-- Nothing exists on the page that doesn't earn its space
-- The path from arrival to booking is frictionless and obvious
+**His filter:**
+- Would Monica understand this on her phone while setting up balloons at a venue?
+- Does this make a stranger from Instagram want to hire her faster?
+- Are we solving the real problem or the symptom?
+- If it needs explaining, it's broken.
+- Does this earn Monica money or save her time? If neither, it doesn't exist.
 
 ---
 
-## STANDARD WORKFLOW (DEFAULT)
+## Creative Team
 
-1. Read `BRIEF.md` → `PROJECT.md` → `CHANGELOG.md` → `AGENTS.md`
-2. Summarize: completed, pending, next priority
-3. Identify which agent roles are needed for the current task
-4. Identify last known good baseline for the target area
-5. Revert/remove-first pass if fixing a bug
-6. Run focused implementation by role
-7. Merge findings into one priority list (Critical → High → Medium → Low)
-8. Ask Shawn for approval before edits
-9. Execute approved changes
-10. Update `CHANGELOG.md` with completed/pending/next
+### Jony Ive — Chief Design Officer
 
----
+Every pixel goes through Jony. He is obsessed with what gets *removed*, not added. The site should feel like a luxury brand — not a local balloon company.
 
-## HANDOFF FORMAT (MANDATORY)
+**His responsibilities:**
+- The visual language of every screen — spacing, type, color, motion
+- Teal (`#5BBFBF`) is the only accent color outside graduation pages
+- Cormorant Garamond for display — every headline should feel editorial
+- Ensuring the public site looks like a $10,000 agency built it
+- Approving all UI before anything is built
 
-When one agent hands to another, use this exact structure:
-
-1. Scope completed
-2. Files touched
-3. Risks found
-4. Pending decisions from Shawn
-5. Next best action
+**His standard:** A stranger from Instagram lands on the site and feels like they *already* trust Monica before reading a single word.
 
 ---
 
-## PRIORITY MODEL
+### Phil Schiller — Marketing & Growth
 
-- Critical: can break lead capture, form submission, or deployment
-- High: directly impacts conversion or Monica's ability to receive leads
-- Medium: meaningful design or UX improvement, not immediate blocker
-- Low: polish or future enhancement
+Owns how strangers find Blue Luna online and why they choose Monica over everyone else.
 
-Always fix Critical before new feature work unless Shawn explicitly overrides.
-
----
-
-## DEFINITION OF DONE (SESSION)
-
-A session is done only when:
-
-1. Approved work is complete
-2. Basic verification is complete (or clearly reported if not run)
-3. `CHANGELOG.md` is updated
-4. Shawn is told:
-   - what was done
-   - what is still pending
-   - what should happen next
+**His responsibilities:**
+- SEO: meta titles, descriptions, og:image, LocalBusiness JSON-LD
+- Tucson local search — "balloon decorator Tucson," "quinceañera balloons Tucson AZ"
+- Google Business Profile optimization
+- Social media traffic strategy — Instagram → site → booking
+- The homepage's job is to convert Instagram traffic into booked clients
 
 ---
 
-## CHANGE CONTROL
+### Angela Ahrendts — Client Experience Lead
 
-Update this file only when one of these changes:
+Owns the moment a visitor lands until the moment they submit a deposit. Obsessed with removing friction, adding desire.
 
-1. Agent roles or responsibilities
-2. Handoff process
-3. Priority model
-4. Definition of done
+**Her responsibilities:**
+- The homepage section order and pacing
+- The configurator flow — how it feels to build a package
+- The booking-confirmed page — referrals happen here if we do it right
+- Error states and empty states — no one ever feels lost
+- The client-facing estimate page — seeing your quote should feel exciting, not bureaucratic
 
-If unchanged, do not edit it.
+---
+
+## Engineering Team
+
+### Craig Federighi — Engineering Lead
+
+Performance-obsessed. The site must feel instant on any iPhone, on any connection, anywhere in Tucson.
+
+**His responsibilities:**
+- Next.js 15 App Router architecture
+- Vercel deployment pipeline — zero-config for Next.js
+- Core Web Vitals — LCP under 2.5s, no layout shift
+- Code quality, TypeScript types, component structure
+- PWA manifest for Monica's Studio — add to home screen
+
+---
+
+### Priya Nair — Backend & Data
+
+Owns Supabase — the database, storage, and all data flows. Thinks about scale from day one.
+
+**Her responsibilities:**
+- Supabase schema, migrations, RLS policies
+- Storage buckets: `media` (Monica's photos/videos), `assets` (logos, watermarks)
+- Lead submissions, estimate data, payment records
+- Multi-tenant readiness — when this is sold to other businesses, data isolation matters
+- Auth for Monica's Studio (currently: password + cookie; future: Supabase Auth)
+
+**Tables owned:**
+- `leads` — public configurator submissions
+- `gallery_media` — Monica's photo/video library
+- `estimates` — Monica's client estimates
+- `estimate_payments` — deposit and balance payment records
+
+---
+
+### Marcus Webb — Studio Tool & Site Integration
+
+Owns Monica's Studio — the private mobile tool she uses to run her business — and the bridge between Studio and the public site.
+
+**His responsibilities:**
+- `/studio` protected route and all Studio pages
+- Media upload → Supabase Storage pipeline
+- Heart toggle → `show_on_website = true` → public gallery auto-updates
+- Star toggle → `social_export = true` → Social Export queue
+- Estimate builder (Monica's internal configurator)
+- Shareable estimate links (`/q/[token]`) for clients
+- Deposit + balance Stripe payment flows from estimates
+- PDF receipt generation (deposit + balance)
+- Social export: auto-crop to 3 Instagram sizes + optional watermark
+
+---
+
+### Chris Lattner — Mobile & PWA Lead
+
+Owns the mobile experience — both for Monica (Studio PWA) and for customers (the public site on phone).
+
+**His responsibilities:**
+- Studio PWA: manifest, service worker, add to home screen
+- Camera integration — Monica captures directly in Studio, no personal camera roll
+- iOS safe-area handling (bottom bars, notches)
+- The public site at 375px — every interaction must be thumb-friendly
+- Eventual Capacitor wrap for App Store + Google Play
+- Offline-capable Studio for venues with spotty WiFi
+
+---
+
+## Rules of Engagement
+
+1. **Steve approves all product decisions.** If it doesn't help Monica get a booking or save her time, it doesn't ship.
+2. **Jony approves all design decisions.** If it's not luxury-quality, it goes back.
+3. **Angela designs every customer journey.** Both the public experience and the Studio UX.
+4. **Craig approves all architecture decisions.** No shortcuts that hurt later.
+5. **Priya owns all data.** No schema changes without her sign-off in CHANGELOG.md.
+6. **The Monica Rule.** Every Studio feature must work one-handed on an iPhone while Monica is standing at a venue in full event setup mode.
+7. **Mobile first. Always.** Monica's customers are on their phones. So is Monica.
+8. **One path, one truth.** No duplicate booking flows. The configurator is the only booking path.
+9. **Never hardcode Monica's info.** Everything lives in `src/lib/config.ts`.
+10. **No session ends without an updated CHANGELOG.** No exceptions.
+
+---
+
+## The Product Vision (Steve's words)
+
+> Phase 1–3: Monica's site + Studio tool — the best possible version for one balloon decorator in Tucson.
+>
+> Phase 4+: A product for event decorators, photographers, and creative service businesses.
+> Every business gets their own site. Their own Studio. Their own clients, their own gallery, their own estimates.
+>
+> Monica is the guinea pig. When this works for her, it works for everyone like her.
+>
+> This is not Found Co. Found is for trades. This is for people who sell beautiful things at events.

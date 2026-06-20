@@ -4,6 +4,39 @@
 
 ---
 
+## Session: May 14, 2026
+**AI:** Claude Code (Sonnet 4.6)
+**Worked on:** Stripe Checkout deposit flow + Resend dual email system
+
+### ✅ Completed This Session
+- **Stripe setup:** installed `stripe` + `@stripe/stripe-js`, configured Netlify env vars, created webhook endpoint in Stripe dashboard
+- **`/api/stripe/checkout/route.ts`** — creates Stripe Checkout session for 50% deposit, passes `lead_id` in metadata
+- **`/api/stripe/webhook/route.ts`** — verifies signature, marks `deposit_paid = true` + saves `stripe_payment_intent_id` in Supabase on `checkout.session.completed`
+- **`/booking-confirmed/page.tsx`** — post-payment success page with next-steps guide and Monica's contact
+- **`PackageConfigurator.tsx`** — non-consultation path now redirects to Stripe after lead save; consultation path shows thank-you screen
+- **`actions.ts`** — inserts `custom_build` + `custom_request`, returns `leadId` for Stripe session metadata
+- **`supabase.ts`** — Lead type extended with `custom_build` and `custom_request`
+- **Supabase schema:** Shawn ran the `ALTER TABLE` SQL — all new columns live
+- **Resend dual email system:**
+  - Monica's notification: dark branded header, contact card with one-tap call/text, event details table, reply-to set to client's email, Call + Text CTAs
+  - Client confirmation: subject personalized by event type, order summary card, numbered next steps (consultation vs. booking variants), Monica contact block, social proof footer — sent from `monica@bluelunaevents.com`
+- **`.claude/settings.json`** — Stop hook added: reminds Claude to update CHANGELOG/TASKS/PROJECT.md at session end
+- **npm audit fix** — fixed 2 of 7 vulnerabilities (brace-expansion, picomatch); remaining 5 require Next.js 16 upgrade (deferred, noted in TASKS backlog)
+- **`.env.local`** — created with placeholders for Stripe + Resend keys
+
+### ⏳ Still Pending
+- End-to-end live test of full flow: configurator → Stripe → `/booking-confirmed` → webhook → Supabase `deposit_paid = true`
+- Verify both Resend emails land in inbox (not spam) after domain propagation completes
+
+### 🔜 Next (In Order)
+1. **Test live flow end-to-end** — use Stripe test card `4242 4242 4242 4242` on Netlify deployment
+2. **Google Calendar date availability** — decision needed from Shawn (manual Supabase list vs. Google Calendar API)
+3. **Phase 2: component photos in custom builder** — add Monica's Instagram photos to each à la carte option
+4. **Next.js upgrade** — 14.2 → 16.x to clear remaining npm vulnerabilities (own session)
+5. **Design rebuild** — Phase 2 after Phase 1 is fully tested
+
+---
+
 ## Session: May 13, 2026
 **AI:** Claude Code (Sonnet 4.6)
 **Worked on:** À la carte custom build path — dual-mode configurator
