@@ -39,6 +39,43 @@ function mediaPublicUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${path}`
 }
 
+function ThumbnailCapture({ src, onCaptured }: { src: string; onCaptured: (file: File) => Promise<void> }) {
+  const done = useRef(false)
+  // Cache-bust so we bypass any non-CORS cached response from older page loads
+  const captureSrc = `${src}${src.includes('?') ? '&' : '?'}__th=1`
+  return (
+    <video
+      src={captureSrc}
+      crossOrigin="anonymous"
+      autoPlay muted playsInline preload="auto"
+      // Keep off-screen but rendered so iOS fully decodes frames
+      style={{ position: 'fixed', top: '-200px', left: '-200px', width: '2px', height: '2px', opacity: 0.01, pointerEvents: 'none', zIndex: -1 }}
+      onTimeUpdate={async e => {
+        const v = e.currentTarget
+        const target = isFinite(v.duration) && v.duration > 3 ? 2.5
+          : isFinite(v.duration) && v.duration > 0 ? v.duration * 0.5 : 2.5
+        if (done.current || v.currentTime < target) return
+        done.current = true
+        v.pause()
+        // Two rAF passes: ensure the GPU has painted the decoded frame before canvas read
+        await new Promise<void>(r => { requestAnimationFrame(() => { requestAnimationFrame(() => r()) }) })
+        if (v.readyState < 2 || v.videoWidth === 0) return
+        try {
+          const W = Math.min(v.videoWidth, 640)
+          const H = Math.round(v.videoHeight * W / v.videoWidth)
+          const canvas = document.createElement('canvas')
+          canvas.width = W; canvas.height = H
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+          ctx.drawImage(v, 0, 0, W, H)
+          const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/webp', 0.82))
+          if (blob) await onCaptured(new File([blob], 'thumb.webp', { type: 'image/webp' }))
+        } catch { /* CORS or SecurityError — fail silently */ }
+      }}
+    />
+  )
+}
+
 export default function StudioMedia() {
   const [media, setMedia]                   = useState<MediaItem[]>([])
   const [loading, setLoading]               = useState(true)
@@ -76,6 +113,8 @@ export default function StudioMedia() {
   const knownFingerprints = new Set(media.map(m => m.file_fingerprint).filter(Boolean))
   const lightboxItem = lightboxIndex !== null ? filtered[lightboxIndex] : null
   const videosNeedingThumbs = media.filter(m => m.type === 'video' && !m.thumbnail_url)
+  // First video without thumbnail — ThumbnailCapture processes them one at a time automatically
+  const autoCapture = videosNeedingThumbs[0] ?? null
 
   useEffect(() => {
     fetch('/api/studio/media')
@@ -83,17 +122,6 @@ export default function StudioMedia() {
       .then(d => { setMedia(Array.isArray(d) ? d : []); setLoading(false) })
       .catch(() => setLoading(false))
   }, [])
-
-  // Auto-generate thumbnails once on first load if any videos are missing them
-  const autoThumbRan = useRef(false)
-  useEffect(() => {
-    if (loading || generatingThumbs || autoThumbRan.current) return
-    const needingThumbs = media.filter(m => m.type === 'video' && !m.thumbnail_url)
-    if (needingThumbs.length === 0) return
-    autoThumbRan.current = true
-    generateMissingThumbnails()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, media])
 
   useEffect(() => {
     if (lightboxIndex === null) return
@@ -665,6 +693,25 @@ export default function StudioMedia() {
         )}
       </div>
 
+      {/* Auto-capture thumbnails one at a time — processes all missing thumbnails without user needing to open each video */}
+      {!loading && autoCapture && (
+        <ThumbnailCapture
+          key={autoCapture.id}
+          src={autoCapture.url}
+          onCaptured={async file => {
+            const path = await uploadThumb(file)
+            if (!path) return
+            const thumbUrl = mediaPublicUrl(path)
+            await fetch(`/api/studio/media/${autoCapture.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ thumbnail_url: thumbUrl }),
+            })
+            setMedia(prev => prev.map(m => m.id === autoCapture.id ? { ...m, thumbnail_url: thumbUrl } : m))
+          }}
+        />
+      )}
+
       {/* Lightbox */}
       {lightboxItem && (
         <div
@@ -695,39 +742,35 @@ export default function StudioMedia() {
 
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             {lightboxItem.type === 'video' ? (
-              <video
-                key={lightboxItem.id}
-                src={lightboxItem.url}
-                controls
-                playsInline
-                muted
-                crossOrigin="anonymous"
-                poster={lightboxItem.thumbnail_url || undefined}
-                style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '8px' }}
-                onLoadedMetadata={e => {
-                  // Seek to capture frame — only if no thumbnail yet
-                  if (lightboxItem.thumbnail_url || lightboxCaptures.current.has(lightboxItem.id)) return
-                  const dur = e.currentTarget.duration
-                  const seekTo = isFinite(dur) && dur > 3 ? 3 : isFinite(dur) && dur > 1 ? dur * 0.3 : -1
-                  if (seekTo > 0) e.currentTarget.currentTime = seekTo
-                }}
-                onSeeked={async e => {
-                  if (lightboxItem.thumbnail_url || lightboxCaptures.current.has(lightboxItem.id)) return
-                  lightboxCaptures.current.add(lightboxItem.id)
-                  const video = e.currentTarget
-                  const thumb = await captureVideoFrame(video)
-                  if (!thumb) return
-                  const path = await uploadThumb(thumb)
-                  if (!path) return
-                  const url = mediaPublicUrl(path)
-                  await fetch(`/api/studio/media/${lightboxItem.id}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ thumbnail_url: url }),
-                  })
-                  setMedia(prev => prev.map(m => m.id === lightboxItem.id ? { ...m, thumbnail_url: url } : m))
-                }}
-              />
+              <>
+                <video
+                  key={lightboxItem.id}
+                  src={lightboxItem.url}
+                  controls
+                  playsInline
+                  muted
+                  poster={lightboxItem.thumbnail_url || undefined}
+                  style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '8px' }}
+                />
+                {!lightboxItem.thumbnail_url && (
+                  <ThumbnailCapture
+                    key={`cap-${lightboxItem.id}`}
+                    src={lightboxItem.url}
+                    onCaptured={async file => {
+                      const path = await uploadThumb(file)
+                      if (!path) return
+                      const thumbUrl = mediaPublicUrl(path)
+                      await fetch(`/api/studio/media/${lightboxItem.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ thumbnail_url: thumbUrl }),
+                      })
+                      setMedia(prev => prev.map(m => m.id === lightboxItem.id ? { ...m, thumbnail_url: thumbUrl } : m))
+                      showToast('Thumbnail saved')
+                    }}
+                  />
+                )}
+              </>
             ) : (
               <img
                 key={lightboxItem.id}
