@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronLeft, ChevronRight, Plus, Link2, Images, FolderOpen, FileText, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Link2, Images, X } from 'lucide-react'
+import StudioNav from '@/components/studio/StudioNav'
 
 type Gallery = {
   id: string
@@ -61,7 +62,7 @@ export default function StudioGalleries() {
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '120px' }}>
 
       {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 72px + 20px) 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 20px) 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link href="/studio" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>
@@ -190,22 +191,7 @@ export default function StudioGalleries() {
         </div>
       )}
 
-      {/* Bottom nav */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'rgba(13,15,15,0.98)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.1)', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex' }}>
-          {([['My Work', '/studio/media', Images], ['Galleries', '/studio/galleries', FolderOpen], ['Estimates', '/studio/estimates', FileText]] as [string, string, any][]).map(([label, href, Icon]) => {
-            const active = href === '/studio/galleries'
-            return (
-              <Link key={href} href={href} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '10px 0', textDecoration: 'none' }}>
-                <div style={{ width: '44px', height: '28px', borderRadius: '14px', background: active ? 'rgba(91,191,191,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={18} color={active ? '#5BBFBF' : 'rgba(255,255,255,0.35)'} />
-                </div>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#5BBFBF' : 'rgba(255,255,255,0.35)', letterSpacing: '0.02em' }}>{label}</span>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+      <StudioNav />
     </div>
   )
 }

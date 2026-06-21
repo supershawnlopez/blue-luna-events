@@ -1,9 +1,20 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-const photos = [
+type MediaItem = {
+  id: string
+  url: string
+  thumbnail_url?: string | null
+  type: string
+  file_name: string
+  event_type?: string | null
+  caption?: string | null
+}
+
+const FALLBACK_PHOTOS = [
   { src: '/images/gal-1.jpg', alt: 'Custom balloon castle installation', label: 'Custom Installation', type: 'Special Event' },
   { src: '/images/gal-2.jpg', alt: 'Rose gold balloon arch', label: 'Rose Gold Arch', type: 'Birthday' },
   { src: '/images/gal-3.jpg', alt: 'Baby shower balloon backdrop', label: 'Baby Shower Setup', type: 'Baby Shower' },
@@ -14,6 +25,21 @@ const photos = [
 ]
 
 export default function Gallery() {
+  const [media, setMedia]   = useState<MediaItem[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/studio/media?website=true')
+      .then(r => r.ok ? r.json() : [])
+      .then((d: MediaItem[]) => {
+        setMedia(Array.isArray(d) ? d.filter(m => m.type !== 'video') : [])
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  const useFallback = !loading && media.length === 0
+
   return (
     <div className="min-h-screen bg-[#0D0F0F] pt-20">
       {/* Header */}
@@ -32,22 +58,47 @@ export default function Gallery() {
 
       {/* Gallery grid */}
       <div className="max-w-screen-xl mx-auto px-6 md:px-12 pb-24">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {photos.map((photo, i) => (
-            <div key={i} className="relative rounded-2xl overflow-hidden group cursor-pointer" style={{height: '320px'}}>
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-[#0D0F0F]/0 group-hover:bg-[#0D0F0F]/60 transition-all duration-300 flex flex-col justify-end p-6">
-                <span className="text-[10px] text-[#5BBFBF] tracking-[0.15em] uppercase font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 mb-1">{photo.type}</span>
-                <span style={{fontFamily:'Cormorant Garamond,Georgia,serif'}} className="text-xl italic text-white font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">{photo.label}</span>
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-2xl bg-white/[0.04] animate-pulse" style={{height: '320px'}} />
+            ))}
+          </div>
+        ) : useFallback ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {FALLBACK_PHOTOS.map((photo, i) => (
+              <div key={i} className="relative rounded-2xl overflow-hidden group cursor-pointer" style={{height: '320px'}}>
+                <Image src={photo.src} alt={photo.alt} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-[#0D0F0F]/0 group-hover:bg-[#0D0F0F]/60 transition-all duration-300 flex flex-col justify-end p-6">
+                  <span className="text-[10px] text-[#5BBFBF] tracking-[0.15em] uppercase font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 mb-1">{photo.type}</span>
+                  <span style={{fontFamily:'Cormorant Garamond,Georgia,serif'}} className="text-xl italic text-white font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">{photo.label}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {media.map(m => (
+              <div key={m.id} className="relative rounded-2xl overflow-hidden group cursor-pointer" style={{height: '320px'}}>
+                <Image
+                  src={m.thumbnail_url || m.url}
+                  alt={m.caption || m.file_name}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+                <div className="absolute inset-0 bg-[#0D0F0F]/0 group-hover:bg-[#0D0F0F]/60 transition-all duration-300 flex flex-col justify-end p-6">
+                  {m.event_type && (
+                    <span className="text-[10px] text-[#5BBFBF] tracking-[0.15em] uppercase font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 mb-1">{m.event_type}</span>
+                  )}
+                  {m.caption && (
+                    <span style={{fontFamily:'Cormorant Garamond,Georgia,serif'}} className="text-xl italic text-white font-light opacity-0 group-hover:opacity-100 transition-opacity duration-300">{m.caption}</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* CTA */}
         <div className="text-center mt-20">

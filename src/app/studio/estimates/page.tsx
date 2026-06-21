@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Plus, ChevronLeft, ChevronRight, FileText, Clock } from 'lucide-react'
+import { Plus, ChevronRight, FileText } from 'lucide-react'
+import StudioNav from '@/components/studio/StudioNav'
 
 type EstimateStatus = 'draft' | 'sent' | 'deposit_paid' | 'balance_paid' | 'completed' | 'declined'
 
@@ -39,22 +40,20 @@ export default function EstimatesList() {
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
       {/* Header */}
-      <div style={{ padding: '56px 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-            <Link href="/studio" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
-              <ChevronLeft size={18} />
-            </Link>
-            <h1 style={{ fontSize: '1.4rem', fontWeight: 600, color: 'white', letterSpacing: '-0.01em', flex: 1 }}>Estimates</h1>
-            <Link href="/studio/estimates/new" style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              background: '#5BBFBF', color: '#0D0F0F',
-              borderRadius: '10px', padding: '10px 16px',
-              fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none',
-            }}>
-              <Plus size={16} /> New
-            </Link>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 20px) 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', color: '#5BBFBF', textTransform: 'uppercase', margin: '0 0 2px' }}>Blue Luna</p>
+            <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'white', letterSpacing: '-0.01em', margin: 0 }}>Estimates</h1>
           </div>
+          <Link href="/studio/estimates/new" style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            background: '#5BBFBF', color: '#0D0F0F',
+            borderRadius: '10px', padding: '10px 16px',
+            fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none',
+          }}>
+            <Plus size={16} /> New
+          </Link>
         </div>
       </div>
 
@@ -115,31 +114,7 @@ export default function EstimatesList() {
         )}
       </div>
 
-      {/* Bottom nav */}
-      <nav style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'rgba(13,15,15,0.95)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(255,255,255,0.08)',
-        padding: '12px 0 env(safe-area-inset-bottom, 12px)',
-        display: 'flex', zIndex: 100,
-      }}>
-        {[
-          { href: '/studio/media', label: 'My Work' },
-          { href: '/studio/estimates', label: 'Estimates', active: true },
-          { href: '/studio/exports', label: 'Export' },
-        ].map(({ href, label, active }) => (
-          <Link key={href} href={href} style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
-            textDecoration: 'none', color: active ? '#5BBFBF' : 'rgba(255,255,255,0.4)',
-            fontSize: '10px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
-          }}>
-            {label === 'My Work' ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-              : label === 'Estimates' ? <FileText size={22} />
-              : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/></svg>}
-            {label}
-          </Link>
-        ))}
-      </nav>
+      <StudioNav />
     </div>
   )
 }

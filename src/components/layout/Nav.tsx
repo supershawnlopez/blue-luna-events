@@ -18,7 +18,7 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
 
-  if (pathname?.startsWith('/gallery/')) return null
+  if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/')) return null
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)

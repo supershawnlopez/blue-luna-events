@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles, Crown, GraduationCap, Cake, Baby, Gem, Briefcase, Images, FolderOpen, FileText, LucideIcon } from 'lucide-react'
+import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles, Crown, GraduationCap, Cake, Baby, Gem, Briefcase, Download, LucideIcon } from 'lucide-react'
+import StudioNav from '@/components/studio/StudioNav'
 
 type MediaItem = {
   id: string
@@ -454,19 +455,20 @@ export default function StudioMedia() {
         style={{ display: 'none' }} onChange={e => onFilesChosen(e.target.files)} />
 
       {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 72px + 20px) 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 20px) 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Link href="/studio" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>
-                <ChevronLeft size={18} />
-              </Link>
-              <div>
-                <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.2em', color: '#5BBFBF', textTransform: 'uppercase', margin: 0 }}>Blue Luna</p>
-                <h1 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.01em' }}>My Work</h1>
-              </div>
+            <div>
+              <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', color: '#5BBFBF', textTransform: 'uppercase', margin: '0 0 2px' }}>Blue Luna</p>
+              <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.01em' }}>My Work</h1>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
+              {media.filter(m => m.social_export).length > 0 && (
+                <Link href="/studio/exports"
+                  style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.3)', borderRadius: '10px', padding: '9px 12px', color: '#5BBFBF', fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none' }}>
+                  <Download size={13} /> Export
+                </Link>
+              )}
               <button onClick={() => openTypeSheet('camera')}
                 style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '9px 13px', color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
                 <Camera size={14} /> Shoot
@@ -707,7 +709,7 @@ export default function StudioMedia() {
             if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev()
           }}>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(env(safe-area-inset-top, 0px) + 72px + 12px) 20px 12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(env(safe-area-inset-top, 44px) + 12px) 20px 12px', flexShrink: 0 }}>
             <button onClick={() => setLightboxIndex(null)}
               style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '10px', padding: '8px', display: 'flex', cursor: 'pointer' }}>
               <X size={18} color="white" />
@@ -818,22 +820,7 @@ export default function StudioMedia() {
         </div>
       )}
 
-      {/* Bottom nav */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'rgba(13,15,15,0.98)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.1)', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex' }}>
-          {([['My Work', '/studio/media', Images], ['Galleries', '/studio/galleries', FolderOpen], ['Estimates', '/studio/estimates', FileText]] as [string, string, LucideIcon][]).map(([label, href, Icon]) => {
-            const active = href === '/studio/media'
-            return (
-              <Link key={href} href={href} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '10px 0', textDecoration: 'none' }}>
-                <div style={{ width: '44px', height: '28px', borderRadius: '14px', background: active ? 'rgba(91,191,191,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}>
-                  <Icon size={18} color={active ? '#5BBFBF' : 'rgba(255,255,255,0.35)'} />
-                </div>
-                <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#5BBFBF' : 'rgba(255,255,255,0.35)', letterSpacing: '0.02em' }}>{label}</span>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+      <StudioNav />
     </div>
   )
 }
