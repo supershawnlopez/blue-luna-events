@@ -36,6 +36,8 @@ export default function StudioMedia() {
   const [loading, setLoading]               = useState(true)
   const [filter, setFilter]                 = useState<Filter>('all')
   const [pendingFiles, setPendingFiles]     = useState<File[]>([])
+  const [dupeFiles, setDupeFiles]           = useState<File[]>([])
+  const [showDupeSheet, setShowDupeSheet]   = useState(false)
   const [pendingSource, setPendingSource]   = useState<'file' | 'camera' | null>(null)
   const [pendingEventType, setPendingEventType] = useState<string | null>(null)
   const [showTypeSheet, setShowTypeSheet]   = useState(false)
@@ -45,6 +47,8 @@ export default function StudioMedia() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const fileRef   = useRef<HTMLInputElement>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
+
+  const knownFingerprints = new Set(media.map(m => (m as MediaItem & { file_fingerprint?: string }).file_fingerprint).filter(Boolean))
 
   useEffect(() => {
     fetch('/api/studio/media')
@@ -56,6 +60,10 @@ export default function StudioMedia() {
   function openTypeSheet(source: 'file' | 'camera') {
     setPendingSource(source)
     setShowTypeSheet(true)
+  }
+
+  function fingerprint(file: File) {
+    return `${file.name}::${file.size}::${file.lastModified}`
   }
 
   function selectType(eventType: string | null) {
@@ -133,6 +141,7 @@ export default function StudioMedia() {
         type: isVideo ? 'video' : 'photo',
         event_type: eventType,
         file_size: uploadFile.size,
+        file_fingerprint: fingerprint(raw),
       }),
     })
     return recRes.ok ? recRes.json() : null
@@ -140,7 +149,26 @@ export default function StudioMedia() {
 
   async function onFilesChosen(files: FileList | null) {
     if (!files?.length) return
-    const chosen = Array.from(files)
+    const all = Array.from(files)
+    const dupes = all.filter(f => knownFingerprints.has(fingerprint(f)))
+    const fresh = all.filter(f => !knownFingerprints.has(fingerprint(f)))
+
+    if (dupes.length > 0) {
+      setPendingFiles(fresh)
+      setDupeFiles(dupes)
+      setShowDupeSheet(true)
+      return
+    }
+    await runUploads(all)
+  }
+
+  async function runUploads(chosen: File[]) {
+    setShowDupeSheet(false)
+    if (chosen.length === 0) {
+      setPendingFiles([])
+      setDupeFiles([])
+      return
+    }
     setPendingFiles(chosen)
     setUploading(true)
     setUploadProgress(0)
@@ -154,6 +182,7 @@ export default function StudioMedia() {
     }
     setUploading(false)
     setPendingFiles([])
+    setDupeFiles([])
     setPendingEventType(null)
     setPendingSource(null)
     setUploadProgress(0)
@@ -342,6 +371,40 @@ export default function StudioMedia() {
           </div>
         )}
       </div>
+
+      {/* Duplicate detection sheet */}
+      {showDupeSheet && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '20px 20px 0 0', padding: '20px 20px 44px' }}>
+            <div style={{ width: '32px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 16px' }} />
+            <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 8px' }}>
+              {dupeFiles.length === 1 ? '1 photo already uploaded' : `${dupeFiles.length} photos already uploaded`}
+            </p>
+            <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '0 0 24px', lineHeight: 1.5 }}>
+              {pendingFiles.length > 0
+                ? `Skipping ${dupeFiles.length} duplicate${dupeFiles.length !== 1 ? 's' : ''}. ${pendingFiles.length} new file${pendingFiles.length !== 1 ? 's' : ''} ready to upload.`
+                : `All selected files have already been uploaded.`}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {pendingFiles.length > 0 && (
+                <button onClick={() => runUploads(pendingFiles)}
+                  style={{ width: '100%', background: '#5BBFBF', border: 'none', borderRadius: '12px', padding: '14px', color: '#0D0F0F', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' }}>
+                  Upload {pendingFiles.length} New File{pendingFiles.length !== 1 ? 's' : ''}
+                </button>
+              )}
+              <button onClick={() => runUploads([...pendingFiles, ...dupeFiles])}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px', color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer' }}>
+                Upload All Anyway
+              </button>
+              <button onClick={() => { setShowDupeSheet(false); setPendingFiles([]); setDupeFiles([]) }}
+                style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem', cursor: 'pointer' }}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Event type bottom sheet */}
       {showTypeSheet && (

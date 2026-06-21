@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
-  const { path, filename, type, event_type, file_size } = await req.json()
+  const { path, filename, type, event_type, file_size, file_fingerprint } = await req.json()
 
   const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)
 
@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
       show_on_website: false,
       social_export: false,
       file_size: file_size ?? null,
+      file_fingerprint: file_fingerprint ?? null,
     }])
     .select('*')
     .single()
