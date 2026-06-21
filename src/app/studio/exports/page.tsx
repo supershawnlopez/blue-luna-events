@@ -18,8 +18,32 @@ function toLabel(raw: string) {
 }
 
 function displayCaption(m: MediaItem) {
-  if (m.caption) return m.caption
-  return m.file_name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  return m.caption?.trim() || null
+}
+
+async function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((res, rej) => {
+    const img = new window.Image()
+    img.crossOrigin = 'anonymous'
+    img.onload  = () => res(img)
+    img.onerror = () => {
+      // retry without crossOrigin (some CDNs block the CORS preflight)
+      const img2 = new window.Image()
+      img2.onload  = () => res(img2)
+      img2.onerror = rej
+      img2.src = src
+    }
+    img.src = src
+  })
+}
+
+function coverFit(ctx: CanvasRenderingContext2D, img: HTMLImageElement, cw: number, ch: number) {
+  const iRatio = img.width / img.height
+  const cRatio = cw / ch
+  let sx = 0, sy = 0, sw = img.width, sh = img.height
+  if (iRatio > cRatio) { sw = img.height * cRatio; sx = (img.width - sw) / 2 }
+  else                  { sh = img.width / cRatio;  sy = (img.height - sh) / 2 }
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch)
 }
 
 async function renderBrandPack(item: MediaItem, layout: Layout): Promise<Blob> {
@@ -29,67 +53,75 @@ async function renderBrandPack(item: MediaItem, layout: Layout): Promise<Blob> {
   canvas.height = spec.h
   const ctx = canvas.getContext('2d')!
 
-  // Load image
-  await new Promise<void>((res, rej) => {
-    const img = new window.Image()
-    img.crossOrigin = 'anonymous'
-    img.onload = () => {
-      // Fill black background
-      ctx.fillStyle = '#0D0F0F'
-      ctx.fillRect(0, 0, spec.w, spec.h)
-
-      // Cover-fit the image
-      const iRatio = img.width / img.height
-      const cRatio = spec.w / spec.h
-      let sx = 0, sy = 0, sw = img.width, sh = img.height
-      if (iRatio > cRatio) { sw = img.height * cRatio; sx = (img.width - sw) / 2 }
-      else                  { sh = img.width / cRatio; sy = (img.height - sh) / 2 }
-      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, spec.w, spec.h)
-      res()
-    }
-    img.onerror = rej
-    img.src = item.url
-  })
-
-  // Teal gradient vignette at bottom
-  const grad = ctx.createLinearGradient(0, spec.h * 0.5, 0, spec.h)
-  grad.addColorStop(0, 'rgba(13,15,15,0)')
-  grad.addColorStop(0.7, 'rgba(13,15,15,0.72)')
-  grad.addColorStop(1,   'rgba(13,15,15,0.92)')
-  ctx.fillStyle = grad
+  // 1 — draw photo full bleed
+  ctx.fillStyle = '#0D0F0F'
   ctx.fillRect(0, 0, spec.w, spec.h)
+  try {
+    const photo = await loadImage(item.url)
+    coverFit(ctx, photo, spec.w, spec.h)
+  } catch { /* leave dark background if photo fails */ }
 
-  // Teal accent bar at bottom
-  const accentGrad = ctx.createLinearGradient(0, 0, spec.w, 0)
-  accentGrad.addColorStop(0, '#5BBFBF')
-  accentGrad.addColorStop(1, '#3A9898')
-  ctx.fillStyle = accentGrad
-  ctx.fillRect(0, spec.h - 8, spec.w, 8)
-
-  // "BLUE LUNA EVENTS" wordmark — top left
-  ctx.font = `600 ${spec.w * 0.026}px "DM Mono", monospace`
-  ctx.fillStyle = 'rgba(255,255,255,0.55)'
-  ctx.letterSpacing = '6px'
-  ctx.fillText('BLUE LUNA EVENTS', spec.w * 0.06, spec.h * 0.065)
-
-  // Event type label
+  // 2 — event type chip — top right (only if tagged)
   if (item.event_type) {
-    ctx.font = `600 ${spec.w * 0.022}px "DM Mono", monospace`
+    const chipLabel = toLabel(item.event_type).toUpperCase()
+    const chipFontSize = spec.w * 0.022
+    ctx.font = `700 ${chipFontSize}px "DM Mono", monospace`
+    const textW = ctx.measureText(chipLabel).width
+    const chipPad = spec.w * 0.028
+    const chipH   = chipFontSize * 2.2
+    const chipX   = spec.w - chipPad - textW - chipFontSize * 1.2
+    const chipY   = chipPad
+
+    // pill background
+    ctx.fillStyle = 'rgba(13,15,15,0.72)'
+    const r = chipH / 2
+    ctx.beginPath()
+    ctx.moveTo(chipX + r, chipY)
+    ctx.lineTo(chipX + textW + chipFontSize * 1.2 - r, chipY)
+    ctx.arcTo(chipX + textW + chipFontSize * 1.2, chipY, chipX + textW + chipFontSize * 1.2, chipY + chipH, r)
+    ctx.arcTo(chipX + textW + chipFontSize * 1.2, chipY + chipH, chipX, chipY + chipH, r)
+    ctx.arcTo(chipX, chipY + chipH, chipX, chipY, r)
+    ctx.arcTo(chipX, chipY, chipX + r, chipY, r)
+    ctx.closePath()
+    ctx.fill()
+
     ctx.fillStyle = '#5BBFBF'
-    ctx.fillText(toLabel(item.event_type).toUpperCase(), spec.w * 0.06, spec.h - spec.h * 0.12)
+    ctx.textAlign = 'center'
+    ctx.fillText(chipLabel, chipX + (textW + chipFontSize * 1.2) / 2, chipY + chipH * 0.68)
   }
 
-  // Caption — large serif italic
-  const caption = displayCaption(item)
-  ctx.font = `300 italic ${spec.w * 0.068}px "Georgia", serif`
-  ctx.fillStyle = 'rgba(255,255,255,0.93)'
-  ctx.fillText(caption, spec.w * 0.06, spec.h - spec.h * 0.065)
+  // 3 — bottom branding strip (80px)
+  const stripH = Math.round(spec.h * 0.074)
+  const stripY = spec.h - stripH
+  ctx.fillStyle = 'rgba(13,15,15,0.88)'
+  ctx.fillRect(0, stripY, spec.w, stripH)
 
-  // "tucsonballoons.com" — subtle bottom right
-  ctx.font = `400 ${spec.w * 0.02}px "DM Mono", monospace`
-  ctx.fillStyle = 'rgba(255,255,255,0.3)'
+  // teal accent line at very top of strip
+  ctx.fillStyle = '#5BBFBF'
+  ctx.fillRect(0, stripY, spec.w, Math.round(spec.h * 0.003))
+
+  const pad = spec.w * 0.055
+  const stripMid = stripY + stripH / 2
+
+  // logo image — left side
+  try {
+    const logo = await loadImage('/images/logo-white.png')
+    const logoH = stripH * 0.52
+    const logoW = logo.width * (logoH / logo.height)
+    ctx.drawImage(logo, pad, stripMid - logoH / 2, logoW, logoH)
+  } catch {
+    // fallback: "Blue Luna Events" text
+    ctx.font = `600 ${spec.w * 0.022}px sans-serif`
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'
+    ctx.textAlign = 'left'
+    ctx.fillText('Blue Luna Events', pad, stripMid + spec.w * 0.008)
+  }
+
+  // website — right side
+  ctx.font = `500 ${spec.w * 0.022}px "DM Mono", monospace`
+  ctx.fillStyle = 'rgba(255,255,255,0.65)'
   ctx.textAlign = 'right'
-  ctx.fillText('bluelunaevents.com', spec.w - spec.w * 0.06, spec.h - spec.h * 0.028)
+  ctx.fillText('bluelunaevents.com', spec.w - pad, stripMid + spec.w * 0.008)
 
   return new Promise(res => canvas.toBlob(b => res(b!), 'image/jpeg', 0.94))
 }
@@ -118,8 +150,9 @@ export default function StudioExports() {
       const blob = await renderBrandPack(item, layout)
       const url  = URL.createObjectURL(blob)
       const a    = document.createElement('a')
+      const label = (displayCaption(item) || item.event_type || 'export').toLowerCase().replace(/[\s_]+/g, '-')
       a.href = url
-      a.download = `blue-luna-${displayCaption(item).toLowerCase().replace(/\s+/g, '-')}-${layout}.jpg`
+      a.download = `blue-luna-${label}-${layout}.jpg`
       a.click()
       URL.revokeObjectURL(url)
       setDone(item.id)
@@ -230,13 +263,11 @@ export default function StudioExports() {
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: '0.88rem', fontWeight: 600, color: 'white', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {displayCaption(item)}
+                        {displayCaption(item) || (item.event_type ? toLabel(item.event_type) : 'Untagged photo')}
                       </p>
-                      {item.event_type && (
-                        <p style={{ fontSize: '0.68rem', color: '#5BBFBF', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', margin: 0 }}>
-                          {toLabel(item.event_type)}
-                        </p>
-                      )}
+                      <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.file_name}
+                      </p>
                     </div>
 
                     {/* Download button */}

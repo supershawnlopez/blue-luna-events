@@ -609,11 +609,13 @@ export default function StudioMedia() {
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : item.type === 'video' ? (
-                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg,#0a1628,#1a1a3e,#0f3460)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(91,191,191,0.15)', border: '1px solid rgba(91,191,191,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Play size={15} color="#5BBFBF" fill="#5BBFBF" style={{ marginLeft: '2px' }} />
-                    </div>
-                  </div>
+                  /* No stored thumbnail — render video element directly so browser shows real frame */
+                  <video
+                    src={item.url}
+                    muted playsInline preload="metadata"
+                    ref={el => { if (el) el.currentTime = 3 }}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
                 ) : (
                   <Image src={item.url} alt={item.file_name} fill style={{ objectFit: 'cover' }} sizes="200px" />
                 )}
