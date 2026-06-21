@@ -250,7 +250,7 @@ export default function StudioExports() {
                     {/* Thumb */}
                     <div style={{ width: '58px', height: '58px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#161616', position: 'relative' }}>
                       {item.thumbnail_url || item.type === 'image' ? (
-                        <img src={item.thumbnail_url || item.url} alt={displayCaption(item)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={item.thumbnail_url || item.url} alt={displayCaption(item) ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
                         <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg,#1a1a2e,#0f3460)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Play size={14} color="rgba(255,255,255,0.3)" fill="rgba(255,255,255,0.3)" />
