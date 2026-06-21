@@ -55,6 +55,7 @@ export default function StudioMedia() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [lightboxIndex, setLightboxIndex]   = useState<number | null>(null)
   const [generatingThumbs, setGeneratingThumbs] = useState(false)
+  const lightboxCaptures = useRef<Set<string>>(new Set())
   const [thumbProgress, setThumbProgress]   = useState({ done: 0, total: 0 })
   const [remainingFiles, setRemainingFiles] = useState<File[]>([])
   const [remainingEventType, setRemainingEventType] = useState<string | null>(null)
@@ -155,10 +156,14 @@ export default function StudioMedia() {
   }
 
   async function captureVideoFrame(video: HTMLVideoElement): Promise<File | null> {
+    if (video.readyState < 2 || video.videoWidth === 0) return null
+    // Wait two paint frames so the GPU has actually drawn the decoded video frame
+    await new Promise<void>(r => { requestAnimationFrame(() => r()) })
+    await new Promise<void>(r => { requestAnimationFrame(() => r()) })
     return new Promise(resolve => {
       try {
-        const W = Math.min(video.videoWidth || 640, 640)
-        const H = video.videoHeight ? Math.round(video.videoHeight * W / Math.max(video.videoWidth, 1)) : 360
+        const W = Math.min(video.videoWidth, 640)
+        const H = Math.round(video.videoHeight * W / video.videoWidth)
         const canvas = document.createElement('canvas')
         canvas.width = W; canvas.height = H
         const ctx = canvas.getContext('2d')
@@ -588,13 +593,12 @@ export default function StudioMedia() {
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : item.type === 'video' ? (
-                  /* No stored thumbnail — video element seeks to 3s via onLoadedMetadata */
-                  <video
-                    src={item.url}
-                    muted playsInline preload="metadata"
-                    onLoadedMetadata={e => { e.currentTarget.currentTime = 3 }}
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
+                  /* Styled placeholder — tap to open lightbox, which auto-captures the thumbnail */
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg, #0e1822 0%, #16213e 60%, #0a2540 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(91,191,191,0.18)', border: '1.5px solid rgba(91,191,191,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Play size={15} color="#5BBFBF" fill="#5BBFBF" style={{ marginLeft: '2px' }} />
+                    </div>
+                  </div>
                 ) : (
                   <Image src={item.url} alt={item.file_name} fill style={{ objectFit: 'cover' }} sizes="200px" />
                 )}
@@ -697,8 +701,32 @@ export default function StudioMedia() {
                 controls
                 playsInline
                 muted
+                crossOrigin="anonymous"
                 poster={lightboxItem.thumbnail_url || undefined}
                 style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '8px' }}
+                onLoadedMetadata={e => {
+                  // Seek to capture frame — only if no thumbnail yet
+                  if (lightboxItem.thumbnail_url || lightboxCaptures.current.has(lightboxItem.id)) return
+                  const dur = e.currentTarget.duration
+                  const seekTo = isFinite(dur) && dur > 3 ? 3 : isFinite(dur) && dur > 1 ? dur * 0.3 : -1
+                  if (seekTo > 0) e.currentTarget.currentTime = seekTo
+                }}
+                onSeeked={async e => {
+                  if (lightboxItem.thumbnail_url || lightboxCaptures.current.has(lightboxItem.id)) return
+                  lightboxCaptures.current.add(lightboxItem.id)
+                  const video = e.currentTarget
+                  const thumb = await captureVideoFrame(video)
+                  if (!thumb) return
+                  const path = await uploadThumb(thumb)
+                  if (!path) return
+                  const url = mediaPublicUrl(path)
+                  await fetch(`/api/studio/media/${lightboxItem.id}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ thumbnail_url: url }),
+                  })
+                  setMedia(prev => prev.map(m => m.id === lightboxItem.id ? { ...m, thumbnail_url: url } : m))
+                }}
               />
             ) : (
               <img

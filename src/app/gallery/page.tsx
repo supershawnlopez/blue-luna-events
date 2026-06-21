@@ -123,9 +123,7 @@ export default function Gallery() {
                   <div style={{ position: 'relative', background: '#111', minHeight: '240px' }}>
                     {m.thumbnail_url
                       ? <img src={m.thumbnail_url} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
-                      : <video src={m.url} muted playsInline preload="metadata"
-                          onLoadedMetadata={e => { e.currentTarget.currentTime = 3 }}
-                          style={{ width: '100%', display: 'block', objectFit: 'cover', minHeight: '240px' }} />
+                      : <div style={{ minHeight: '240px', background: 'linear-gradient(145deg, #0e1822 0%, #16213e 60%, #0a2540 100%)' }} />
                     }
                     {/* Modern play button */}
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
