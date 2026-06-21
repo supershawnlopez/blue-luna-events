@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2 } from 'lucide-react'
+import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag } from 'lucide-react'
 
 type MediaItem = {
   id: string
@@ -14,6 +14,7 @@ type MediaItem = {
   social_export: boolean
   file_name: string
   created_at: string
+  file_fingerprint?: string | null
 }
 
 const EVENT_TYPES = [
@@ -29,7 +30,7 @@ const EVENT_TYPES = [
 type Filter = 'all' | 'website' | 'social'
 
 function getLabel(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.label ?? 'Tag it' }
-function getEmoji(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.emoji ?? '🏷️' }
+function getEmoji(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.emoji ?? null }
 
 export default function StudioMedia() {
   const [media, setMedia]                   = useState<MediaItem[]>([])
@@ -44,10 +45,19 @@ export default function StudioMedia() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const [editingTypeId, setEditingTypeId]   = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
-  const fileRef   = useRef<HTMLInputElement>(null)
-  const cameraRef = useRef<HTMLInputElement>(null)
+  const [lightboxIndex, setLightboxIndex]   = useState<number | null>(null)
+  const fileRef      = useRef<HTMLInputElement>(null)
+  const cameraRef    = useRef<HTMLInputElement>(null)
+  const touchStartX  = useRef(0)
 
-  const knownFingerprints = new Set(media.map(m => (m as MediaItem & { file_fingerprint?: string }).file_fingerprint).filter(Boolean))
+  const filtered = media.filter(m => {
+    if (filter === 'website') return m.show_on_website
+    if (filter === 'social')  return m.social_export
+    return true
+  })
+
+  const knownFingerprints = new Set(media.map(m => m.file_fingerprint).filter(Boolean))
+  const lightboxItem = lightboxIndex !== null ? filtered[lightboxIndex] : null
 
   useEffect(() => {
     fetch('/api/studio/media')
@@ -56,14 +66,32 @@ export default function StudioMedia() {
       .catch(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    if (lightboxIndex === null) return
+    const len = filtered.length
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'ArrowRight') setLightboxIndex(i => i !== null ? (i + 1) % len : null)
+      else if (e.key === 'ArrowLeft') setLightboxIndex(i => i !== null ? (i - 1 + len) % len : null)
+      else if (e.key === 'Escape') setLightboxIndex(null)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [lightboxIndex, filtered.length])
+
+  function goNext() { setLightboxIndex(i => i !== null ? (i + 1) % filtered.length : null) }
+  function goPrev() { setLightboxIndex(i => i !== null ? (i - 1 + filtered.length) % filtered.length : null) }
+
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 4000)
+  }
+
   function openTypeSheet(source: 'file' | 'camera') {
     setPendingSource(source)
     setShowTypeSheet(true)
   }
 
-  function fingerprint(file: File) {
-    return `${file.name}::${file.size}`
-  }
+  function fingerprint(file: File) { return `${file.name}::${file.size}` }
 
   function selectType(eventType: string | null) {
     setPendingEventType(eventType)
@@ -85,8 +113,7 @@ export default function StudioMedia() {
           else { width = Math.round(width * MAX / height); height = MAX }
         }
         const canvas = document.createElement('canvas')
-        canvas.width = width
-        canvas.height = height
+        canvas.width = width; canvas.height = height
         canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
         canvas.toBlob(blob => {
           if (!blob) { resolve({ file, type: file.type }); return }
@@ -110,7 +137,6 @@ export default function StudioMedia() {
       contentType = compressed.type
     }
 
-    // Get signed URL from our server (uses service role — never exposed to client)
     const signRes = await fetch('/api/studio/media/sign', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -119,7 +145,6 @@ export default function StudioMedia() {
     if (!signRes.ok) return null
     const { signedUrl, path } = await signRes.json()
 
-    // Upload directly to Supabase Storage with progress tracking
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest()
       xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100)) }
@@ -130,7 +155,6 @@ export default function StudioMedia() {
       xhr.send(uploadFile)
     })
 
-    // Save metadata record
     const recRes = await fetch('/api/studio/media/record', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -140,15 +164,10 @@ export default function StudioMedia() {
         type: isVideo ? 'video' : 'photo',
         event_type: eventType,
         file_size: uploadFile.size,
-        file_fingerprint: `${raw.name}::${raw.size}`,
+        file_fingerprint: fingerprint(raw),
       }),
     })
     return recRes.ok ? recRes.json() : null
-  }
-
-  function showToast(msg: string) {
-    setToast(msg)
-    setTimeout(() => setToast(null), 4000)
   }
 
   async function onFilesChosen(files: FileList | null) {
@@ -163,11 +182,9 @@ export default function StudioMedia() {
       if (cameraRef.current) cameraRef.current.value = ''
       return
     }
-
     if (dupes.length > 0) {
       showToast(`${dupes.length} duplicate${dupes.length !== 1 ? 's' : ''} skipped — uploading ${fresh.length} new file${fresh.length !== 1 ? 's' : ''}.`)
     }
-
     await runUploads(fresh)
   }
 
@@ -214,15 +231,10 @@ export default function StudioMedia() {
 
   async function deleteItem(id: string) {
     setConfirmDeleteId(null)
+    if (lightboxIndex !== null) setLightboxIndex(null)
     setMedia(prev => prev.filter(m => m.id !== id))
     fetch(`/api/studio/media/${id}`, { method: 'DELETE' })
   }
-
-  const filtered = media.filter(m => {
-    if (filter === 'website') return m.show_on_website
-    if (filter === 'social')  return m.social_export
-    return true
-  })
 
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
@@ -269,11 +281,14 @@ export default function StudioMedia() {
             </div>
           )}
 
+          {/* Filter tabs — flat Lucide icons, no emoji */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {(['all', 'website', 'social'] as Filter[]).map(f => (
               <button key={f} onClick={() => setFilter(f)}
-                style={{ padding: '6px 13px', borderRadius: '999px', border: filter === f ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: filter === f ? 'rgba(91,191,191,0.12)' : 'transparent', color: filter === f ? '#5BBFBF' : 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
-                {f === 'all' ? `All (${media.length})` : f === 'website' ? `❤️ Website (${media.filter(m => m.show_on_website).length})` : `⭐ Social (${media.filter(m => m.social_export).length})`}
+                style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 13px', borderRadius: '999px', border: filter === f ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: filter === f ? 'rgba(91,191,191,0.12)' : 'transparent', color: filter === f ? '#5BBFBF' : 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                {f === 'website' && <Heart size={11} fill="currentColor" />}
+                {f === 'social'  && <Star  size={11} fill="currentColor" />}
+                {f === 'all'     ? `All (${media.length})` : f === 'website' ? `Website (${media.filter(m => m.show_on_website).length})` : `Social (${media.filter(m => m.social_export).length})`}
               </button>
             ))}
           </div>
@@ -298,8 +313,10 @@ export default function StudioMedia() {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '3px' }}>
-            {filtered.map(item => (
-              <div key={item.id} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', background: '#1A1A1A' }}>
+            {filtered.map((item, idx) => (
+              <div key={item.id}
+                onClick={() => setLightboxIndex(idx)}
+                style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', background: '#1A1A1A', cursor: 'pointer' }}>
 
                 {item.type === 'video' ? (
                   <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -318,26 +335,28 @@ export default function StudioMedia() {
 
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 45%)' }} />
 
-                {/* Event type badge */}
-                <button onClick={() => setEditingTypeId(editingTypeId === item.id ? null : item.id)}
+                {/* Event type badge — Tag icon instead of emoji */}
+                <button onClick={e => { e.stopPropagation(); setEditingTypeId(editingTypeId === item.id ? null : item.id) }}
                   style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', border: 'none', borderRadius: '5px', padding: '3px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  <span style={{ fontSize: '8px' }}>{getEmoji(item.event_type)}</span>
+                  {getEmoji(item.event_type)
+                    ? <span style={{ fontSize: '8px' }}>{getEmoji(item.event_type)}</span>
+                    : <Tag size={8} color="rgba(255,255,255,0.45)" />}
                   <span style={{ fontSize: '8px', fontWeight: 700, color: item.event_type ? 'white' : 'rgba(255,255,255,0.45)' }}>{getLabel(item.event_type)}</span>
                 </button>
 
                 {/* Delete */}
-                <button onClick={() => setConfirmDeleteId(item.id)}
+                <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(item.id) }}
                   style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '5px', padding: '4px', cursor: 'pointer', display: 'flex' }}>
                   <Trash2 size={10} color="rgba(255,255,255,0.45)" />
                 </button>
 
                 {/* Heart + Star */}
                 <div style={{ position: 'absolute', bottom: '5px', left: '5px', right: '5px', display: 'flex', justifyContent: 'space-between' }}>
-                  <button onClick={() => toggle(item.id, 'show_on_website', item.show_on_website)}
+                  <button onClick={e => { e.stopPropagation(); toggle(item.id, 'show_on_website', item.show_on_website) }}
                     style={{ background: item.show_on_website ? 'rgba(239,68,68,0.85)' : 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '6px', padding: '5px 6px', cursor: 'pointer', display: 'flex' }}>
                     <Heart size={12} color="white" fill={item.show_on_website ? 'white' : 'none'} />
                   </button>
-                  <button onClick={() => toggle(item.id, 'social_export', item.social_export)}
+                  <button onClick={e => { e.stopPropagation(); toggle(item.id, 'social_export', item.social_export) }}
                     style={{ background: item.social_export ? 'rgba(234,179,8,0.85)' : 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '6px', padding: '5px 6px', cursor: 'pointer', display: 'flex' }}>
                     <Star size={12} color="white" fill={item.social_export ? 'white' : 'none'} />
                   </button>
@@ -345,7 +364,7 @@ export default function StudioMedia() {
 
                 {/* Inline event type picker */}
                 {editingTypeId === item.id && (
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', padding: '6px', gap: '3px', overflowY: 'auto', zIndex: 10 }}>
+                  <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', padding: '6px', gap: '3px', overflowY: 'auto', zIndex: 10 }}>
                     {EVENT_TYPES.map(et => (
                       <button key={et.id} onClick={() => changeType(item.id, et.id)}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', background: item.event_type === et.id ? 'rgba(91,191,191,0.18)' : 'rgba(255,255,255,0.04)', border: item.event_type === et.id ? '1px solid rgba(91,191,191,0.5)' : '1px solid rgba(255,255,255,0.07)', borderRadius: '5px', padding: '5px 7px', cursor: 'pointer' }}>
@@ -359,7 +378,7 @@ export default function StudioMedia() {
 
                 {/* Delete confirm */}
                 {confirmDeleteId === item.id && (
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', zIndex: 10 }}>
+                  <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', zIndex: 10 }}>
                     <p style={{ fontSize: '10px', color: 'white', fontWeight: 700, textAlign: 'center', margin: 0 }}>Delete this?</p>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button onClick={() => deleteItem(item.id)}
@@ -374,6 +393,90 @@ export default function StudioMedia() {
           </div>
         )}
       </div>
+
+      {/* Lightbox */}
+      {lightboxItem && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.97)', display: 'flex', flexDirection: 'column' }}
+          onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
+          onTouchEnd={e => {
+            const diff = touchStartX.current - e.changedTouches[0].clientX
+            if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev()
+          }}>
+
+          {/* Top bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '56px 20px 12px', flexShrink: 0 }}>
+            <button onClick={() => setLightboxIndex(null)}
+              style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '10px', padding: '8px', display: 'flex', cursor: 'pointer' }}>
+              <X size={18} color="white" />
+            </button>
+            <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
+              {lightboxIndex !== null ? lightboxIndex + 1 : 0} / {filtered.length}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '4px 10px' }}>
+              {getEmoji(lightboxItem.event_type)
+                ? <span style={{ fontSize: '11px' }}>{getEmoji(lightboxItem.event_type)}</span>
+                : <Tag size={10} color="rgba(255,255,255,0.4)" />}
+              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: lightboxItem.event_type ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)' }}>
+                {getLabel(lightboxItem.event_type)}
+              </span>
+            </div>
+          </div>
+
+          {/* Media */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+            {lightboxItem.type === 'video' ? (
+              <video
+                key={lightboxItem.id}
+                src={lightboxItem.url}
+                controls
+                playsInline
+                style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '8px' }}
+              />
+            ) : (
+              <img
+                key={lightboxItem.id}
+                src={lightboxItem.url}
+                alt={lightboxItem.file_name}
+                style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: '8px' }}
+              />
+            )}
+
+            {/* Prev / Next arrows (desktop) */}
+            {filtered.length > 1 && (
+              <>
+                <button onClick={goPrev}
+                  style={{ position: 'absolute', left: '12px', background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <ChevronLeft size={20} color="white" />
+                </button>
+                <button onClick={goNext}
+                  style={{ position: 'absolute', right: '12px', background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                  <ChevronRight size={20} color="white" />
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Bottom bar — heart + star */}
+          <div style={{ padding: '16px 24px env(safe-area-inset-bottom, 24px)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexShrink: 0 }}>
+            <button onClick={() => toggle(lightboxItem.id, 'show_on_website', lightboxItem.show_on_website)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 20px' }}>
+              <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: lightboxItem.show_on_website ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)', border: lightboxItem.show_on_website ? '1.5px solid rgba(239,68,68,0.5)' : '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}>
+                <Heart size={22} color={lightboxItem.show_on_website ? '#ef4444' : 'rgba(255,255,255,0.4)'} fill={lightboxItem.show_on_website ? '#ef4444' : 'none'} />
+              </div>
+              <span style={{ fontSize: '0.68rem', fontWeight: 600, color: lightboxItem.show_on_website ? '#ef4444' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>Website</span>
+            </button>
+
+            <button onClick={() => toggle(lightboxItem.id, 'social_export', lightboxItem.social_export)}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 20px' }}>
+              <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: lightboxItem.social_export ? 'rgba(234,179,8,0.2)' : 'rgba(255,255,255,0.06)', border: lightboxItem.social_export ? '1.5px solid rgba(234,179,8,0.5)' : '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}>
+                <Star size={22} color={lightboxItem.social_export ? '#eab308' : 'rgba(255,255,255,0.4)'} fill={lightboxItem.social_export ? '#eab308' : 'none'} />
+              </div>
+              <span style={{ fontSize: '0.68rem', fontWeight: 600, color: lightboxItem.social_export ? '#eab308' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>Social</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Toast notification */}
       {toast && (
