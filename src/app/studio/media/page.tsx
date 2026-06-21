@@ -65,6 +65,79 @@ export default function StudioMedia() {
     else fileRef.current?.click()
   }
 
+  async function compressImage(file: File): Promise<{ file: File; type: string }> {
+    return new Promise(resolve => {
+      const img = new window.Image()
+      const url = URL.createObjectURL(file)
+      img.onload = () => {
+        URL.revokeObjectURL(url)
+        const MAX = 1920
+        let { width, height } = img
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX }
+          else { width = Math.round(width * MAX / height); height = MAX }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+        canvas.toBlob(blob => {
+          if (!blob) { resolve({ file, type: file.type }); return }
+          const webp = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' })
+          resolve({ file: webp, type: 'image/webp' })
+        }, 'image/webp', 0.85)
+      }
+      img.onerror = () => { URL.revokeObjectURL(url); resolve({ file, type: file.type }) }
+      img.src = url
+    })
+  }
+
+  async function uploadFile(raw: File, eventType: string | null, onProgress: (pct: number) => void) {
+    const isVideo = raw.type.startsWith('video')
+    let uploadFile = raw
+    let contentType = raw.type
+
+    if (!isVideo) {
+      const compressed = await compressImage(raw)
+      uploadFile = compressed.file
+      contentType = compressed.type
+    }
+
+    // Get signed URL from our server (uses service role — never exposed to client)
+    const signRes = await fetch('/api/studio/media/sign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: uploadFile.name, contentType }),
+    })
+    if (!signRes.ok) return null
+    const { signedUrl, path } = await signRes.json()
+
+    // Upload directly to Supabase Storage with progress tracking
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100)) }
+      xhr.onload = () => xhr.status < 300 ? resolve() : reject()
+      xhr.onerror = reject
+      xhr.open('PUT', signedUrl)
+      xhr.setRequestHeader('Content-Type', contentType)
+      xhr.send(uploadFile)
+    })
+
+    // Save metadata record
+    const recRes = await fetch('/api/studio/media/record', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path,
+        filename: raw.name,
+        type: isVideo ? 'video' : 'photo',
+        event_type: eventType,
+        file_size: uploadFile.size,
+      }),
+    })
+    return recRes.ok ? recRes.json() : null
+  }
+
   async function onFilesChosen(files: FileList | null) {
     if (!files?.length) return
     const chosen = Array.from(files)
@@ -72,14 +145,11 @@ export default function StudioMedia() {
     setUploading(true)
     setUploadProgress(0)
     for (let i = 0; i < chosen.length; i++) {
-      const form = new FormData()
-      form.append('file', chosen[i])
-      if (pendingEventType) form.append('event_type', pendingEventType)
-      const res = await fetch('/api/studio/media/upload', { method: 'POST', body: form })
-      if (res.ok) {
-        const item = await res.json()
-        setMedia(prev => [item, ...prev])
-      }
+      const item = await uploadFile(chosen[i], pendingEventType, pct => {
+        const base = (i / chosen.length) * 100
+        setUploadProgress(Math.round(base + pct / chosen.length))
+      })
+      if (item) setMedia(prev => [item, ...prev])
       setUploadProgress(Math.round(((i + 1) / chosen.length) * 100))
     }
     setUploading(false)
