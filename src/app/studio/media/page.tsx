@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles, Crown, GraduationCap, Cake, Baby, Gem, Briefcase, LucideIcon } from 'lucide-react'
+import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles, Crown, GraduationCap, Cake, Baby, Gem, Briefcase, Images, FolderOpen, FileText, LucideIcon } from 'lucide-react'
 
 type MediaItem = {
   id: string
@@ -82,15 +82,16 @@ export default function StudioMedia() {
       .catch(() => setLoading(false))
   }, [])
 
-  // Auto-generate thumbnails for videos that need them, once media loads
+  // Auto-generate thumbnails once on first load if any videos are missing them
   const autoThumbRan = useRef(false)
   useEffect(() => {
-    if (!loading && videosNeedingThumbs.length > 0 && !generatingThumbs && !autoThumbRan.current) {
-      autoThumbRan.current = true
-      generateMissingThumbnails()
-    }
+    if (loading || generatingThumbs || autoThumbRan.current) return
+    const needingThumbs = media.filter(m => m.type === 'video' && !m.thumbnail_url)
+    if (needingThumbs.length === 0) return
+    autoThumbRan.current = true
+    generateMissingThumbnails()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading])
+  }, [loading, media])
 
   useEffect(() => {
     if (lightboxIndex === null) return
@@ -445,7 +446,7 @@ export default function StudioMedia() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
+    <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '120px' }}>
 
       <input ref={fileRef} type="file" multiple accept="image/*,video/*"
         style={{ display: 'none' }} onChange={e => onFilesChosen(e.target.files)} />
@@ -617,8 +618,9 @@ export default function StudioMedia() {
                     }}
                   />
                 ) : item.type === 'video' ? (
-                  <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    muted playsInline preload="metadata" />
+                  <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Play size={20} color="rgba(255,255,255,0.3)" fill="rgba(255,255,255,0.3)" />
+                  </div>
                 ) : (
                   <Image src={item.url} alt={item.file_name} fill style={{ objectFit: 'cover' }} sizes="200px" />
                 )}
@@ -817,14 +819,19 @@ export default function StudioMedia() {
       )}
 
       {/* Bottom nav */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'rgba(13,15,15,0.97)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '10px 24px env(safe-area-inset-bottom,16px)' }}>
-        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', justifyContent: 'space-around' }}>
-          {[['My Work', '/studio/media'], ['Galleries', '/studio/galleries'], ['Estimates', '/studio/estimates']].map(([label, href]) => (
-            <Link key={href} href={href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', color: href === '/studio/media' ? '#5BBFBF' : 'rgba(255,255,255,0.3)', textDecoration: 'none', fontSize: '10px', fontWeight: 600, letterSpacing: '0.04em' }}>
-              <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: href === '/studio/media' ? '#5BBFBF' : 'transparent' }} />
-              {label}
-            </Link>
-          ))}
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'rgba(13,15,15,0.98)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.1)', paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex' }}>
+          {([['My Work', '/studio/media', Images], ['Galleries', '/studio/galleries', FolderOpen], ['Estimates', '/studio/estimates', FileText]] as [string, string, LucideIcon][]).map(([label, href, Icon]) => {
+            const active = href === '/studio/media'
+            return (
+              <Link key={href} href={href} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', padding: '10px 0', textDecoration: 'none' }}>
+                <div style={{ width: '44px', height: '28px', borderRadius: '14px', background: active ? 'rgba(91,191,191,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s' }}>
+                  <Icon size={18} color={active ? '#5BBFBF' : 'rgba(255,255,255,0.35)'} />
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#5BBFBF' : 'rgba(255,255,255,0.35)', letterSpacing: '0.02em' }}>{label}</span>
+              </Link>
+            )
+          })}
         </div>
       </div>
     </div>
