@@ -42,6 +42,7 @@ export default function StudioMedia() {
   const [media, setMedia]                   = useState<MediaItem[]>([])
   const [loading, setLoading]               = useState(true)
   const [filter, setFilter]                 = useState<Filter>('all')
+  const [eventFilter, setEventFilter]       = useState<string | null>(null)
   const [pendingFiles, setPendingFiles]     = useState<File[]>([])
   const [toast, setToast]                   = useState<string | null>(null)
   const [pendingSource, setPendingSource]   = useState<'file' | 'camera' | null>(null)
@@ -61,10 +62,14 @@ export default function StudioMedia() {
   const touchStartX  = useRef(0)
 
   const filtered = media.filter(m => {
-    if (filter === 'website') return m.show_on_website
-    if (filter === 'social')  return m.social_export
+    if (filter === 'website' && !m.show_on_website) return false
+    if (filter === 'social'  && !m.social_export)   return false
+    if (eventFilter && m.event_type !== eventFilter) return false
     return true
   })
+
+  // Only show event type pills that have at least one media item
+  const activeEventTypes = EVENT_TYPES.filter(et => media.some(m => m.event_type === et.id))
 
   const knownFingerprints = new Set(media.map(m => m.file_fingerprint).filter(Boolean))
   const lightboxItem = lightboxIndex !== null ? filtered[lightboxIndex] : null
@@ -438,7 +443,7 @@ export default function StudioMedia() {
         style={{ display: 'none' }} onChange={e => onFilesChosen(e.target.files)} />
 
       {/* Header */}
-      <div style={{ padding: '56px 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 28px) 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -531,8 +536,8 @@ export default function StudioMedia() {
             </div>
           )}
 
-          {/* Filter tabs */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {/* Status filter tabs */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: activeEventTypes.length > 0 ? '8px' : '0' }}>
             {(['all', 'website', 'social'] as Filter[]).map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 13px', borderRadius: '999px', border: filter === f ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: filter === f ? 'rgba(91,191,191,0.12)' : 'transparent', color: filter === f ? '#5BBFBF' : 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
@@ -542,6 +547,23 @@ export default function StudioMedia() {
               </button>
             ))}
           </div>
+
+          {/* Album (event type) filter row */}
+          {activeEventTypes.length > 0 && (
+            <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '2px', scrollbarWidth: 'none' }}>
+              {activeEventTypes.map(et => {
+                const count = media.filter(m => m.event_type === et.id).length
+                const active = eventFilter === et.id
+                return (
+                  <button key={et.id} onClick={() => setEventFilter(active ? null : et.id)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 12px', borderRadius: '999px', border: `1px solid ${active ? et.color + '88' : 'rgba(255,255,255,0.1)'}`, background: active ? et.bg : 'transparent', color: active ? et.color : 'rgba(255,255,255,0.35)', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'all 0.15s ease' }}>
+                    <et.icon size={10} color={active ? et.color : 'rgba(255,255,255,0.35)'} />
+                    {et.label} ({count})
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
 
