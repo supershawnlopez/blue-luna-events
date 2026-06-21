@@ -134,7 +134,7 @@ export default function StudioMedia() {
     })
   }
 
-  function captureVideoFrame(video: HTMLVideoElement): Promise<File | null> {
+  async function captureVideoFrame(video: HTMLVideoElement): Promise<File | null> {
     return new Promise(resolve => {
       try {
         const W = Math.min(video.videoWidth || 640, 640)
@@ -158,7 +158,9 @@ export default function StudioMedia() {
       const url = URL.createObjectURL(file)
       video.muted = true
       video.playsInline = true
+      video.preload = 'auto'
       let done = false
+      let seeked = false
 
       const finish = async (v: HTMLVideoElement) => {
         if (done) return; done = true
@@ -167,22 +169,34 @@ export default function StudioMedia() {
       }
 
       video.onseeked = () => finish(video)
-      video.onloadedmetadata = () => { video.currentTime = Math.min(1, isFinite(video.duration) ? video.duration : 0) }
-      video.oncanplay = () => { if (!done && video.currentTime === 0) finish(video) }
+      video.onloadedmetadata = () => {
+        seeked = true
+        // Seek to 2s or 15% of video, whichever is less — gives better content than frame 1
+        video.currentTime = isFinite(video.duration) && video.duration > 0
+          ? Math.min(2, video.duration * 0.15)
+          : 0
+      }
+      // Fallback: if onseeked never fires (common on iOS), capture after brief wait
+      video.onloadeddata = () => {
+        if (!seeked) setTimeout(() => { if (!done) finish(video) }, 800)
+      }
       video.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
-      setTimeout(() => { if (!done) finish(video) }, 6000)
+      setTimeout(() => { if (!done) finish(video) }, 8000)
       video.src = url
       video.load()
     })
   }
 
   async function generateThumbFromUrl(videoUrl: string): Promise<File | null> {
-    return new Promise(resolve => {
+    // Try crossOrigin canvas approach first (works when Supabase sends CORS headers)
+    const canvasResult = await new Promise<File | null>(resolve => {
       const video = document.createElement('video')
       video.muted = true
       video.playsInline = true
       video.crossOrigin = 'anonymous'
+      video.preload = 'metadata'
       let done = false
+      let seeked = false
 
       const finish = async (v: HTMLVideoElement) => {
         if (done) return; done = true
@@ -190,13 +204,35 @@ export default function StudioMedia() {
       }
 
       video.onseeked = () => finish(video)
-      video.onloadedmetadata = () => { video.currentTime = Math.min(1, isFinite(video.duration) ? video.duration : 0) }
-      video.oncanplay = () => { if (!done && video.currentTime === 0) finish(video) }
+      video.onloadedmetadata = () => {
+        seeked = true
+        video.currentTime = isFinite(video.duration) && video.duration > 0
+          ? Math.min(3, video.duration * 0.15)
+          : 0
+      }
+      video.onloadeddata = () => {
+        if (!seeked) setTimeout(() => { if (!done) finish(video) }, 800)
+      }
       video.onerror = () => resolve(null)
-      setTimeout(() => { if (!done) finish(video) }, 8000)
+      // Shorter timeout — if CORS fails it errors immediately
+      setTimeout(() => { if (!done) resolve(null) }, 10000)
       video.src = videoUrl
       video.load()
     })
+
+    if (canvasResult) return canvasResult
+
+    // CORS canvas failed — try downloading as blob (local blob URL has no CORS restriction)
+    try {
+      const resp = await fetch(videoUrl, { cache: 'no-store' })
+      if (!resp.ok) return null
+      const blob = await resp.blob()
+      // Skip if too large to keep in memory (over 150MB)
+      if (blob.size > 150 * 1024 * 1024) return null
+      return await generateVideoThumbnail(new File([blob], 'video.mp4', { type: blob.type }))
+    } catch {
+      return null
+    }
   }
 
   async function uploadThumb(thumb: File): Promise<string | null> {
@@ -466,9 +502,22 @@ export default function StudioMedia() {
                 onClick={() => setLightboxIndex(idx)}
                 style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', background: '#1A1A1A', cursor: 'pointer' }}>
 
-                {/* Thumbnail image for videos, direct image for photos */}
+                {/* Thumbnail for videos, photo for images */}
                 {item.type === 'video' && item.thumbnail_url ? (
-                  <Image src={item.thumbnail_url} alt={item.file_name} fill style={{ objectFit: 'cover' }} sizes="200px" unoptimized />
+                  <img src={item.thumbnail_url} alt={item.file_name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    onError={e => {
+                      // Thumbnail URL broken — fall back to the video element
+                      const el = e.currentTarget
+                      const vid = document.createElement('video')
+                      vid.src = item.url
+                      vid.muted = true
+                      vid.playsInline = true
+                      vid.setAttribute('preload', 'metadata')
+                      Object.assign(vid.style, { width: '100%', height: '100%', objectFit: 'cover' })
+                      el.parentNode?.replaceChild(vid, el)
+                    }}
+                  />
                 ) : item.type === 'video' ? (
                   <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     muted playsInline preload="metadata" />
@@ -582,6 +631,7 @@ export default function StudioMedia() {
                 controls
                 playsInline
                 muted
+                poster={lightboxItem.thumbnail_url || undefined}
                 style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '8px' }}
               />
             ) : (
