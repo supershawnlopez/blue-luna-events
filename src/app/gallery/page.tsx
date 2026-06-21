@@ -124,7 +124,7 @@ export default function Gallery() {
                     {m.thumbnail_url
                       ? <img src={m.thumbnail_url} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
                       : <video src={m.url} muted playsInline preload="metadata"
-                          ref={el => { if (el) el.currentTime = 3 }}
+                          onLoadedMetadata={e => { e.currentTarget.currentTime = 3 }}
                           style={{ width: '100%', display: 'block', objectFit: 'cover', minHeight: '240px' }} />
                     }
                     {/* Modern play button */}

@@ -180,76 +180,55 @@ export default function StudioMedia() {
       video.playsInline = true
       video.preload = 'auto'
       let done = false
-      let seeked = false
 
       const finish = async (v: HTMLVideoElement) => {
-        if (done) return; done = true
+        if (done) return
+        done = true
         URL.revokeObjectURL(url)
         resolve(await captureVideoFrame(v))
       }
 
       video.onseeked = () => finish(video)
+
       video.onloadedmetadata = () => {
-        seeked = true
-        // Seek to 2s or 15% of video, whichever is less — gives better content than frame 1
-        video.currentTime = isFinite(video.duration) && video.duration > 0
-          ? Math.min(2, video.duration * 0.15)
+        const seekTo = isFinite(video.duration) && video.duration > 3
+          ? 3
+          : isFinite(video.duration) && video.duration > 0
+          ? video.duration * 0.2
           : 0
+        video.currentTime = seekTo
       }
-      // Fallback: if onseeked never fires (common on iOS), capture after brief wait
-      video.onloadeddata = () => {
-        if (!seeked) setTimeout(() => { if (!done) finish(video) }, 800)
+
+      // If onseeked never fires (some iOS + HEVC combos), play briefly then capture
+      video.oncanplay = () => {
+        setTimeout(async () => {
+          if (!done) {
+            // Try playing 1 frame worth then capture
+            try { await video.play() } catch { /* ignore */ }
+            setTimeout(() => { video.pause(); finish(video) }, 400)
+          }
+        }, 2500)
       }
+
       video.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
-      setTimeout(() => { if (!done) finish(video) }, 8000)
+      setTimeout(() => { if (!done) { URL.revokeObjectURL(url); resolve(null) } }, 12000)
       video.src = url
       video.load()
     })
   }
 
   async function generateThumbFromUrl(videoUrl: string): Promise<File | null> {
-    // Try crossOrigin canvas approach first (works when Supabase sends CORS headers)
-    const canvasResult = await new Promise<File | null>(resolve => {
-      const video = document.createElement('video')
-      video.muted = true
-      video.playsInline = true
-      video.crossOrigin = 'anonymous'
-      video.preload = 'metadata'
-      let done = false
-      let seeked = false
-
-      const finish = async (v: HTMLVideoElement) => {
-        if (done) return; done = true
-        resolve(await captureVideoFrame(v))
-      }
-
-      video.onseeked = () => finish(video)
-      video.onloadedmetadata = () => {
-        seeked = true
-        video.currentTime = isFinite(video.duration) && video.duration > 0
-          ? Math.min(3, video.duration * 0.15)
-          : 0
-      }
-      video.onloadeddata = () => {
-        if (!seeked) setTimeout(() => { if (!done) finish(video) }, 800)
-      }
-      video.onerror = () => resolve(null)
-      // Shorter timeout — if CORS fails it errors immediately
-      setTimeout(() => { if (!done) resolve(null) }, 10000)
-      video.src = videoUrl
-      video.load()
-    })
-
-    if (canvasResult) return canvasResult
-
-    // CORS canvas failed — try downloading as blob (local blob URL has no CORS restriction)
+    // Fetch only the first 8MB via Range header — enough for most video containers
+    // to include metadata + early frames, avoids downloading the full file
     try {
-      const resp = await fetch(videoUrl, { cache: 'no-store' })
-      if (!resp.ok) return null
+      const resp = await fetch(videoUrl, {
+        headers: { Range: 'bytes=0-8388607' },
+        cache: 'no-store',
+      })
+      if (!resp.ok && resp.status !== 206) return null
       const blob = await resp.blob()
-      // Skip if too large to keep in memory (over 150MB)
-      if (blob.size > 150 * 1024 * 1024) return null
-      return await generateVideoThumbnail(new File([blob], 'video.mp4', { type: blob.type }))
+      const file = new File([blob], 'video.mp4', { type: blob.type || 'video/mp4' })
+      return await generateVideoThumbnail(file)
     } catch {
       return null
     }
@@ -609,11 +588,11 @@ export default function StudioMedia() {
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : item.type === 'video' ? (
-                  /* No stored thumbnail — render video element directly so browser shows real frame */
+                  /* No stored thumbnail — video element seeks to 3s via onLoadedMetadata */
                   <video
                     src={item.url}
                     muted playsInline preload="metadata"
-                    ref={el => { if (el) el.currentTime = 3 }}
+                    onLoadedMetadata={e => { e.currentTarget.currentTime = 3 }}
                     style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : (
