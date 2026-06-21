@@ -41,23 +41,24 @@ function mediaPublicUrl(path: string) {
 
 function ThumbnailCapture({ src, onCaptured }: { src: string; onCaptured: (file: File) => Promise<void> }) {
   const done = useRef(false)
-  // Cache-bust so we bypass any non-CORS cached response from older page loads
   const captureSrc = `${src}${src.includes('?') ? '&' : '?'}__th=1`
   return (
     <video
       src={captureSrc}
       crossOrigin="anonymous"
       autoPlay muted playsInline preload="auto"
-      // Keep off-screen but rendered so iOS fully decodes frames
-      style={{ position: 'fixed', top: '-200px', left: '-200px', width: '2px', height: '2px', opacity: 0.01, pointerEvents: 'none', zIndex: -1 }}
+      // visibility:hidden keeps the element rendered (browser decodes real frames) but invisible.
+      // Must be in the viewport at real size — off-screen or sub-pixel elements get GPU-optimized
+      // away on iOS/Safari, leaving drawImage with an empty texture (produces white WebP).
+      style={{ position: 'fixed', bottom: '80px', right: '8px', width: '80px', height: '142px', visibility: 'hidden', pointerEvents: 'none' }}
       onTimeUpdate={async e => {
         const v = e.currentTarget
-        const target = isFinite(v.duration) && v.duration > 3 ? 2.5
-          : isFinite(v.duration) && v.duration > 0 ? v.duration * 0.5 : 2.5
+        // Capture at 5s — past any camera fade-in or walking-up footage
+        const target = isFinite(v.duration) && v.duration > 5 ? 5
+          : isFinite(v.duration) && v.duration > 1 ? v.duration * 0.6 : 5
         if (done.current || v.currentTime < target) return
         done.current = true
         v.pause()
-        // Two rAF passes: ensure the GPU has painted the decoded frame before canvas read
         await new Promise<void>(r => { requestAnimationFrame(() => { requestAnimationFrame(() => r()) }) })
         if (v.readyState < 2 || v.videoWidth === 0) return
         try {
@@ -70,7 +71,7 @@ function ThumbnailCapture({ src, onCaptured }: { src: string; onCaptured: (file:
           ctx.drawImage(v, 0, 0, W, H)
           const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/webp', 0.82))
           if (blob) await onCaptured(new File([blob], 'thumb.webp', { type: 'image/webp' }))
-        } catch { /* CORS or SecurityError — fail silently */ }
+        } catch { /* CORS or SecurityError */ }
       }}
     />
   )
