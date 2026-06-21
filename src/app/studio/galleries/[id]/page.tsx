@@ -141,7 +141,7 @@ export default function GalleryDetail() {
                 <ChevronLeft size={18} />
               </Link>
               <div style={{ minWidth: 0 }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: 0 }}>Gallery</p>
+                <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.2em', color: '#5BBFBF', textTransform: 'uppercase', margin: 0 }}>Blue Luna</p>
                 <h1 style={{ fontSize: '1.2rem', fontWeight: 600, color: 'white', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{gallery.display_name}</h1>
               </div>
             </div>
@@ -313,7 +313,7 @@ export default function GalleryDetail() {
       )}
 
       {/* Bottom nav */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: 'rgba(13,15,15,0.97)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '10px 24px env(safe-area-inset-bottom,10px)' }}>
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 40, background: 'rgba(13,15,15,0.97)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '10px 24px env(safe-area-inset-bottom,16px)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', justifyContent: 'space-around' }}>
           {[['My Work', '/studio/media'], ['Galleries', '/studio/galleries'], ['Estimates', '/studio/estimates']].map(([label, href]) => (
             <Link key={href} href={href} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px', color: href === '/studio/galleries' ? '#5BBFBF' : 'rgba(255,255,255,0.3)', textDecoration: 'none', fontSize: '10px', fontWeight: 600, letterSpacing: '0.04em' }}>

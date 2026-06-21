@@ -13,7 +13,6 @@ export default function StudioLayout({ children }: { children: React.ReactNode }
       color: 'white',
       fontFamily: 'Inter, -apple-system, sans-serif',
       WebkitFontSmoothing: 'antialiased',
-      overflowX: 'hidden',
     }}>
       {children}
     </div>
