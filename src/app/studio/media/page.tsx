@@ -36,8 +36,7 @@ export default function StudioMedia() {
   const [loading, setLoading]               = useState(true)
   const [filter, setFilter]                 = useState<Filter>('all')
   const [pendingFiles, setPendingFiles]     = useState<File[]>([])
-  const [dupeFiles, setDupeFiles]           = useState<File[]>([])
-  const [showDupeSheet, setShowDupeSheet]   = useState(false)
+  const [toast, setToast]                   = useState<string | null>(null)
   const [pendingSource, setPendingSource]   = useState<'file' | 'camera' | null>(null)
   const [pendingEventType, setPendingEventType] = useState<string | null>(null)
   const [showTypeSheet, setShowTypeSheet]   = useState(false)
@@ -147,28 +146,33 @@ export default function StudioMedia() {
     return recRes.ok ? recRes.json() : null
   }
 
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 4000)
+  }
+
   async function onFilesChosen(files: FileList | null) {
     if (!files?.length) return
     const all = Array.from(files)
     const dupes = all.filter(f => knownFingerprints.has(fingerprint(f)))
     const fresh = all.filter(f => !knownFingerprints.has(fingerprint(f)))
 
-    if (dupes.length > 0) {
-      setPendingFiles(fresh)
-      setDupeFiles(dupes)
-      setShowDupeSheet(true)
+    if (dupes.length > 0 && fresh.length === 0) {
+      showToast(`All ${dupes.length} selected file${dupes.length !== 1 ? 's have' : ' has'} already been uploaded — nothing new to add.`)
+      if (fileRef.current)   fileRef.current.value = ''
+      if (cameraRef.current) cameraRef.current.value = ''
       return
     }
-    await runUploads(all)
+
+    if (dupes.length > 0) {
+      showToast(`${dupes.length} duplicate${dupes.length !== 1 ? 's' : ''} skipped — uploading ${fresh.length} new file${fresh.length !== 1 ? 's' : ''}.`)
+    }
+
+    await runUploads(fresh)
   }
 
   async function runUploads(chosen: File[]) {
-    setShowDupeSheet(false)
-    if (chosen.length === 0) {
-      setPendingFiles([])
-      setDupeFiles([])
-      return
-    }
+    if (chosen.length === 0) return
     setPendingFiles(chosen)
     setUploading(true)
     setUploadProgress(0)
@@ -182,7 +186,6 @@ export default function StudioMedia() {
     }
     setUploading(false)
     setPendingFiles([])
-    setDupeFiles([])
     setPendingEventType(null)
     setPendingSource(null)
     setUploadProgress(0)
@@ -372,36 +375,12 @@ export default function StudioMedia() {
         )}
       </div>
 
-      {/* Duplicate detection sheet */}
-      {showDupeSheet && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)' }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '20px 20px 0 0', padding: '20px 20px 44px' }}>
-            <div style={{ width: '32px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 16px' }} />
-            <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 8px' }}>
-              {dupeFiles.length === 1 ? '1 photo already uploaded' : `${dupeFiles.length} photos already uploaded`}
-            </p>
-            <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '0 0 24px', lineHeight: 1.5 }}>
-              {pendingFiles.length > 0
-                ? `Skipping ${dupeFiles.length} duplicate${dupeFiles.length !== 1 ? 's' : ''}. ${pendingFiles.length} new file${pendingFiles.length !== 1 ? 's' : ''} ready to upload.`
-                : `All selected files have already been uploaded.`}
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {pendingFiles.length > 0 && (
-                <button onClick={() => runUploads(pendingFiles)}
-                  style={{ width: '100%', background: '#5BBFBF', border: 'none', borderRadius: '12px', padding: '14px', color: '#0D0F0F', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' }}>
-                  Upload {pendingFiles.length} New File{pendingFiles.length !== 1 ? 's' : ''}
-                </button>
-              )}
-              <button onClick={() => runUploads([...pendingFiles, ...dupeFiles])}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px', color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer' }}>
-                Upload All Anyway
-              </button>
-              <button onClick={() => { setShowDupeSheet(false); setPendingFiles([]); setDupeFiles([]) }}
-                style={{ width: '100%', background: 'transparent', border: 'none', padding: '10px', color: 'rgba(255,255,255,0.3)', fontSize: '0.82rem', cursor: 'pointer' }}>
-                Cancel
-              </button>
-            </div>
+      {/* Toast notification */}
+      {toast && (
+        <div style={{ position: 'fixed', top: '72px', left: '50%', transform: 'translateX(-50%)', zIndex: 60, maxWidth: '340px', width: 'calc(100% - 40px)' }}>
+          <div style={{ background: '#1F1F1F', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#5BBFBF', flexShrink: 0 }} />
+            <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.85)', margin: 0, lineHeight: 1.4 }}>{toast}</p>
           </div>
         </div>
       )}
