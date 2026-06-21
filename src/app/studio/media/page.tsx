@@ -62,7 +62,7 @@ export default function StudioMedia() {
   }
 
   function fingerprint(file: File) {
-    return `${file.name}::${file.size}::${file.lastModified}`
+    return `${file.name}::${file.size}`
   }
 
   function selectType(eventType: string | null) {
@@ -140,7 +140,7 @@ export default function StudioMedia() {
         type: isVideo ? 'video' : 'photo',
         event_type: eventType,
         file_size: uploadFile.size,
-        file_fingerprint: fingerprint(raw),
+        file_fingerprint: `${raw.name}::${raw.size}`,
       }),
     })
     return recRes.ok ? recRes.json() : null
