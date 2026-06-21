@@ -82,6 +82,16 @@ export default function StudioMedia() {
       .catch(() => setLoading(false))
   }, [])
 
+  // Auto-generate thumbnails for videos that need them, once media loads
+  const autoThumbRan = useRef(false)
+  useEffect(() => {
+    if (!loading && videosNeedingThumbs.length > 0 && !generatingThumbs && !autoThumbRan.current) {
+      autoThumbRan.current = true
+      generateMissingThumbnails()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading])
+
   useEffect(() => {
     if (lightboxIndex === null) return
     const len = filtered.length
@@ -695,7 +705,7 @@ export default function StudioMedia() {
             if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev()
           }}>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '56px 20px 12px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(env(safe-area-inset-top, 44px) + 12px) 20px 12px', flexShrink: 0 }}>
             <button onClick={() => setLightboxIndex(null)}
               style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '10px', padding: '8px', display: 'flex', cursor: 'pointer' }}>
               <X size={18} color="white" />

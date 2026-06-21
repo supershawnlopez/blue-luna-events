@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { X, Menu, Instagram, Facebook, ArrowRight } from 'lucide-react'
@@ -13,8 +14,11 @@ const LINKS = [
 ]
 
 export default function Nav() {
+  const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+
+  if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery')) return null
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)
