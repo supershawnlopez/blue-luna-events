@@ -133,7 +133,7 @@ export default function GalleryDetail() {
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
 
       {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 28px) 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 72px + 20px) 20px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -249,7 +249,7 @@ export default function GalleryDetail() {
       {showAddSheet && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.85)' }} />
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top, 44px) + 12px)' }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', paddingTop: 'calc(env(safe-area-inset-top, 0px) + 72px + 12px)' }}>
 
             {/* Sheet header */}
             <div style={{ background: '#161616', padding: '16px 20px 12px', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>

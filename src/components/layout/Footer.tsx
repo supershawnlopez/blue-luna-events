@@ -7,7 +7,7 @@ import { Instagram, Facebook, Phone, Mail, MapPin } from 'lucide-react'
 
 export default function Footer() {
   const pathname = usePathname()
-  if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery')) return null
+  if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/')) return null
   return (
     <footer style={{ background: '#0D0F0F', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
       <div className="container">

@@ -61,7 +61,7 @@ export default function StudioGalleries() {
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
 
       {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 28px) 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 72px + 20px) 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link href="/studio" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>
