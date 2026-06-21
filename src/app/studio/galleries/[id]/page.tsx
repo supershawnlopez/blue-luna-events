@@ -67,7 +67,7 @@ export default function GalleryDetail() {
   async function addSelected() {
     if (!gallery || adding) return
     const existingIds = new Set(gallery.media.map(m => m.id))
-    const toAdd = [...selected].filter(id => !existingIds.has(id))
+    const toAdd = Array.from(selected).filter(id => !existingIds.has(id))
     const toRemove = gallery.media.filter(m => !selected.has(m.id))
 
     setAdding(true)
