@@ -54,6 +54,8 @@ export default function StudioMedia() {
   const [lightboxIndex, setLightboxIndex]   = useState<number | null>(null)
   const [generatingThumbs, setGeneratingThumbs] = useState(false)
   const [thumbProgress, setThumbProgress]   = useState({ done: 0, total: 0 })
+  const [remainingFiles, setRemainingFiles] = useState<File[]>([])
+  const [remainingEventType, setRemainingEventType] = useState<string | null>(null)
   const fileRef      = useRef<HTMLInputElement>(null)
   const cameraRef    = useRef<HTMLInputElement>(null)
   const touchStartX  = useRef(0)
@@ -351,14 +353,20 @@ export default function StudioMedia() {
 
     let freshVideos = fresh.filter(f => f.type.startsWith('video'))
     let freshPhotos = fresh.filter(f => !f.type.startsWith('video'))
+    const skipped: File[] = []
 
     if (freshVideos.length > MAX_VIDEOS) {
-      notices.push(`only ${MAX_VIDEOS} videos at a time — first ${MAX_VIDEOS} queued`)
+      skipped.push(...freshVideos.slice(MAX_VIDEOS))
       freshVideos = freshVideos.slice(0, MAX_VIDEOS)
     }
     if (freshPhotos.length > MAX_PHOTOS) {
-      notices.push(`only ${MAX_PHOTOS} photos at a time — first ${MAX_PHOTOS} queued`)
+      skipped.push(...freshPhotos.slice(MAX_PHOTOS))
       freshPhotos = freshPhotos.slice(0, MAX_PHOTOS)
+    }
+
+    if (skipped.length > 0) {
+      setRemainingFiles(skipped)
+      setRemainingEventType(pendingEventType)
     }
 
     if (notices.length > 0) showToast(notices.map((n, i) => i === 0 ? n.charAt(0).toUpperCase() + n.slice(1) : n).join(', ') + '.')
@@ -372,13 +380,14 @@ export default function StudioMedia() {
     await runUploads(fresh)
   }
 
-  async function runUploads(chosen: File[]) {
+  async function runUploads(chosen: File[], eventTypeOverride?: string | null) {
     if (chosen.length === 0) return
+    const etype = eventTypeOverride !== undefined ? eventTypeOverride : pendingEventType
     setPendingFiles(chosen)
     setUploading(true)
     setUploadProgress(0)
     for (let i = 0; i < chosen.length; i++) {
-      const item = await uploadFile(chosen[i], pendingEventType, pct => {
+      const item = await uploadFile(chosen[i], etype, pct => {
         const base = (i / chosen.length) * 100
         setUploadProgress(Math.round(base + pct / chosen.length))
       })
@@ -462,6 +471,38 @@ export default function StudioMedia() {
               <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px' }}>
                 <div style={{ height: '100%', width: `${uploadProgress}%`, background: '#5BBFBF', borderRadius: '99px', transition: 'width 0.3s ease' }} />
               </div>
+            </div>
+          )}
+
+          {/* Remaining files banner */}
+          {remainingFiles.length > 0 && !uploading && (
+            <div style={{ background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.25)', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '0.76rem', fontWeight: 700, color: '#FB923C' }}>
+                  {remainingFiles.length} file{remainingFiles.length !== 1 ? 's' : ''} waiting to upload
+                </span>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    onClick={() => {
+                      const files = remainingFiles
+                      const etype = remainingEventType
+                      setRemainingFiles([])
+                      setRemainingEventType(null)
+                      runUploads(files, etype)
+                    }}
+                    style={{ background: '#FB923C', border: 'none', borderRadius: '7px', padding: '5px 11px', color: '#0D0F0F', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}>
+                    Upload Now
+                  </button>
+                  <button onClick={() => { setRemainingFiles([]); setRemainingEventType(null) }}
+                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '5px 8px', color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', cursor: 'pointer' }}>
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5, wordBreak: 'break-all' }}>
+                {remainingFiles.slice(0, 4).map(f => f.name).join(', ')}
+                {remainingFiles.length > 4 ? ` +${remainingFiles.length - 4} more` : ''}
+              </p>
             </div>
           )}
 
