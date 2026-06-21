@@ -36,6 +36,8 @@ export default function StudioMedia() {
   const [loading, setLoading]               = useState(true)
   const [filter, setFilter]                 = useState<Filter>('all')
   const [pendingFiles, setPendingFiles]     = useState<File[]>([])
+  const [pendingSource, setPendingSource]   = useState<'file' | 'camera' | null>(null)
+  const [pendingEventType, setPendingEventType] = useState<string | null>(null)
   const [showTypeSheet, setShowTypeSheet]   = useState(false)
   const [uploading, setUploading]           = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -51,28 +53,39 @@ export default function StudioMedia() {
       .catch(() => setLoading(false))
   }, [])
 
-  function onFilesChosen(files: FileList | null) {
-    if (!files?.length) return
-    setPendingFiles(Array.from(files))
+  function openTypeSheet(source: 'file' | 'camera') {
+    setPendingSource(source)
     setShowTypeSheet(true)
   }
 
-  async function startUpload(eventType: string) {
+  function selectType(eventType: string | null) {
+    setPendingEventType(eventType)
     setShowTypeSheet(false)
+    if (pendingSource === 'camera') cameraRef.current?.click()
+    else fileRef.current?.click()
+  }
+
+  async function onFilesChosen(files: FileList | null) {
+    if (!files?.length) return
+    const chosen = Array.from(files)
+    setPendingFiles(chosen)
     setUploading(true)
-    for (let i = 0; i < pendingFiles.length; i++) {
+    setUploadProgress(0)
+    for (let i = 0; i < chosen.length; i++) {
       const form = new FormData()
-      form.append('file', pendingFiles[i])
-      form.append('event_type', eventType)
+      form.append('file', chosen[i])
+      if (pendingEventType) form.append('event_type', pendingEventType)
       const res = await fetch('/api/studio/media/upload', { method: 'POST', body: form })
       if (res.ok) {
         const item = await res.json()
         setMedia(prev => [item, ...prev])
       }
-      setUploadProgress(Math.round(((i + 1) / pendingFiles.length) * 100))
+      setUploadProgress(Math.round(((i + 1) / chosen.length) * 100))
     }
     setUploading(false)
     setPendingFiles([])
+    setPendingEventType(null)
+    setPendingSource(null)
     setUploadProgress(0)
     if (fileRef.current)   fileRef.current.value = ''
     if (cameraRef.current) cameraRef.current.value = ''
@@ -131,11 +144,11 @@ export default function StudioMedia() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={() => cameraRef.current?.click()}
+              <button onClick={() => openTypeSheet('camera')}
                 style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '9px 13px', color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
                 <Camera size={14} /> Shoot
               </button>
-              <button onClick={() => fileRef.current?.click()}
+              <button onClick={() => openTypeSheet('file')}
                 style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#5BBFBF', border: 'none', borderRadius: '10px', padding: '9px 13px', color: '#0D0F0F', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
                 <Upload size={14} /> Upload
               </button>
@@ -145,7 +158,7 @@ export default function StudioMedia() {
           {uploading && (
             <div style={{ marginBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Uploading {pendingFiles.length} file{pendingFiles.length !== 1 ? 's' : ''}…</span>
+                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Uploading…</span>
                 <span style={{ fontSize: '0.75rem', color: '#5BBFBF', fontWeight: 700 }}>{uploadProgress}%</span>
               </div>
               <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px' }}>
@@ -268,17 +281,21 @@ export default function StudioMedia() {
             <div style={{ width: '32px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 16px' }} />
             <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 4px' }}>What type of event?</p>
             <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', margin: '0 0 16px' }}>
-              {pendingFiles.length} file{pendingFiles.length !== 1 ? 's' : ''} ready to upload
+              Tag your photos so they show in the right gallery filter
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
               {EVENT_TYPES.map(et => (
-                <button key={et.id} onClick={() => startUpload(et.id)}
+                <button key={et.id} onClick={() => selectType(et.id)}
                   style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '13px 14px', cursor: 'pointer' }}>
                   <span style={{ fontSize: '18px' }}>{et.emoji}</span>
                   <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'white' }}>{et.label}</span>
                 </button>
               ))}
             </div>
+            <button onClick={() => selectType(null)}
+              style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px', color: 'rgba(255,255,255,0.35)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+              Skip — upload without tagging
+            </button>
           </div>
         </div>
       )}
