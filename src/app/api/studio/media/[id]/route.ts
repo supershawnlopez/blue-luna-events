@@ -7,7 +7,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
   const body = await req.json()
-  const allowed = ['show_on_website', 'social_export', 'event_type', 'caption']
+  const allowed = ['show_on_website', 'social_export', 'event_type', 'caption', 'thumbnail_url']
   const update = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)))
 
   const { data, error } = await supabase

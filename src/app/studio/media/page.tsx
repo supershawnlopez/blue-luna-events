@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag } from 'lucide-react'
+import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles } from 'lucide-react'
 
 type MediaItem = {
   id: string
   url: string
+  thumbnail_url?: string | null
   type: 'photo' | 'video'
   event_type?: string | null
   show_on_website: boolean
@@ -32,6 +33,10 @@ type Filter = 'all' | 'website' | 'social'
 function getLabel(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.label ?? 'Tag it' }
 function getEmoji(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.emoji ?? null }
 
+function mediaPublicUrl(path: string) {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${path}`
+}
+
 export default function StudioMedia() {
   const [media, setMedia]                   = useState<MediaItem[]>([])
   const [loading, setLoading]               = useState(true)
@@ -46,6 +51,8 @@ export default function StudioMedia() {
   const [editingTypeId, setEditingTypeId]   = useState<string | null>(null)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [lightboxIndex, setLightboxIndex]   = useState<number | null>(null)
+  const [generatingThumbs, setGeneratingThumbs] = useState(false)
+  const [thumbProgress, setThumbProgress]   = useState({ done: 0, total: 0 })
   const fileRef      = useRef<HTMLInputElement>(null)
   const cameraRef    = useRef<HTMLInputElement>(null)
   const touchStartX  = useRef(0)
@@ -58,6 +65,7 @@ export default function StudioMedia() {
 
   const knownFingerprints = new Set(media.map(m => m.file_fingerprint).filter(Boolean))
   const lightboxItem = lightboxIndex !== null ? filtered[lightboxIndex] : null
+  const videosNeedingThumbs = media.filter(m => m.type === 'video' && !m.thumbnail_url)
 
   useEffect(() => {
     fetch('/api/studio/media')
@@ -126,15 +134,129 @@ export default function StudioMedia() {
     })
   }
 
+  function captureVideoFrame(video: HTMLVideoElement): Promise<File | null> {
+    return new Promise(resolve => {
+      try {
+        const W = Math.min(video.videoWidth || 640, 640)
+        const H = video.videoHeight ? Math.round(video.videoHeight * W / Math.max(video.videoWidth, 1)) : 360
+        const canvas = document.createElement('canvas')
+        canvas.width = W; canvas.height = H
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { resolve(null); return }
+        ctx.drawImage(video, 0, 0, W, H)
+        canvas.toBlob(
+          blob => resolve(blob ? new File([blob], 'thumb.webp', { type: 'image/webp' }) : null),
+          'image/webp', 0.82
+        )
+      } catch { resolve(null) }
+    })
+  }
+
+  async function generateVideoThumbnail(file: File): Promise<File | null> {
+    return new Promise(resolve => {
+      const video = document.createElement('video')
+      const url = URL.createObjectURL(file)
+      video.muted = true
+      video.playsInline = true
+      let done = false
+
+      const finish = async (v: HTMLVideoElement) => {
+        if (done) return; done = true
+        URL.revokeObjectURL(url)
+        resolve(await captureVideoFrame(v))
+      }
+
+      video.onseeked = () => finish(video)
+      video.onloadedmetadata = () => { video.currentTime = Math.min(1, isFinite(video.duration) ? video.duration : 0) }
+      video.oncanplay = () => { if (!done && video.currentTime === 0) finish(video) }
+      video.onerror = () => { URL.revokeObjectURL(url); resolve(null) }
+      setTimeout(() => { if (!done) finish(video) }, 6000)
+      video.src = url
+      video.load()
+    })
+  }
+
+  async function generateThumbFromUrl(videoUrl: string): Promise<File | null> {
+    return new Promise(resolve => {
+      const video = document.createElement('video')
+      video.muted = true
+      video.playsInline = true
+      video.crossOrigin = 'anonymous'
+      let done = false
+
+      const finish = async (v: HTMLVideoElement) => {
+        if (done) return; done = true
+        resolve(await captureVideoFrame(v))
+      }
+
+      video.onseeked = () => finish(video)
+      video.onloadedmetadata = () => { video.currentTime = Math.min(1, isFinite(video.duration) ? video.duration : 0) }
+      video.oncanplay = () => { if (!done && video.currentTime === 0) finish(video) }
+      video.onerror = () => resolve(null)
+      setTimeout(() => { if (!done) finish(video) }, 8000)
+      video.src = videoUrl
+      video.load()
+    })
+  }
+
+  async function uploadThumb(thumb: File): Promise<string | null> {
+    const signRes = await fetch('/api/studio/media/sign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filename: thumb.name, contentType: 'image/webp', isThumb: true }),
+    })
+    if (!signRes.ok) return null
+    const { signedUrl, path } = await signRes.json()
+    const ok = await new Promise<boolean>(resolve => {
+      const xhr = new XMLHttpRequest()
+      xhr.onload = () => resolve(xhr.status < 300)
+      xhr.onerror = () => resolve(false)
+      xhr.open('PUT', signedUrl)
+      xhr.setRequestHeader('Content-Type', 'image/webp')
+      xhr.send(thumb)
+    })
+    return ok ? path : null
+  }
+
+  async function generateMissingThumbnails() {
+    if (!videosNeedingThumbs.length || generatingThumbs) return
+    setGeneratingThumbs(true)
+    setThumbProgress({ done: 0, total: videosNeedingThumbs.length })
+
+    for (let i = 0; i < videosNeedingThumbs.length; i++) {
+      const item = videosNeedingThumbs[i]
+      const thumb = await generateThumbFromUrl(item.url)
+      if (thumb) {
+        const path = await uploadThumb(thumb)
+        if (path) {
+          const url = mediaPublicUrl(path)
+          await fetch(`/api/studio/media/${item.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ thumbnail_url: url }),
+          })
+          setMedia(prev => prev.map(m => m.id === item.id ? { ...m, thumbnail_url: url } : m))
+        }
+      }
+      setThumbProgress({ done: i + 1, total: videosNeedingThumbs.length })
+    }
+    setGeneratingThumbs(false)
+    showToast('Video thumbnails generated.')
+  }
+
   async function uploadFile(raw: File, eventType: string | null, onProgress: (pct: number) => void) {
     const isVideo = raw.type.startsWith('video')
     let uploadFile = raw
     let contentType = raw.type
+    let thumbnailPath: string | null = null
 
     if (!isVideo) {
       const compressed = await compressImage(raw)
       uploadFile = compressed.file
       contentType = compressed.type
+    } else {
+      const thumb = await generateVideoThumbnail(raw)
+      if (thumb) thumbnailPath = await uploadThumb(thumb)
     }
 
     const signRes = await fetch('/api/studio/media/sign', {
@@ -165,6 +287,7 @@ export default function StudioMedia() {
         event_type: eventType,
         file_size: uploadFile.size,
         file_fingerprint: fingerprint(raw),
+        thumbnail_path: thumbnailPath,
       }),
     })
     return recRes.ok ? recRes.json() : null
@@ -281,14 +404,39 @@ export default function StudioMedia() {
             </div>
           )}
 
-          {/* Filter tabs — flat Lucide icons, no emoji */}
+          {/* Thumbnail backfill banner */}
+          {!loading && videosNeedingThumbs.length > 0 && !generatingThumbs && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(91,191,191,0.08)', border: '1px solid rgba(91,191,191,0.2)', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', gap: '10px' }}>
+              <span style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.4 }}>
+                {videosNeedingThumbs.length} video{videosNeedingThumbs.length !== 1 ? 's' : ''} missing preview thumbnails
+              </span>
+              <button onClick={generateMissingThumbnails}
+                style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#5BBFBF', border: 'none', borderRadius: '8px', padding: '7px 12px', color: '#0D0F0F', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <Sparkles size={11} /> Generate
+              </button>
+            </div>
+          )}
+
+          {generatingThumbs && (
+            <div style={{ marginBottom: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)' }}>Generating thumbnails…</span>
+                <span style={{ fontSize: '0.75rem', color: '#5BBFBF', fontWeight: 700 }}>{thumbProgress.done} / {thumbProgress.total}</span>
+              </div>
+              <div style={{ height: '3px', background: 'rgba(255,255,255,0.08)', borderRadius: '99px' }}>
+                <div style={{ height: '100%', width: `${Math.round((thumbProgress.done / thumbProgress.total) * 100)}%`, background: '#5BBFBF', borderRadius: '99px', transition: 'width 0.4s ease' }} />
+              </div>
+            </div>
+          )}
+
+          {/* Filter tabs */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {(['all', 'website', 'social'] as Filter[]).map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 13px', borderRadius: '999px', border: filter === f ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: filter === f ? 'rgba(91,191,191,0.12)' : 'transparent', color: filter === f ? '#5BBFBF' : 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
                 {f === 'website' && <Heart size={11} fill="currentColor" />}
                 {f === 'social'  && <Star  size={11} fill="currentColor" />}
-                {f === 'all'     ? `All (${media.length})` : f === 'website' ? `Website (${media.filter(m => m.show_on_website).length})` : `Social (${media.filter(m => m.social_export).length})`}
+                {f === 'all' ? `All (${media.length})` : f === 'website' ? `Website (${media.filter(m => m.show_on_website).length})` : `Social (${media.filter(m => m.social_export).length})`}
               </button>
             ))}
           </div>
@@ -318,13 +466,17 @@ export default function StudioMedia() {
                 onClick={() => setLightboxIndex(idx)}
                 style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '6px', overflow: 'hidden', background: '#1A1A1A', cursor: 'pointer' }}>
 
-                {item.type === 'video' ? (
+                {/* Thumbnail image for videos, direct image for photos */}
+                {item.type === 'video' && item.thumbnail_url ? (
+                  <Image src={item.thumbnail_url} alt={item.file_name} fill style={{ objectFit: 'cover' }} sizes="200px" unoptimized />
+                ) : item.type === 'video' ? (
                   <video src={item.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                     muted playsInline preload="metadata" />
                 ) : (
                   <Image src={item.url} alt={item.file_name} fill style={{ objectFit: 'cover' }} sizes="200px" />
                 )}
 
+                {/* Play badge for videos */}
                 {item.type === 'video' && (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
                     <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -335,7 +487,7 @@ export default function StudioMedia() {
 
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 45%)' }} />
 
-                {/* Event type badge — Tag icon instead of emoji */}
+                {/* Event type badge */}
                 <button onClick={e => { e.stopPropagation(); setEditingTypeId(editingTypeId === item.id ? null : item.id) }}
                   style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', border: 'none', borderRadius: '5px', padding: '3px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
                   {getEmoji(item.event_type)
@@ -404,7 +556,6 @@ export default function StudioMedia() {
             if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev()
           }}>
 
-          {/* Top bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '56px 20px 12px', flexShrink: 0 }}>
             <button onClick={() => setLightboxIndex(null)}
               style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '10px', padding: '8px', display: 'flex', cursor: 'pointer' }}>
@@ -423,7 +574,6 @@ export default function StudioMedia() {
             </div>
           </div>
 
-          {/* Media */}
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             {lightboxItem.type === 'video' ? (
               <video
@@ -431,6 +581,7 @@ export default function StudioMedia() {
                 src={lightboxItem.url}
                 controls
                 playsInline
+                muted
                 style={{ maxWidth: '100%', maxHeight: '100%', borderRadius: '8px' }}
               />
             ) : (
@@ -442,7 +593,6 @@ export default function StudioMedia() {
               />
             )}
 
-            {/* Prev / Next arrows (desktop) */}
             {filtered.length > 1 && (
               <>
                 <button onClick={goPrev}
@@ -457,7 +607,6 @@ export default function StudioMedia() {
             )}
           </div>
 
-          {/* Bottom bar — heart + star */}
           <div style={{ padding: '16px 24px env(safe-area-inset-bottom, 24px)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexShrink: 0 }}>
             <button onClick={() => toggle(lightboxItem.id, 'show_on_website', lightboxItem.show_on_website)}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 20px' }}>
@@ -478,7 +627,7 @@ export default function StudioMedia() {
         </div>
       )}
 
-      {/* Toast notification */}
+      {/* Toast */}
       {toast && (
         <div style={{ position: 'fixed', top: '72px', left: '50%', transform: 'translateX(-50%)', zIndex: 60, maxWidth: '340px', width: 'calc(100% - 40px)' }}>
           <div style={{ background: '#1F1F1F', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '12px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
