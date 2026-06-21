@@ -39,7 +39,7 @@ function mediaPublicUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${path}`
 }
 
-function ThumbnailCapture({ src, onCaptured }: { src: string; onCaptured: (file: File) => Promise<void> }) {
+function ThumbnailCapture({ src, onCaptured, slot = 0 }: { src: string; onCaptured: (file: File) => Promise<void>; slot?: number }) {
   const done = useRef(false)
   const captureSrc = `${src}${src.includes('?') ? '&' : '?'}__th=1`
   return (
@@ -48,9 +48,9 @@ function ThumbnailCapture({ src, onCaptured }: { src: string; onCaptured: (file:
       crossOrigin="anonymous"
       autoPlay muted playsInline preload="auto"
       // visibility:hidden keeps the element rendered (browser decodes real frames) but invisible.
-      // Must be in the viewport at real size — off-screen or sub-pixel elements get GPU-optimized
-      // away on iOS/Safari, leaving drawImage with an empty texture (produces white WebP).
-      style={{ position: 'fixed', bottom: '80px', right: '8px', width: '80px', height: '142px', visibility: 'hidden', pointerEvents: 'none' }}
+      // Must be in viewport at real size — off-screen/sub-pixel elements get optimized away on
+      // iOS Safari, leaving drawImage with an empty texture (produces all-white WebP).
+      style={{ position: 'fixed', bottom: '80px', right: `${8 + slot * 88}px`, width: '80px', height: '142px', visibility: 'hidden', pointerEvents: 'none' }}
       onTimeUpdate={async e => {
         const v = e.currentTarget
         // Capture at 5s — past any camera fade-in or walking-up footage
@@ -114,8 +114,8 @@ export default function StudioMedia() {
   const knownFingerprints = new Set(media.map(m => m.file_fingerprint).filter(Boolean))
   const lightboxItem = lightboxIndex !== null ? filtered[lightboxIndex] : null
   const videosNeedingThumbs = media.filter(m => m.type === 'video' && !m.thumbnail_url)
-  // First video without thumbnail — ThumbnailCapture processes them one at a time automatically
-  const autoCapture = videosNeedingThumbs[0] ?? null
+  // Process up to 3 videos simultaneously — rolls forward as each completes
+  const autoCaptureSlots = videosNeedingThumbs.slice(0, 3)
 
   useEffect(() => {
     fetch('/api/studio/media')
@@ -537,16 +537,13 @@ export default function StudioMedia() {
             </div>
           )}
 
-          {/* Thumbnail backfill banner */}
-          {!loading && videosNeedingThumbs.length > 0 && !generatingThumbs && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(91,191,191,0.08)', border: '1px solid rgba(91,191,191,0.2)', borderRadius: '10px', padding: '10px 14px', marginBottom: '12px', gap: '10px' }}>
-              <span style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.55)', lineHeight: 1.4 }}>
-                {videosNeedingThumbs.length} video{videosNeedingThumbs.length !== 1 ? 's' : ''} missing preview thumbnails
+          {/* Thumbnail backfill status */}
+          {!loading && videosNeedingThumbs.length > 0 && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(91,191,191,0.06)', border: '1px solid rgba(91,191,191,0.15)', borderRadius: '10px', padding: '9px 14px', marginBottom: '12px' }}>
+              <Sparkles size={12} color="#5BBFBF" />
+              <span style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', lineHeight: 1.4 }}>
+                Generating thumbnails for {videosNeedingThumbs.length} video{videosNeedingThumbs.length !== 1 ? 's' : ''}…
               </span>
-              <button onClick={generateMissingThumbnails}
-                style={{ display: 'flex', alignItems: 'center', gap: '5px', background: '#5BBFBF', border: 'none', borderRadius: '8px', padding: '7px 12px', color: '#0D0F0F', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                <Sparkles size={11} /> Generate
-              </button>
             </div>
           )}
 
@@ -694,24 +691,25 @@ export default function StudioMedia() {
         )}
       </div>
 
-      {/* Auto-capture thumbnails one at a time — processes all missing thumbnails without user needing to open each video */}
-      {!loading && autoCapture && (
+      {/* Auto-capture thumbnails 3 at a time — rolls forward as each completes */}
+      {!loading && autoCaptureSlots.map((item, i) => (
         <ThumbnailCapture
-          key={autoCapture.id}
-          src={autoCapture.url}
+          key={item.id}
+          src={item.url}
+          slot={i}
           onCaptured={async file => {
             const path = await uploadThumb(file)
             if (!path) return
             const thumbUrl = mediaPublicUrl(path)
-            await fetch(`/api/studio/media/${autoCapture.id}`, {
+            await fetch(`/api/studio/media/${item.id}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ thumbnail_url: thumbUrl }),
             })
-            setMedia(prev => prev.map(m => m.id === autoCapture.id ? { ...m, thumbnail_url: thumbUrl } : m))
+            setMedia(prev => prev.map(m => m.id === item.id ? { ...m, thumbnail_url: thumbUrl } : m))
           }}
         />
-      )}
+      ))}
 
       {/* Lightbox */}
       {lightboxItem && (
