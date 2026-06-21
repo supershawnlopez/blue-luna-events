@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { X, ChevronLeft, ChevronRight, Play } from 'lucide-react'
 
 type MediaItem = {
@@ -12,35 +11,28 @@ type MediaItem = {
   type: string
   file_name: string
   event_type?: string | null
-  caption?: string | null
 }
 
 const FALLBACK: MediaItem[] = [
-  { id: 'f1', url: '/images/gal-1.jpg',      type: 'image', file_name: 'gal-1.jpg',      event_type: 'special_event', caption: 'Custom Installation' },
-  { id: 'f2', url: '/images/gal-2.jpg',      type: 'image', file_name: 'gal-2.jpg',      event_type: 'birthday',      caption: 'Rose Gold Arch' },
-  { id: 'f3', url: '/images/gal-3.jpg',      type: 'image', file_name: 'gal-3.jpg',      event_type: 'baby_shower',   caption: 'Baby Shower Setup' },
-  { id: 'f4', url: '/images/gal-4.jpg',      type: 'image', file_name: 'gal-4.jpg',      event_type: 'birthday',      caption: 'Birthday Celebration' },
-  { id: 'f5', url: '/images/gal-5.jpg',      type: 'image', file_name: 'gal-5.jpg',      event_type: 'special_event', caption: 'Outdoor Event' },
-  { id: 'f6', url: '/images/hero-main.jpg',  type: 'image', file_name: 'hero-main.jpg',  event_type: 'birthday',      caption: 'Blue & Silver Arch' },
-  { id: 'f7', url: '/images/hero-sec.jpg',   type: 'image', file_name: 'hero-sec.jpg',   event_type: 'wedding',       caption: 'Elegant Backdrop' },
+  { id: 'f1', url: '/images/gal-1.jpg',     type: 'image', file_name: 'gal-1.jpg',     event_type: 'special_event' },
+  { id: 'f2', url: '/images/gal-2.jpg',     type: 'image', file_name: 'gal-2.jpg',     event_type: 'birthday'      },
+  { id: 'f3', url: '/images/gal-3.jpg',     type: 'image', file_name: 'gal-3.jpg',     event_type: 'baby_shower'   },
+  { id: 'f4', url: '/images/gal-4.jpg',     type: 'image', file_name: 'gal-4.jpg',     event_type: 'birthday'      },
+  { id: 'f5', url: '/images/gal-5.jpg',     type: 'image', file_name: 'gal-5.jpg',     event_type: 'special_event' },
+  { id: 'f6', url: '/images/hero-main.jpg', type: 'image', file_name: 'hero-main.jpg', event_type: 'birthday'      },
+  { id: 'f7', url: '/images/hero-sec.jpg',  type: 'image', file_name: 'hero-sec.jpg',  event_type: 'wedding'       },
 ]
 
 function toLabel(raw: string) {
   return raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-function displayCaption(m: MediaItem) {
-  if (m.caption) return m.caption
-  return m.file_name.replace(/\.[^.]+$/, '').replace(/[_-]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-}
-
 export default function Gallery() {
-  const [media, setMedia]         = useState<MediaItem[]>([])
-  const [loading, setLoading]     = useState(true)
-  const [filter, setFilter]       = useState('all')
-  const [lightbox, setLightbox]   = useState<number | null>(null)
-  const touchStartX               = useRef<number | null>(null)
-  const videoRef                  = useRef<HTMLVideoElement>(null)
+  const [media, setMedia]       = useState<MediaItem[]>([])
+  const [loading, setLoading]   = useState(true)
+  const [filter, setFilter]     = useState('all')
+  const [lightbox, setLightbox] = useState<number | null>(null)
+  const touchStartX             = useRef<number | null>(null)
 
   useEffect(() => {
     fetch('/api/studio/media?website=true')
@@ -53,35 +45,28 @@ export default function Gallery() {
   }, [])
 
   const filtered = filter === 'all' ? media : media.filter(m => m.event_type === filter)
-
   const eventTypes = Array.from(new Set(media.map(m => m.event_type).filter(Boolean))) as string[]
 
-  const openLightbox = (indexInFiltered: number) => {
-    setLightbox(indexInFiltered)
-    document.body.style.overflow = 'hidden'
-  }
-  const closeLightbox = () => {
-    setLightbox(null)
-    document.body.style.overflow = ''
-  }
+  const openLightbox = (i: number) => { setLightbox(i); document.body.style.overflow = 'hidden' }
+  const closeLightbox = () => { setLightbox(null); document.body.style.overflow = '' }
+
   const prev = useCallback(() => {
-    if (lightbox === null) return
-    setLightbox(i => (i! - 1 + filtered.length) % filtered.length)
-  }, [lightbox, filtered.length])
+    setLightbox(i => i === null ? null : (i - 1 + filtered.length) % filtered.length)
+  }, [filtered.length])
+
   const next = useCallback(() => {
-    if (lightbox === null) return
-    setLightbox(i => (i! + 1) % filtered.length)
-  }, [lightbox, filtered.length])
+    setLightbox(i => i === null ? null : (i + 1) % filtered.length)
+  }, [filtered.length])
 
   useEffect(() => {
     if (lightbox === null) return
-    const handler = (e: KeyboardEvent) => {
+    const fn = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft')  prev()
       if (e.key === 'ArrowRight') next()
       if (e.key === 'Escape')     closeLightbox()
     }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    window.addEventListener('keydown', fn)
+    return () => window.removeEventListener('keydown', fn)
   }, [lightbox, prev, next])
 
   const activeLb = lightbox !== null ? filtered[lightbox] : null
@@ -89,8 +74,8 @@ export default function Gallery() {
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F' }}>
 
-      {/* Hero header */}
-      <div style={{ paddingTop: '140px', paddingBottom: '60px', paddingLeft: '24px', paddingRight: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Hero */}
+      <div style={{ paddingTop: '140px', paddingBottom: '60px', padding: '140px 24px 60px', maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
           <div style={{ width: '24px', height: '1px', background: '#5BBFBF' }} />
           <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: '#5BBFBF', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Our Work</span>
@@ -105,7 +90,7 @@ export default function Gallery() {
 
       {/* Filter chips */}
       {!loading && eventTypes.length > 0 && (
-        <div style={{ paddingBottom: '36px', paddingLeft: '24px', paddingRight: '24px' }}>
+        <div style={{ padding: '0 24px 36px' }}>
           <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {['all', ...eventTypes].map(type => {
               const active = filter === type
@@ -120,58 +105,54 @@ export default function Gallery() {
         </div>
       )}
 
-      {/* Grid */}
+      {/* Masonry grid */}
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px 80px' }}>
         {loading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '16px' }}>
+          <div style={{ columns: 'auto 280px', columnGap: '16px' }}>
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} style={{ height: '320px', borderRadius: '16px', background: 'rgba(255,255,255,0.04)', animation: 'pulse 1.5s ease-in-out infinite' }} />
+              <div key={i} style={{ breakInside: 'avoid', marginBottom: '16px', height: `${240 + (i % 3) * 60}px`, borderRadius: '16px', background: 'rgba(255,255,255,0.04)' }} />
             ))}
           </div>
         ) : (
           <div style={{ columns: 'auto 280px', columnGap: '16px' }}>
             {filtered.map((m, i) => (
-              <div key={m.id}
-                onClick={() => openLightbox(i)}
-                style={{ breakInside: 'avoid', marginBottom: '16px', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', position: 'relative', display: 'block',
-                  opacity: 1, transition: 'opacity 0.25s, transform 0.25s', transform: 'scale(1)' }}>
-                {/* Media */}
+              <div key={m.id} className="gallery-card" onClick={() => openLightbox(i)}
+                style={{ breakInside: 'avoid', marginBottom: '16px', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', position: 'relative' }}>
+
                 {m.type === 'video' ? (
-                  <div style={{ position: 'relative', background: '#111', minHeight: '220px' }}>
-                    <img
-                      src={m.thumbnail_url || undefined}
-                      alt={displayCaption(m)}
-                      style={{ width: '100%', display: 'block', objectFit: 'cover' }}
-                    />
-                    {!m.thumbnail_url && (
-                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg,#1a1a2e,#0f3460)', minHeight: '220px' }} />
-                    )}
+                  <div style={{ position: 'relative', background: '#111', minHeight: '240px' }}>
+                    {m.thumbnail_url
+                      ? <img src={m.thumbnail_url} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} />
+                      : <div style={{ minHeight: '240px', background: 'linear-gradient(135deg,#0d1b2a,#1a1a3e)' }} />
+                    }
+                    {/* Modern play button */}
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Play size={20} color="white" fill="white" style={{ marginLeft: '3px' }} />
+                      <div className="play-btn" style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 1px rgba(255,255,255,0.2), 0 0 32px rgba(91,191,191,0.55)', transition: 'transform 0.2s' }}>
+                        <Play size={26} color="#5BBFBF" fill="#5BBFBF" style={{ marginLeft: '4px' }} />
                       </div>
                     </div>
+                    {/* Category label bottom */}
+                    {m.event_type && (
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '36px 16px 14px', background: 'linear-gradient(to top,rgba(13,15,15,0.85),transparent)' }}>
+                        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', color: '#5BBFBF', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0 }}>
+                          {toLabel(m.event_type)}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 ) : (
-                  <img
-                    src={m.url}
-                    alt={displayCaption(m)}
-                    style={{ width: '100%', display: 'block', objectFit: 'cover', transition: 'transform 0.4s ease' }}
-                  />
+                  <div style={{ position: 'relative' }}>
+                    <img src={m.url} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover', transition: 'transform 0.45s ease' }} className="gallery-img" />
+                    {/* Category label — always visible at bottom */}
+                    {m.event_type && (
+                      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '36px 16px 14px', background: 'linear-gradient(to top,rgba(13,15,15,0.82),transparent)' }}>
+                        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', color: '#5BBFBF', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0 }}>
+                          {toLabel(m.event_type)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 )}
-
-                {/* Label overlay */}
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '40px 18px 18px', background: 'linear-gradient(to top, rgba(13,15,15,0.88) 0%, transparent 100%)', opacity: 0, transition: 'opacity 0.3s' }}
-                  className="gallery-hover-overlay">
-                  {m.event_type && (
-                    <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', color: '#5BBFBF', letterSpacing: '0.18em', textTransform: 'uppercase', margin: '0 0 5px' }}>
-                      {toLabel(m.event_type)}
-                    </p>
-                  )}
-                  <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: '1.35rem', fontStyle: 'italic', fontWeight: 300, color: 'rgba(255,255,255,0.92)', margin: 0, lineHeight: 1.2 }}>
-                    {displayCaption(m)}
-                  </p>
-                </div>
               </div>
             ))}
           </div>
@@ -182,9 +163,11 @@ export default function Gallery() {
           <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: '2rem', fontWeight: 300, color: 'white', marginBottom: '12px' }}>
             Ready to create your <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>moment?</em>
           </p>
-          <p style={{ fontSize: '0.95rem', fontWeight: 300, color: 'rgba(255,255,255,0.5)', marginBottom: '32px' }}>Let&apos;s build something beautiful for your event.</p>
+          <p style={{ fontSize: '0.95rem', fontWeight: 300, color: 'rgba(255,255,255,0.5)', marginBottom: '32px' }}>
+            Let&apos;s build something beautiful for your event.
+          </p>
           <Link href="/get-a-quote"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: '#5BBFBF', color: '#0D0F0F', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px 36px', borderRadius: '999px', textDecoration: 'none', boxShadow: '0 4px 24px rgba(91,191,191,0.35)', transition: 'all 0.25s' }}>
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: '#5BBFBF', color: '#0D0F0F', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px 36px', borderRadius: '999px', textDecoration: 'none', boxShadow: '0 4px 24px rgba(91,191,191,0.35)' }}>
             Get a Free Estimate
           </Link>
         </div>
@@ -192,18 +175,16 @@ export default function Gallery() {
 
       {/* Lightbox */}
       {activeLb && (
-        <div
-          style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(6,7,7,0.97)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(6,7,7,0.97)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           onClick={closeLightbox}
           onTouchStart={e => { touchStartX.current = e.touches[0].clientX }}
           onTouchEnd={e => {
             if (touchStartX.current === null) return
             const dx = e.changedTouches[0].clientX - touchStartX.current
-            if (dx > 50) prev()
-            else if (dx < -50) next()
+            if (dx > 50) prev(); else if (dx < -50) next()
             touchStartX.current = null
-          }}
-        >
+          }}>
+
           {/* Close */}
           <button onClick={closeLightbox}
             style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '50%', width: '44px', height: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', cursor: 'pointer' }}>
@@ -231,44 +212,34 @@ export default function Gallery() {
             </button>
           )}
 
-          {/* Media */}
+          {/* Media — no controls, fully muted */}
           <div onClick={e => e.stopPropagation()}
-            style={{ position: 'relative', maxWidth: 'min(90vw, 900px)', maxHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            style={{ position: 'relative', maxWidth: 'min(90vw,900px)', maxHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {activeLb.type === 'video' ? (
-              <video
-                ref={videoRef}
-                key={activeLb.id}
-                src={activeLb.url}
-                autoPlay muted loop playsInline controls
+              <video key={activeLb.id} src={activeLb.url}
+                autoPlay muted loop playsInline
                 style={{ maxWidth: '100%', maxHeight: '78vh', borderRadius: '12px', display: 'block' }}
               />
             ) : (
-              <img
-                key={activeLb.id}
-                src={activeLb.url}
-                alt={displayCaption(activeLb)}
-                style={{ maxWidth: '100%', maxHeight: '78vh', borderRadius: '12px', display: 'block', objectFit: 'contain' }}
-              />
+              <img key={activeLb.id} src={activeLb.url} alt=""
+                style={{ maxWidth: '100%', maxHeight: '78vh', borderRadius: '12px', display: 'block', objectFit: 'contain' }} />
             )}
           </div>
 
-          {/* Caption strip */}
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '32px 24px 28px', background: 'linear-gradient(to top, rgba(6,7,7,0.95) 0%, transparent 100%)', textAlign: 'center', pointerEvents: 'none' }}>
-            {activeLb.event_type && (
-              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '10px', color: '#5BBFBF', letterSpacing: '0.2em', textTransform: 'uppercase', margin: '0 0 6px' }}>
+          {/* Caption strip — event type only */}
+          {activeLb.event_type && (
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '32px 24px 28px', background: 'linear-gradient(to top,rgba(6,7,7,0.95),transparent)', pointerEvents: 'none' }}>
+              <p style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: '#5BBFBF', letterSpacing: '0.2em', textTransform: 'uppercase', margin: 0 }}>
                 {toLabel(activeLb.event_type)}
               </p>
-            )}
-            <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: '1.5rem', fontStyle: 'italic', fontWeight: 300, color: 'rgba(255,255,255,0.9)', margin: 0 }}>
-              {displayCaption(activeLb)}
-            </p>
-          </div>
+            </div>
+          )}
         </div>
       )}
 
       <style>{`
-        .gallery-hover-overlay { opacity: 0; }
-        div:hover > .gallery-hover-overlay { opacity: 1; }
+        .gallery-card:hover .gallery-img { transform: scale(1.04); }
+        .gallery-card:hover .play-btn    { transform: scale(1.08); }
         @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:0.7} }
       `}</style>
     </div>

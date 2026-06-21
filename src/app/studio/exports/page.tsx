@@ -106,7 +106,7 @@ export default function StudioExports() {
     fetch('/api/studio/media')
       .then(r => r.json())
       .then((d: any[]) => {
-        setStarred(Array.isArray(d) ? d.filter(m => m.social_export && m.type === 'image') : [])
+        setStarred(Array.isArray(d) ? d.filter(m => m.social_export) : [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -147,7 +147,7 @@ export default function StudioExports() {
           </Link>
           <div>
             <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', color: '#5BBFBF', textTransform: 'uppercase', margin: '0 0 2px' }}>Blue Luna Studio</p>
-            <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.01em' }}>Brand Pack</h1>
+            <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.01em' }}>Social Export</h1>
           </div>
         </div>
       </div>

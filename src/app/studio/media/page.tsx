@@ -466,7 +466,7 @@ export default function StudioMedia() {
               {media.filter(m => m.social_export).length > 0 && (
                 <Link href="/studio/exports"
                   style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.3)', borderRadius: '10px', padding: '9px 12px', color: '#5BBFBF', fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none' }}>
-                  <Download size={13} /> Export
+                  <Download size={13} /> {media.filter(m => m.social_export).length} starred
                 </Link>
               )}
               <button onClick={() => openTypeSheet('camera')}
@@ -606,90 +606,71 @@ export default function StudioMedia() {
                 {/* Thumbnail for videos, photo for images */}
                 {item.type === 'video' && item.thumbnail_url ? (
                   <img src={item.thumbnail_url} alt={item.file_name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                    onError={e => {
-                      // Thumbnail URL broken — fall back to the video element
-                      const el = e.currentTarget
-                      const vid = document.createElement('video')
-                      vid.src = item.url
-                      vid.muted = true
-                      vid.playsInline = true
-                      vid.setAttribute('preload', 'metadata')
-                      Object.assign(vid.style, { width: '100%', height: '100%', objectFit: 'cover' })
-                      el.parentNode?.replaceChild(vid, el)
-                    }}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 ) : item.type === 'video' ? (
-                  <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Play size={20} color="rgba(255,255,255,0.3)" fill="rgba(255,255,255,0.3)" />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(145deg,#0a1628,#1a1a3e,#0f3460)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'rgba(91,191,191,0.15)', border: '1px solid rgba(91,191,191,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Play size={15} color="#5BBFBF" fill="#5BBFBF" style={{ marginLeft: '2px' }} />
+                    </div>
                   </div>
                 ) : (
                   <Image src={item.url} alt={item.file_name} fill style={{ objectFit: 'cover' }} sizes="200px" />
                 )}
 
-                {/* Play badge for videos */}
-                {item.type === 'video' && (
+                {/* Play indicator for videos with thumbnail */}
+                {item.type === 'video' && item.thumbnail_url && (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                    <div style={{ background: 'rgba(0,0,0,0.55)', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Play size={13} color="white" fill="white" />
+                    <div style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Play size={13} color="white" fill="white" style={{ marginLeft: '2px' }} />
                     </div>
                   </div>
                 )}
 
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 45%)' }} />
+                {/* Gradient fade at bottom */}
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, transparent 42%)', pointerEvents: 'none' }} />
 
-                {/* Event type badge */}
+                {/* Event type badge — top left, visual only, tap opens tag sheet */}
                 {(() => { const et = getEventType(item.event_type); return (
-                <button onClick={e => { e.stopPropagation(); setEditingTypeId(editingTypeId === item.id ? null : item.id) }}
-                  style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', border: 'none', borderRadius: '5px', padding: '3px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  {et ? <et.icon size={8} color={et.color} /> : <Tag size={8} color="rgba(255,255,255,0.45)" />}
-                  <span style={{ fontSize: '8px', fontWeight: 700, color: et ? et.color : 'rgba(255,255,255,0.45)' }}>{et?.label ?? 'Tag it'}</span>
-                </button>
+                  <button onClick={e => { e.stopPropagation(); setEditingTypeId(item.id) }}
+                    style={{ position: 'absolute', top: '6px', left: '6px', background: et ? et.bg : 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', border: `1px solid ${et ? et.color + '55' : 'rgba(255,255,255,0.15)'}`, borderRadius: '6px', padding: '4px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', minHeight: '28px' }}>
+                    {et ? <et.icon size={9} color={et.color} /> : <Tag size={9} color="rgba(255,255,255,0.6)" />}
+                    <span style={{ fontSize: '9px', fontWeight: 700, color: et ? et.color : 'rgba(255,255,255,0.7)', lineHeight: 1 }}>{et?.label ?? 'Tag'}</span>
+                  </button>
                 )})()}
 
-                {/* Delete */}
-                <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(item.id) }}
-                  style={{ position: 'absolute', top: '5px', right: '5px', background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '5px', padding: '4px', cursor: 'pointer', display: 'flex' }}>
-                  <Trash2 size={10} color="rgba(255,255,255,0.45)" />
-                </button>
-
-                {/* Heart + Star */}
-                <div style={{ position: 'absolute', bottom: '5px', left: '5px', right: '5px', display: 'flex', justifyContent: 'space-between' }}>
+                {/* Bottom action bar — heart & star with generous tap targets */}
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', height: '44px' }}>
                   <button onClick={e => { e.stopPropagation(); toggle(item.id, 'show_on_website', item.show_on_website) }}
-                    style={{ background: item.show_on_website ? 'rgba(239,68,68,0.85)' : 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '6px', padding: '5px 6px', cursor: 'pointer', display: 'flex' }}>
-                    <Heart size={12} color="white" fill={item.show_on_website ? 'white' : 'none'} />
+                    style={{ flex: 1, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: item.show_on_website ? 'rgba(239,68,68,0.85)' : 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                      <Heart size={14} color="white" fill={item.show_on_website ? 'white' : 'none'} />
+                    </div>
                   </button>
                   <button onClick={e => { e.stopPropagation(); toggle(item.id, 'social_export', item.social_export) }}
-                    style={{ background: item.social_export ? 'rgba(234,179,8,0.85)' : 'rgba(0,0,0,0.55)', border: 'none', borderRadius: '6px', padding: '5px 6px', cursor: 'pointer', display: 'flex' }}>
-                    <Star size={12} color="white" fill={item.social_export ? 'white' : 'none'} />
+                    style={{ flex: 1, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: item.social_export ? 'rgba(234,179,8,0.85)' : 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                      <Star size={14} color="white" fill={item.social_export ? 'white' : 'none'} />
+                    </div>
+                  </button>
+                  <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(item.id) }}
+                    style={{ flex: 1, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Trash2 size={13} color="rgba(255,255,255,0.7)" />
+                    </div>
                   </button>
                 </div>
 
-                {/* Inline event type picker */}
-                {editingTypeId === item.id && (
-                  <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', padding: '6px', gap: '3px', overflowY: 'auto', zIndex: 10 }}>
-                    {EVENT_TYPES.map(et => (
-                      <button key={et.id} onClick={() => changeType(item.id, et.id)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '7px', background: item.event_type === et.id ? et.bg : 'rgba(255,255,255,0.04)', border: `1px solid ${item.event_type === et.id ? et.color + '55' : 'rgba(255,255,255,0.07)'}`, borderRadius: '5px', padding: '5px 7px', cursor: 'pointer' }}>
-                        <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: et.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <et.icon size={9} color={et.color} />
-                        </div>
-                        <span style={{ fontSize: '9px', fontWeight: 700, color: item.event_type === et.id ? et.color : 'rgba(255,255,255,0.8)' }}>{et.label}</span>
-                        {item.event_type === et.id && <Check size={9} color={et.color} style={{ marginLeft: 'auto' }} />}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {/* Delete confirm */}
+                {/* Delete confirm overlay */}
                 {confirmDeleteId === item.id && (
-                  <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px', zIndex: 10 }}>
-                    <p style={{ fontSize: '10px', color: 'white', fontWeight: 700, textAlign: 'center', margin: 0 }}>Delete this?</p>
+                  <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', zIndex: 10 }}>
+                    <Trash2 size={20} color="#ef4444" />
+                    <p style={{ fontSize: '11px', color: 'white', fontWeight: 700, textAlign: 'center', margin: 0 }}>Delete this?</p>
                     <div style={{ display: 'flex', gap: '6px' }}>
                       <button onClick={() => deleteItem(item.id)}
-                        style={{ background: '#ef4444', border: 'none', borderRadius: '6px', padding: '6px 10px', color: 'white', fontSize: '9px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>
+                        style={{ background: '#ef4444', border: 'none', borderRadius: '8px', padding: '8px 14px', color: 'white', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>
                       <button onClick={() => setConfirmDeleteId(null)}
-                        style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '6px', padding: '6px 10px', color: 'white', fontSize: '9px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                        style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '8px 12px', color: 'white', fontSize: '11px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
                     </div>
                   </div>
                 )}
@@ -791,31 +772,49 @@ export default function StudioMedia() {
         </div>
       )}
 
-      {/* Event type bottom sheet */}
-      {showTypeSheet && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.75)' }} onClick={() => setShowTypeSheet(false)} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '20px 20px 0 0', padding: '16px 20px 44px' }}>
-            <div style={{ width: '32px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 16px' }} />
-            <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 4px' }}>What type of event?</p>
-            <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', margin: '0 0 16px' }}>
-              Tag your photos so they show in the right gallery filter
+      {/* Event type bottom sheet — used for both upload tagging AND re-tagging existing items */}
+      {(showTypeSheet || editingTypeId) && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }}
+            onClick={() => { setShowTypeSheet(false); setEditingTypeId(null) }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px env(safe-area-inset-bottom, 32px)', maxHeight: '85vh', overflowY: 'auto' }}>
+            <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 20px' }} />
+            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 6px' }}>
+              {editingTypeId ? 'Change Category' : 'What type of event?'}
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
-              {EVENT_TYPES.map(et => (
-                <button key={et.id} onClick={() => selectType(et.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '12px', background: et.bg, border: `1px solid ${et.color}33`, borderRadius: '14px', padding: '14px 16px', cursor: 'pointer' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: et.color + '22', border: `1px solid ${et.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <et.icon size={18} color={et.color} />
-                  </div>
-                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'white', textAlign: 'left', lineHeight: 1.2 }}>{et.label}</span>
-                </button>
-              ))}
+            <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center', margin: '0 0 20px' }}>
+              {editingTypeId ? 'Pick the best match for this photo' : 'Tag your photos so they show in the right gallery filter'}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
+              {EVENT_TYPES.map(et => {
+                const currentType = editingTypeId ? media.find(m => m.id === editingTypeId)?.event_type : null
+                const isActive = currentType === et.id
+                return (
+                  <button key={et.id}
+                    onClick={() => {
+                      if (editingTypeId) {
+                        changeType(editingTypeId, et.id)
+                        setEditingTypeId(null)
+                      } else {
+                        selectType(et.id)
+                      }
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: '16px', background: isActive ? et.bg : 'rgba(255,255,255,0.04)', border: `1.5px solid ${isActive ? et.color + '66' : 'rgba(255,255,255,0.07)'}`, borderRadius: '14px', padding: '16px 18px', cursor: 'pointer', minHeight: '64px' }}>
+                    <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: et.bg, border: `1px solid ${et.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <et.icon size={20} color={et.color} />
+                    </div>
+                    <span style={{ fontSize: '0.95rem', fontWeight: 600, color: isActive ? et.color : 'white', textAlign: 'left', lineHeight: 1.2, flex: 1 }}>{et.label}</span>
+                    {isActive && <Check size={16} color={et.color} />}
+                  </button>
+                )
+              })}
             </div>
-            <button onClick={() => selectType(null)}
-              style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px', color: 'rgba(255,255,255,0.35)', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
-              Skip — upload without tagging
-            </button>
+            {!editingTypeId && (
+              <button onClick={() => selectType(null)}
+                style={{ width: '100%', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px', color: 'rgba(255,255,255,0.35)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                Skip — upload without tagging
+              </button>
+            )}
           </div>
         </div>
       )}
