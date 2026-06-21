@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles } from 'lucide-react'
+import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles, Crown, GraduationCap, Cake, Baby, Gem, Briefcase, LucideIcon } from 'lucide-react'
 
 type MediaItem = {
   id: string
@@ -18,20 +18,21 @@ type MediaItem = {
   file_fingerprint?: string | null
 }
 
-const EVENT_TYPES = [
-  { id: 'quinceanera', label: 'Quinceañera', emoji: '👑' },
-  { id: 'graduation',  label: 'Graduation',  emoji: '🎓' },
-  { id: 'birthday',    label: 'Birthday',     emoji: '🎂' },
-  { id: 'baby_shower', label: 'Baby Shower',  emoji: '🍼' },
-  { id: 'wedding',     label: 'Wedding',      emoji: '💍' },
-  { id: 'corporate',   label: 'Corporate',    emoji: '💼' },
-  { id: 'other',       label: 'Other',        emoji: '🎈' },
+type EventType = { id: string; label: string; icon: LucideIcon; color: string; bg: string }
+
+const EVENT_TYPES: EventType[] = [
+  { id: 'quinceanera', label: 'Quinceañera', icon: Crown,          color: '#C084FC', bg: 'rgba(192,132,252,0.15)' },
+  { id: 'graduation',  label: 'Graduation',  icon: GraduationCap,  color: '#60A5FA', bg: 'rgba(96,165,250,0.15)'  },
+  { id: 'birthday',    label: 'Birthday',    icon: Cake,            color: '#F472B6', bg: 'rgba(244,114,182,0.15)' },
+  { id: 'baby_shower', label: 'Baby Shower', icon: Baby,            color: '#34D399', bg: 'rgba(52,211,153,0.15)'  },
+  { id: 'wedding',     label: 'Wedding',     icon: Gem,             color: '#FB7185', bg: 'rgba(251,113,133,0.15)' },
+  { id: 'corporate',   label: 'Corporate',   icon: Briefcase,       color: '#94A3B8', bg: 'rgba(148,163,184,0.15)' },
+  { id: 'other',       label: 'Other',       icon: Sparkles,        color: '#FB923C', bg: 'rgba(251,146,60,0.15)'  },
 ]
 
 type Filter = 'all' | 'website' | 'social'
 
-function getLabel(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.label ?? 'Tag it' }
-function getEmoji(id?: string | null) { return EVENT_TYPES.find(e => e.id === id)?.emoji ?? null }
+function getEventType(id?: string | null): EventType | null { return EVENT_TYPES.find(e => e.id === id) ?? null }
 
 function mediaPublicUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${path}`
@@ -329,11 +330,14 @@ export default function StudioMedia() {
     return recRes.ok ? recRes.json() : null
   }
 
+  const MAX_VIDEOS = 5
+  const MAX_PHOTOS = 30
+
   async function onFilesChosen(files: FileList | null) {
     if (!files?.length) return
     const all = Array.from(files)
     const dupes = all.filter(f => knownFingerprints.has(fingerprint(f)))
-    const fresh = all.filter(f => !knownFingerprints.has(fingerprint(f)))
+    let fresh = all.filter(f => !knownFingerprints.has(fingerprint(f)))
 
     if (dupes.length > 0 && fresh.length === 0) {
       showToast(`All ${dupes.length} selected file${dupes.length !== 1 ? 's have' : ' has'} already been uploaded — nothing new to add.`)
@@ -341,8 +345,29 @@ export default function StudioMedia() {
       if (cameraRef.current) cameraRef.current.value = ''
       return
     }
-    if (dupes.length > 0) {
-      showToast(`${dupes.length} duplicate${dupes.length !== 1 ? 's' : ''} skipped — uploading ${fresh.length} new file${fresh.length !== 1 ? 's' : ''}.`)
+
+    const notices: string[] = []
+    if (dupes.length > 0) notices.push(`${dupes.length} duplicate${dupes.length !== 1 ? 's' : ''} skipped`)
+
+    let freshVideos = fresh.filter(f => f.type.startsWith('video'))
+    let freshPhotos = fresh.filter(f => !f.type.startsWith('video'))
+
+    if (freshVideos.length > MAX_VIDEOS) {
+      notices.push(`only ${MAX_VIDEOS} videos at a time — first ${MAX_VIDEOS} queued`)
+      freshVideos = freshVideos.slice(0, MAX_VIDEOS)
+    }
+    if (freshPhotos.length > MAX_PHOTOS) {
+      notices.push(`only ${MAX_PHOTOS} photos at a time — first ${MAX_PHOTOS} queued`)
+      freshPhotos = freshPhotos.slice(0, MAX_PHOTOS)
+    }
+
+    if (notices.length > 0) showToast(notices.map((n, i) => i === 0 ? n.charAt(0).toUpperCase() + n.slice(1) : n).join(', ') + '.')
+
+    fresh = [...freshPhotos, ...freshVideos]
+    if (fresh.length === 0) {
+      if (fileRef.current)   fileRef.current.value = ''
+      if (cameraRef.current) cameraRef.current.value = ''
+      return
     }
     await runUploads(fresh)
   }
@@ -537,13 +562,13 @@ export default function StudioMedia() {
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.75) 0%, transparent 45%)' }} />
 
                 {/* Event type badge */}
+                {(() => { const et = getEventType(item.event_type); return (
                 <button onClick={e => { e.stopPropagation(); setEditingTypeId(editingTypeId === item.id ? null : item.id) }}
                   style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', border: 'none', borderRadius: '5px', padding: '3px 6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                  {getEmoji(item.event_type)
-                    ? <span style={{ fontSize: '8px' }}>{getEmoji(item.event_type)}</span>
-                    : <Tag size={8} color="rgba(255,255,255,0.45)" />}
-                  <span style={{ fontSize: '8px', fontWeight: 700, color: item.event_type ? 'white' : 'rgba(255,255,255,0.45)' }}>{getLabel(item.event_type)}</span>
+                  {et ? <et.icon size={8} color={et.color} /> : <Tag size={8} color="rgba(255,255,255,0.45)" />}
+                  <span style={{ fontSize: '8px', fontWeight: 700, color: et ? et.color : 'rgba(255,255,255,0.45)' }}>{et?.label ?? 'Tag it'}</span>
                 </button>
+                )})()}
 
                 {/* Delete */}
                 <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(item.id) }}
@@ -568,10 +593,12 @@ export default function StudioMedia() {
                   <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', inset: 0, background: 'rgba(13,15,15,0.96)', display: 'flex', flexDirection: 'column', padding: '6px', gap: '3px', overflowY: 'auto', zIndex: 10 }}>
                     {EVENT_TYPES.map(et => (
                       <button key={et.id} onClick={() => changeType(item.id, et.id)}
-                        style={{ display: 'flex', alignItems: 'center', gap: '6px', background: item.event_type === et.id ? 'rgba(91,191,191,0.18)' : 'rgba(255,255,255,0.04)', border: item.event_type === et.id ? '1px solid rgba(91,191,191,0.5)' : '1px solid rgba(255,255,255,0.07)', borderRadius: '5px', padding: '5px 7px', cursor: 'pointer' }}>
-                        <span style={{ fontSize: '11px' }}>{et.emoji}</span>
-                        <span style={{ fontSize: '9px', fontWeight: 700, color: 'white' }}>{et.label}</span>
-                        {item.event_type === et.id && <Check size={9} color="#5BBFBF" style={{ marginLeft: 'auto' }} />}
+                        style={{ display: 'flex', alignItems: 'center', gap: '7px', background: item.event_type === et.id ? et.bg : 'rgba(255,255,255,0.04)', border: `1px solid ${item.event_type === et.id ? et.color + '55' : 'rgba(255,255,255,0.07)'}`, borderRadius: '5px', padding: '5px 7px', cursor: 'pointer' }}>
+                        <div style={{ width: '16px', height: '16px', borderRadius: '4px', background: et.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <et.icon size={9} color={et.color} />
+                        </div>
+                        <span style={{ fontSize: '9px', fontWeight: 700, color: item.event_type === et.id ? et.color : 'rgba(255,255,255,0.8)' }}>{et.label}</span>
+                        {item.event_type === et.id && <Check size={9} color={et.color} style={{ marginLeft: 'auto' }} />}
                       </button>
                     ))}
                   </div>
@@ -613,14 +640,14 @@ export default function StudioMedia() {
             <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>
               {lightboxIndex !== null ? lightboxIndex + 1 : 0} / {filtered.length}
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '4px 10px' }}>
-              {getEmoji(lightboxItem.event_type)
-                ? <span style={{ fontSize: '11px' }}>{getEmoji(lightboxItem.event_type)}</span>
-                : <Tag size={10} color="rgba(255,255,255,0.4)" />}
-              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: lightboxItem.event_type ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.3)' }}>
-                {getLabel(lightboxItem.event_type)}
+            {(() => { const et = getEventType(lightboxItem.event_type); return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: et ? et.bg : 'rgba(255,255,255,0.06)', border: `1px solid ${et ? et.color + '44' : 'rgba(255,255,255,0.1)'}`, borderRadius: '8px', padding: '5px 10px' }}>
+              {et ? <et.icon size={12} color={et.color} /> : <Tag size={11} color="rgba(255,255,255,0.35)" />}
+              <span style={{ fontSize: '0.7rem', fontWeight: 600, color: et ? et.color : 'rgba(255,255,255,0.3)' }}>
+                {et?.label ?? 'Untagged'}
               </span>
             </div>
+            )})()}
           </div>
 
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
@@ -700,9 +727,11 @@ export default function StudioMedia() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '10px' }}>
               {EVENT_TYPES.map(et => (
                 <button key={et.id} onClick={() => selectType(et.id)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '13px 14px', cursor: 'pointer' }}>
-                  <span style={{ fontSize: '18px' }}>{et.emoji}</span>
-                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'white' }}>{et.label}</span>
+                  style={{ display: 'flex', alignItems: 'center', gap: '12px', background: et.bg, border: `1px solid ${et.color}33`, borderRadius: '14px', padding: '14px 16px', cursor: 'pointer' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: et.color + '22', border: `1px solid ${et.color}44`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <et.icon size={18} color={et.color} />
+                  </div>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'white', textAlign: 'left', lineHeight: 1.2 }}>{et.label}</span>
                 </button>
               ))}
             </div>
