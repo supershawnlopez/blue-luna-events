@@ -92,9 +92,24 @@ Why: Zero-cost infrastructure keeps margins attractive while the site is still p
 
 ---
 
-## OPEN QUESTION CARRIED FROM PRIOR SESSION
+## PLATFORM REBUILD — DECIDED (July 2026)
 
-**Google Calendar date availability — decision still needed from Shawn.**
-- Option A: Supabase-backed `booked_dates` list, Monica updates manually (simple, fast to build).
-- Option B: Google Calendar API — real availability shown in the configurator (complex, more powerful).
-No decision recorded yet — do not build either path until Shawn picks one.
+Full audit and team meeting: `PLATFORM_REBUILD_AUDIT.md`. Shawn sat in the meeting himself, added his own input (notably the iCloud calendar requirement below), and approved all 4.
+
+**[2026-07-07] — Foundation and design work run in two parallel lanes, not strict sequence.**
+Approved by: Shawn + Steve Jobs + Jony Ive + Craig Federighi + Angela Ahrendts
+Why: Craig's real constraint is the unfinished Stripe estimate-checkout path — no new payment surface should be added on top of an unproven one. Jony's design work and Phil's SEO scaffolding don't touch the same files and don't need to wait. Lane A (blocking): finish Stripe checkout + resolve calendar/availability. Lane B (parallel): SEO foundation + early design work.
+
+**[2026-07-07] — Calendar/availability: port Found's real-availability system AND build toward a two-way sync with Monica's personal iCloud calendar.**
+Approved by: Shawn + Craig Federighi + Priya Nair + Angela Ahrendts + Marcus Webb
+Why: Craig confirmed Found's `availability`/`availability_blocks`/`bookings` tables and slot algorithm are portable to single-tenant, and this is the engine that shows clients real open slots. But Shawn raised the real gap: Monica's actual weekend availability lives in her personal iPhone calendar, not in an admin panel she has to remember to update. Two directions matter: (1) her personal calendar's busy times should eventually auto-block Blue Luna availability, and (2) confirmed bookings should eventually push onto a calendar she already sees on her phone — otherwise "real availability" still depends on manual upkeep, which defeats the point.
+
+**Technical note — iCloud, not Google:** Monica's calendar is iCloud, not a Google account. Google Calendar has a clean, well-documented OAuth API; iCloud does not — sync has to go through CalDAV (`caldav.icloud.com`), authenticated with an Apple ID **app-specific password** (generated once by Monica at appleid.apple.com, since Apple blocks normal password auth for third-party CalDAV access). This is more fragile than a Google integration would have been (no modern OAuth flow, more edge cases), but workable. **Build sequencing:** ship the internal availability/booking engine first (Phase 1, Lane A) as the source of truth for client-facing slots and booking records; design its schema now so a CalDAV sync layer can be added afterward without a rebuild (an `external_busy_blocks` style table or equivalent, populated by a periodic CalDAV read, plus a write-back path that creates an iCloud calendar event per confirmed booking). The CalDAV sync itself is a near-term follow-on, not a Phase 1 blocker.
+
+**[2026-07-07] — Email/marketing system: build a real owner-editable template system, not a copy of Spa Mambo's current hardcoded-template reality.**
+Approved by: Shawn + Marcus Webb + Priya Nair + Phil Schiller + Angela Ahrendts + Steve Jobs
+Why: Spa Mambo's actual "template" system is hardcoded JS with no owner UI to create/save templates, and the one-guest templated-send button is currently disabled. Shawn's framing ("templates driving marketing and promos") implies Monica owns and edits her own templates.
+
+**[2026-07-07] — SMS: build sending capability now, defer activation pending carrier registration.**
+Approved by: Shawn + Phil Schiller + Craig Federighi + Chris Lattner + Steve Jobs
+Why: Twilio integration itself is a small lift; the real constraint is A2P 10DLC carrier registration, which is outside the team's control and is Shawn's action item (business phone number + carrier registration).

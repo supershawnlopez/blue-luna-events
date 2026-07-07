@@ -16,45 +16,46 @@
 
 ## CURRENT PHASE
 
-**Phase 1: Package Configurator + Lead Automation**
+**Platform Rebuild — Phase 1: Foundation (two parallel lanes) — APPROVED by Shawn 2026-07-07 (see DECISIONS.md).**
 
-Goal:
-- Replace the manual quote process with a real-time package configurator
-- Customers build their own package, see price instantly, and pay a 50% deposit via Stripe
-- Monica stops losing 50% of leads at price reveal — the price is already theirs before they submit
-- Psychological upgrade path baked in: customers self-upgrade or self-select to budget
+Full audit + team decisions: `PLATFORM_REBUILD_AUDIT.md`. Locked decisions: `DECISIONS.md` (July 7, 2026 entries).
 
-Exit criteria:
-1. Configurator live on /get-a-quote — 4-step flow: Event Type → Package → Add-Ons → Details
-2. Real-time pricing displayed at every step
-3. Consultation path triggers correctly (≥$1,200 total OR Luxury tier OR 4+ add-ons)
-4. Leads write to Supabase with full package + pricing data
-5. Monica gets email notification within minutes of each new lead (Resend)
-6. Stripe deposit redirect working for non-consultation bookings
+Goal: fix what's broken (unfinished payments, no real calendar) and lay SEO groundwork, without blocking Jony's design work behind it. Package Configurator + Lead Automation (the original Phase 1) is complete — see COMPLETED below — this is the next phase of the full platform rebuild Shawn requested.
+
+**Lane A — blocking, sequential:**
+1. Finish Stripe estimate checkout (deposit + balance from `/q/[token]`) + PDF receipt generation + the end-to-end Stripe test that's been pending since May.
+2. Build the calendar/availability system — port Found's `availability` / `availability_blocks` / `bookings` tables + slot algorithm, simplified for single-tenant (resolves the Google Calendar decision — Option B, real availability).
+
+**Lane B — non-blocking, parallel (can start immediately alongside Lane A):**
+3. SEO/AEO/GEO foundation — per-page metadata, JSON-LD (LocalBusiness + Service/Event + FAQ schema), sitemap.xml, robots.txt, Core Web Vitals pass.
+4. Early design exploration (Jony) — does not need to wait on Lane A.
+
+Exit criteria for Phase 1:
+1. `STUDIO_PASSWORD` set.
+2. Client can pay a deposit and balance on an estimate end-to-end, tested with Stripe test card.
+3. PDF receipt generates correctly.
+4. Public configurator shows Monica's real availability, not just a date picker with no constraints.
+5. Every public page has unique metadata + JSON-LD; sitemap.xml and robots.txt exist.
 
 ---
 
 ## NOW (MAX 3)
 
-1. End-to-end live test — full Stripe + email flow
-- Owner: Shawn
-- Status: PENDING TEST
-- Use Stripe test card: 4242 4242 4242 4242, any future date, any CVV
-- Go through configurator on Netlify → submit → Stripe Checkout → confirm → check /booking-confirmed
-- Check Monica's inbox + client inbox for both emails
-- Check Supabase leads table: deposit_paid should flip to true after payment
+1. Set `STUDIO_PASSWORD` env var
+- Owner: Shawn picks the password, Claude sets it via Vercel API
+- Status: NOT STARTED
 
-2. Google Calendar date availability — approach decision
-- Owner: Shawn decides
-- Status: DECISION NEEDED
-- Option A: Supabase-backed booked_dates list, Monica updates manually (simple, fast)
-- Option B: Google Calendar API — real availability in Step 4 (complex, powerful)
+2. Finish Stripe estimate checkout + PDF receipt + end-to-end test
+- Owner: Craig / Claude Code
+- Status: NOT STARTED
+- Build `/api/stripe/estimate-checkout`, `/studio/estimates/[id]` detail view, `/api/studio/estimates/[id]/pdf`
+- Test with Stripe test card: 4242 4242 4242 4242
 
-3. Phase 2: component photos in custom builder
-- Owner: Function Agent (after Shawn sources photos)
-- Status: WAITING ON PHOTOS
-- Add Monica's Instagram photos to each à la carte option in Step3Custom
-- Source: @BlueLunaMagic Instagram
+3. Calendar/availability system — port from Found, schema built for future iCloud sync
+- Owner: Craig + Priya (schema) → Marcus (wiring into Studio Schedule tab + public configurator)
+- Status: NOT STARTED
+- Port `availability` / `availability_blocks` / `bookings` tables + slot algorithm, single-tenant scoped
+- Design schema so a CalDAV-based two-way sync with Monica's iCloud calendar can be added later without a rebuild (external busy-block source + write-back path for confirmed bookings). The sync itself is a near-term follow-on, not required for this task's completion.
 
 ---
 
@@ -74,41 +75,30 @@ Exit criteria:
 
 ---
 
-## NEXT (in order)
+## NEXT (in order — Platform Rebuild Phases 2–6, see PLATFORM_REBUILD_AUDIT.md)
 
-1. Component photos for custom builder — Image Agent task (see AGENTS.md → Image Agent)
-   - Source or generate 15–20 images for à la carte options in Step3Custom
-   - Place in: `public/images/components/`
-   - Hand off to Claude Code to wire into PackageConfigurator.tsx
-   - Full brief in AGENTS.md
-
-2. Google Calendar date availability — once approach is decided
-   (Option A: manual Supabase booked_dates list — simple, fast to build)
-   (Option B: Google Calendar API — real availability, complex)
-
-3. Full design rebuild — Phase 2B (after photos + calendar decision)
-
-4. Next.js upgrade (14.2 → 16.x) — own session, test build after
+1. **Phase 2 — New Design (Jony-led)**: unified visual rebuild across public site + Studio, one design language. Early exploration can start now (Lane B), full build after Phase 1 Lane A completes.
+2. **Phase 3 — Camera & Photos**: port Found's in-app `CameraSheet` pattern (zoom, torch, aspect ratio, album-at-capture picker), replacing the native file-input "Shoot" button. Keep existing heart/star model + locked video-thumbnail solution.
+3. **Phase 4 — Calendar/Booking UI**: once the Lane A schema/algorithm lands, build Monica's Schedule tab (Calendar/Bookings/Hours) and surface real availability in the public configurator. Follow-on: iCloud CalDAV two-way sync (Monica's personal calendar auto-blocks Blue Luna availability; confirmed bookings push to her iPhone calendar) — requires Monica to generate an Apple ID app-specific password.
+4. **Phase 5 — Leads, Contacts, Email**: real Leads system (temperature/status/source, lead→estimate handoff), Contacts phone book, real owner-editable `email_templates` system + Studio editor + campaign send tool. SMS sending capability (Twilio) built alongside, activation gated on Shawn's A2P 10DLC registration.
+5. **Phase 6 — Social / Branded Image Generation**: extend Social Export into an automatic branded-image pipeline off starred photos, caption assistance, lightweight posting view.
+6. Component photos for custom builder — Image Agent task (see AGENTS.md → Image Agent). Source or generate 15–20 images for à la carte options in Step3Custom, from @BlueLunaMagic Instagram.
+7. Next.js upgrade (14.2 → 16.x) — own session, test build after.
 
 ---
 
 ## BLOCKED
 
-1. Google Calendar approach
-- Blocker: Decision needed from Shawn — manual Supabase list vs. Google Calendar API
+*(none currently — Google Calendar approach resolved 2026-07-07, see DECISIONS.md)*
 
 ---
 
-## BACKLOG (Phase 2)
+## BACKLOG
 
-1. Design rebuild — globals.css, Nav, Hero, all sections, quince/grad/gallery pages
-   (Paused; configurator is higher priority. Design refresh follows once core conversion
-   machine is working.)
-2. Admin leads dashboard (view + manage leads, password-protected)
-3. Dynamic gallery (Supabase-backed, Monica manages photos without code deploy)
-4. Email auto-reply to quote requester on submission
-5. bl_pricing.json — decide: add to .gitignore? (contains private home address)
-6. Next.js upgrade — currently on 14.2, needs upgrade to 16.x to fix 5 remaining npm audit
+1. Admin leads dashboard — superseded by Phase 5's real Leads system above.
+2. Dynamic gallery (Supabase-backed, Monica manages photos without code deploy) — largely satisfied by the existing Studio media pipeline; revisit if gaps remain after Phase 3.
+3. bl_pricing.json — decide: add to .gitignore? (contains private home address)
+4. Next.js upgrade — currently on 14.2, needs upgrade to 16.x to fix 5 remaining npm audit
    vulnerabilities (DoS, XSS, cache poisoning). Deferred — low risk for this site type but
    must be done before any future launch hardening. Run as its own session, test build after.
 
