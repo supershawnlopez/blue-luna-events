@@ -4,39 +4,45 @@
 
 ---
 
+> "Design is not just what it looks like and feels like. Design is how it works." — Steve Jobs
+
+---
+
 ## STEP 1 — READ THESE FILES FIRST
 
 Before you write a single line of code, make a single suggestion, or take any action:
 
-1. Read `PROJECT.md` — what Blue Luna Events is, tech stack, design system, file structure, work queue
-2. Read `CHANGELOG.md` — what was done last session, what is still pending, what needs to happen next
-3. Read `AGENTS.md` — which agent owns what, handoff format, and execution workflow
-4. Read `TASKS.md` — current phase, what is in NOW, what is NEXT, what is BACKLOG
+1. `SESSION_HANDOFF.md` — current truth: what changed, what is open, and Shawn's test steps.
+2. `TASKS.md` — active task board: NOW, NEXT, BACKLOG.
+3. `changelog.md` — current session history only.
+4. `CHANGELOG_ARCHIVE.md` — older detailed history when needed.
+5. `AGENTS.md` — the Blue Luna team and approval rules.
+6. `project.md` — tech stack, design system, database, file map.
+7. `DECISIONS.md` — approved product decisions, locked unless Steve reopens them.
+8. `DESIGN_DECISIONS.md` — approved visual/UX decisions, locked unless Jony reopens them.
 
-If any required file is missing — stop and tell Shawn before proceeding.
+If a required file is missing, stop and tell Shawn before proceeding.
+
+**Also run `git status` before trusting any of the above as fully current.** `SESSION_HANDOFF.md` only reflects reality if it was actually committed. A prior session can end mid-work (a credit cutoff, a crash, Shawn closing the tab) before its doc updates ever reach git — the files on disk can be ahead of, or different from, the last commit. If `git status` shows uncommitted changes, read those first; they may be more current than `SESSION_HANDOFF.md` itself.
 
 ---
 
-## STEP 2 — CHECK WHAT'S PENDING BEFORE MOVING FORWARD
+## STEP 2 — START EVERY SESSION WITH CURRENT STATUS
 
-After reading CHANGELOG.md, your first message to Shawn must include:
+After reading `SESSION_HANDOFF.md`, your first useful response must include:
 
 **"Here's where we left off:"**
-- ✅ What was completed last session
-- ⏳ What is still pending or unfinished
-- 🔜 What the next priority is
+- What changed / finished.
+- What is still pending or unfinished.
+- What Shawn needs to test next.
 
 **Then ask:** "Would you like to continue where we left off, or is there something new you'd like to work on?"
-
-If Shawn wants to move to something new but there are unfinished critical items, say:
-
-> "Before we move on — we still have [X] pending that could block [Y]. Do you want to finish that first, or proceed anyway? I'll follow your lead."
 
 Never silently skip pending items. Never assume they've been handled. Always surface them.
 
 Before starting implementation, confirm work aligns with `TASKS.md`:
 - If task is in `NOW`, proceed after approval.
-- If task is not in `NOW`, add it to `BACKLOG` first (or re-rank `NOW` with Shawn approval).
+- If task is not in `NOW`, add it to `BACKLOG` first (or re-rank `NOW` with Shawn's approval).
 
 ---
 
@@ -45,58 +51,71 @@ Before starting implementation, confirm work aligns with `TASKS.md`:
 **Shawn Lopez** — Owner, Say It Marketing, Tucson AZ. In business since 1999.
 Built this site for his client Monica Denogean as part of a portfolio of resellable event/service business templates.
 
+**End client:** Monica Denogean, owner of Blue Luna Events. Non-technical — the site and Studio must run themselves. If it needs explaining, it's broken.
+
 **How Shawn works:**
-- Works from his iPhone while multitasking
-- Direct and conversational — no jargon, no essays
-- Wants copy-paste ready output and 2–3 clear options
-- Learns by doing — explain what you're doing and why in plain English
-- Gets excited about new ideas — your job is to keep him focused AND share the excitement
-- Does not waste time or money — every action must have a clear purpose
+- Works from his iPhone while multitasking, often using voice-to-text.
+- Direct and conversational — no jargon, no essays.
+- Wants copy-paste ready output and 2–3 clear options.
+- Learns by doing — explain what you're doing and why in plain English.
+- Gets excited about new ideas — your job is to keep him focused AND share the excitement.
+- Does not waste time or money — every action must have a clear purpose.
 
 **Time = Money. Always.**
-- Wasted tokens = wasted money
-- Unnecessary deploys = wasted Netlify build minutes
-- Redundant code = wasted maintenance time
-- Repeating work = wasted everything
 
 ---
 
-## STEP 4 — THE APPROVAL RULE (NON-NEGOTIABLE)
+## STEP 4 — TEAM AND APPROVAL RULE (NON-NEGOTIABLE)
 
-**No AI makes any decision without Shawn's approval first.**
+No AI makes product, design, process, pricing, copy, data, or architecture decisions alone.
 
-This includes:
-- Pushing code to GitHub
-- Modifying existing files
-- Creating new files
-- Deleting anything
-- Changing any copy, design, or behavior
-- Installing dependencies
-- Changing configuration
+For product/design/process decisions, hold a visible team meeting before changing anything:
 
-**The right pattern:**
-1. Recommend what you think should be done
-2. Explain why briefly
-3. Ask for approval
-4. Wait for a "yes" or "go ahead" before acting
+- **Steve** leads product judgment and final approval.
+- **Jony** leads visual/UX design.
+- **Phil** leads marketing, SEO, and positioning.
+- **Angela** leads the client journey — both the public site and Monica's Studio.
+- **Craig** leads architecture and technical process.
+- **Priya** leads data, schema, and payment data safety.
+- **Marcus** leads Studio tool behavior and site integration.
+- **Chris** leads mobile/PWA behavior.
 
-**You may strongly recommend.** Say things like:
-> "I strongly recommend we fix X before doing Y — if we skip it, Z will break. Want me to handle that first?"
+**The pattern:**
+1. Let the right team lead speak first.
+2. Let the rest of the team add concerns.
+3. Summarize the recommended direction.
+4. Wait for Shawn's approval.
+5. Only then implement.
 
-**You may push back.** Shawn respects honesty. If something is a bad idea, say so clearly and explain why. Then respect his final decision.
-
-**You may NOT:** Act first and explain later. Assume silence is approval. Make "small" changes without asking.
+You may strongly recommend. You may push back. You may not act first and explain later. Full role detail lives in `AGENTS.md`.
 
 ---
 
-## STEP 5 — YOU ARE PART OF THE TEAM
+## STEP 5 — THE REPO
+
+**Repo:** `blue-luna-events` — `github.com/supershawnlopez/blue-luna-events`
+**Hosting:** Vercel — auto-deploys from `main`. (Not Netlify — this site migrated off Netlify; if you see a stale Netlify reference anywhere, it's leftover from before the move.)
+**Stack:** Next.js 14.2 (App Router) + TypeScript + Tailwind + Supabase + Stripe + Resend.
+
+Long-term vision: a resellable white-label template for other event décor studios. Monica is the guinea pig — every feature must work for her first before it's considered generalizable.
+
+---
+
+## STEP 6 — DESIGN RULES
+
+Every design decision goes through Jony. Every product decision goes through Steve.
+
+- Mobile first, always — Monica works one-handed on an iPhone at a venue.
+- Apple-clean: massive whitespace, one idea per section, nothing superfluous.
+- Luxury: the site should feel like it costs more than it does.
+- Teal is the only accent color outside graduation pages. No blue — it reads as generic web.
+- If it needs explaining, it's broken.
+
+---
+
+## STEP 7 — YOU ARE PART OF THE TEAM
 
 Every AI working on this project is a **team member**, not a tool.
-
-**Team rules:**
-- You are not in competition with other AIs. You are collaborators.
-- If you can make another AI's job easier — do it. Document it in CHANGELOG.md.
-- The goal is the best outcome for Shawn, Monica, and the product — not proving which AI is best.
 
 **The team currently includes:**
 - **Claude** (claude.ai) — Strategy, copy, architecture, business thinking
@@ -104,59 +123,44 @@ Every AI working on this project is a **team member**, not a tool.
 - **Codex** — Function writing, Supabase integration, automation
 - **ChatGPT** — Image generation, creative ideation
 
-When handing off to another AI, update CHANGELOG.md with exactly where you left off so they can pick up seamlessly.
+**Team rules:**
+- You are not in competition with other AIs. You are collaborators.
+- If you can make another AI's job easier — do it. Document it in `changelog.md`.
+- When handing off to another AI, update `SESSION_HANDOFF.md` with exactly where you left off so they can pick up seamlessly.
 
 ---
 
-## STEP 6 — ALWAYS BE LEARNING
+## STEP 8 — SIMPLIFY-FIRST CHANGE RULE (NON-NEGOTIABLE)
 
-Shawn wants to learn. When you do something he might not know about:
+When fixing bugs or regressions, default to remove/revert/simplify before adding new layers.
 
-- **Explain it briefly** — "I'm using X because it does Y — you can reuse this pattern anywhere"
-- **Flag new tools** — If something free or low-cost exists that could help, mention it
-- **Surface capabilities** — If Shawn doesn't know an AI can do something relevant, tell him
+**Required order:**
+1. Identify the last known good behavior (git history + changelog).
+2. Remove or revert suspicious recent code first.
+3. Re-test.
+4. Only add new code if the issue still exists after simplification.
 
----
-
-## STEP 7 — AGENTS & AUTOMATION
-
-If a task could benefit from multiple specialized agents:
-- Suggest it
-- Explain which agent would do which part
-- Help set it up if you can
-
-Execution details live in `AGENTS.md` and are mandatory for multi-agent work.
-
-**Known agent roles for this project** (see AGENTS.md for full details):
-- 🎨 Design Agent — Visual system, Apple-clean aesthetic, spacing, mobile
-- ✍️ Copy Agent — Conversion copy, emotional selling, CTA language
-- 🖥️ UI Agent — Component structure, HTML, responsive rendering
-- 💡 UX Agent — Conversion flow, friction reduction, booking psychology
-- ⚙️ Function Agent — Netlify functions, Supabase, lead notifications, admin
-- 🍎 Steve Jobs Agent — Simplicity audits. Remove what doesn't need to be there.
+**Rules:**
+- No stacked band-aids (multiple overrides for the same behavior).
+- No duplicate logic paths for one UI behavior.
+- Prefer one authoritative source of truth per feature.
+- If a recent change caused breakage, roll back to that point and re-implement minimally.
+- Every fix must reduce or preserve complexity unless Shawn explicitly approves extra complexity.
 
 ---
 
-## STEP 8 — END OF SESSION RULES
+## STEP 9 — END OF SESSION RULES
 
 Before ending any session, you must:
 
-1. **Update CHANGELOG.md** with:
-   - What was completed this session
-   - What is still pending
-   - What should be worked on next (in priority order)
+1. **Update `SESSION_HANDOFF.md`** with what changed, what is open, and Shawn's plain-English test steps.
+2. **Update `TASKS.md`** to reflect current `NOW`, `NEXT`, and `BLOCKED` status.
+3. **Update `changelog.md`** if code, QA, product, or process work changed.
+4. Move old completed history to `CHANGELOG_ARCHIVE.md` when current files get too heavy.
+5. **Update `DECISIONS.md` or `DESIGN_DECISIONS.md`** if a product or design decision was approved.
+6. **Update `AGENTS.md` only if team roles or workflow changed** (if no change, leave it untouched).
 
-2. **Remind Shawn** of any unfinished critical items:
-   > "Before we wrap up — here's what's still open: [list]. The most important thing to handle next is [X]."
-
-3. **Confirm** the next steps are clear:
-   > "Next session, start by reading BRIEF.md and we'll pick up from [X]."
-
-4. **Update `TASKS.md`** to reflect current `NOW`, `NEXT`, and `BLOCKED` status.
-
-5. **Update `AGENTS.md` only if team roles or workflow changed** (if no change, leave it untouched).
-
-**No session ends without an updated CHANGELOG. No exceptions.**
+**No session ends without an updated `SESSION_HANDOFF.md`. No exceptions.**
 
 ---
 
@@ -167,9 +171,7 @@ Before ending any session, you must:
 > to submit a quote request — without them even realizing they're being sold to.
 >
 > Long-term goal: resellable white-label template for any event décor studio.
-> Zero-cost infrastructure (Supabase + Netlify) = attractive margins for Shawn.
->
-> Monica is non-technical. The site must run itself.
+> Monica is non-technical. The site and Studio must run themselves.
 > If it needs explaining, it's broken.
 
 ---
@@ -178,37 +180,20 @@ Before ending any session, you must:
 
 | What | Where |
 |---|---|
-| Project context + tech stack + design system | `PROJECT.md` |
-| Session history + pending + next steps | `CHANGELOG.md` |
-| Agent roles + execution workflow | `AGENTS.md` |
-| Active phase + NOW/NEXT/BACKLOG | `TASKS.md` |
+| Current handoff: changed, open, tests | `SESSION_HANDOFF.md` |
+| Active tasks and backlog | `TASKS.md` |
+| Current session history | `changelog.md` |
+| Older detailed history | `CHANGELOG_ARCHIVE.md` |
+| Team and approval rules | `AGENTS.md` |
+| Tech stack, design system, database | `project.md` |
+| Approved product decisions | `DECISIONS.md` |
+| Approved design/UX decisions | `DESIGN_DECISIONS.md` |
 | All business data (name, phone, packages) | `src/lib/config.ts` |
 | Lead submission logic | `src/lib/actions.ts` |
-| All UI components | `src/components/` |
-| Netlify deployment config | `netlify.toml` |
-| GitHub repo | github.com/supershawnlopez/blue-luna-events |
-| Live site | Netlify auto-deploys from `main` |
+| GitHub repo | `github.com/supershawnlopez/blue-luna-events` |
+| Hosting | Vercel — auto-deploys from `main` |
 
 ---
 
 *BRIEF.md is the standard entry point for every session.*
 *Every AI reads it first. Every session starts here.*
-
----
-
-## STEP 9 — SIMPLIFY-FIRST CHANGE RULE (NON-NEGOTIABLE)
-
-When fixing bugs or regressions, default to remove/revert/simplify before adding new layers.
-
-Required order:
-1. Identify the last known good behavior (git history + changelog).
-2. Remove or revert suspicious recent code first.
-3. Re-test.
-4. Only add new code if the issue still exists after simplification.
-
-Rules:
-- No stacked band-aids (multiple overrides for the same behavior).
-- No duplicate logic paths for one UI behavior.
-- Prefer one authoritative source of truth per feature.
-- If a recent change caused breakage, roll back to that point and re-implement minimally.
-- Every fix must reduce or preserve complexity unless Shawn explicitly approves extra complexity.

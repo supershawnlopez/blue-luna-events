@@ -1,6 +1,6 @@
 # TASKS.md
 ### Execution board for Blue Luna Events
-### Single source of truth for active work
+### Current session truth lives in `SESSION_HANDOFF.md`. Read that first.
 
 ---
 
