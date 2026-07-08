@@ -1,6 +1,6 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: July 6, 2026*
+*Last updated: July 7, 2026*
 
 ---
 
@@ -19,10 +19,11 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- The repo's own changelog (`CHANGELOG_ARCHIVE.md` as of this reorg) was last updated May 14, 2026 — the Stripe deposit flow + dual email session. A substantial Studio rebuild (StudioNav, My Work overhaul, Social Export, public gallery, video thumbnail system) happened after that but was never logged in the repo's own docs in real time. It's reconstructed into this file from prior session notes below.
-- This session added the doc system Found Co. uses: `CLAUDE.md` (auto-loads `brief.md` + this file + `AGENTS.md`), this `SESSION_HANDOFF.md`, `DECISIONS.md`, `DESIGN_DECISIONS.md`, and archived the old `changelog.md` history into `CHANGELOG_ARCHIVE.md`.
-- `brief.md` Step 1 now also instructs every AI to run `git status` before trusting this file — the same loophole fix Found Co. just added, closing the gap where a session's doc updates never reach git before a credit cutoff or crash.
-- **Run `git status` and `git log` before trusting anything below as fully current.** This file was assembled from prior session notes, not a fresh read of the actual repo history — confirm the real latest commit and check for uncommitted work before relying on it.
+- Platform Rebuild Phase 1 (Foundation) is active and approved — full audit in `PLATFORM_REBUILD_AUDIT.md`, locked decisions in `DECISIONS.md`.
+- **Supabase was found `INACTIVE` (paused) on 2026-07-07 mid-session** — manually restored via Management API, but the root cause (keepalive cron apparently not preventing this) is still open. See `TASKS.md` NOW #1. Check project status before assuming the live site works.
+- Stripe estimate checkout is now built: `/api/stripe/estimate-checkout`, webhook writes to `estimates` table, `/studio/estimates/[id]` detail view, PDF receipt route. Not yet live-tested end-to-end with a real Stripe test transaction.
+- Latest commit: `9876888c` — pushed to `main`, Vercel should auto-deploy.
+- **Run `git status` and `git log` before trusting anything below as fully current.**
 
 ---
 
@@ -39,11 +40,10 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Still Needs Work
 
-- [ ] `STUDIO_PASSWORD` env var — not yet set. Shawn needs to pick a password; add it via Vercel API.
-- [ ] `/api/stripe/estimate-checkout` — Stripe Checkout for estimate deposit + balance payment from the client share link.
-- [ ] `/studio/estimates/[id]` — Monica's individual estimate detail view.
-- [ ] `/api/studio/estimates/[id]/pdf` — PDF receipt via `@react-pdf/renderer`.
-- [ ] End-to-end Stripe test (test card `4242 4242 4242 4242`).
+- [ ] **Supabase auto-pause root cause** — one-time restore is not a fix. Investigate the keepalive cron.
+- [ ] `STUDIO_PASSWORD` env var — not yet set. Shawn needs to pick a password (or ask Claude to generate one); add it via Vercel API.
+- [ ] End-to-end Stripe test (test card `4242 4242 4242 4242`) — checkout code is built and pushed, not yet live-verified.
+- [ ] Calendar/availability system — not started (Lane A item 2).
 - [ ] Update Stripe webhook URL to `bluelunaevents.com` once DNS propagation is confirmed complete.
 - [ ] `next-pwa` PWA manifest — install prompt for Monica's Studio.
 - [ ] Confirm current DNS/domain propagation status — unknown as of this handoff, verify before assuming it's resolved.

@@ -41,21 +41,32 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. Set `STUDIO_PASSWORD` env var
-- Owner: Shawn picks the password, Claude sets it via Vercel API
-- Status: NOT STARTED
+1. **Fix Supabase auto-pause** (NEW — found 2026-07-07, higher priority than anything else)
+- Owner: Craig / Shawn
+- Status: NOT STARTED — one-time manual restore done 2026-07-07, root cause still open
+- The project was found `INACTIVE` (paused) mid-session — the keepalive cron (`/api/cron/keepalive`, Mon+Thu 10am UTC) is evidently not preventing this. A paused DB breaks the live site for real visitors (leads, estimates, gallery, Studio login all fail).
+- Investigate: confirm the Vercel cron is actually registered/firing (check `vercel.json` + Vercel dashboard cron logs), or accept periodic manual restores until revenue justifies Supabase Pro ($25/mo removes pausing entirely).
 
-2. Finish Stripe estimate checkout + PDF receipt + end-to-end test
-- Owner: Craig / Claude Code
-- Status: NOT STARTED
-- Build `/api/stripe/estimate-checkout`, `/studio/estimates/[id]` detail view, `/api/studio/estimates/[id]/pdf`
-- Test with Stripe test card: 4242 4242 4242 4242
+2. Set `STUDIO_PASSWORD` env var
+- Owner: Shawn picks the password, Claude sets it via Vercel API
+- Status: NOT STARTED — waiting on Shawn's choice (or "generate one for me")
 
 3. Calendar/availability system — port from Found, schema built for future iCloud sync
 - Owner: Craig + Priya (schema) → Marcus (wiring into Studio Schedule tab + public configurator)
 - Status: NOT STARTED
 - Port `availability` / `availability_blocks` / `bookings` tables + slot algorithm, single-tenant scoped
 - Design schema so a CalDAV-based two-way sync with Monica's iCloud calendar can be added later without a rebuild (external busy-block source + write-back path for confirmed bookings). The sync itself is a near-term follow-on, not required for this task's completion.
+
+---
+
+## DONE (this session, 2026-07-07)
+
+- ✅ Stripe estimate checkout — `/api/stripe/estimate-checkout` (deposit + balance), webhook updated to write `estimates.deposit_paid`/`balance_paid`/`*_paid_at`/`*_stripe_session_id`/`*_stripe_payment_intent_id`.
+- ✅ `/studio/estimates/[id]` detail view — client info, line items, payment status, manual "Mark Paid" for Zelle/cash/check, share link, PDF download.
+- ✅ `/api/studio/estimates/[id]/pdf` — PDF receipt via `@react-pdf/renderer`.
+- ✅ Fixed real bug: Studio estimates list page never fetched from Supabase (hardcoded empty array) — now fetches and derives display status from `deposit_paid`/`balance_paid`.
+- ✅ Fixed real bug: `@react-pdf/renderer` was listed in `package.json` but never installed — `npm install` run, `package-lock.json` corrected.
+- ⏳ Still needed before Lane A item 1 is fully done: live end-to-end test with Stripe test card `4242 4242 4242 4242` on the deployed site.
 
 ---
 
