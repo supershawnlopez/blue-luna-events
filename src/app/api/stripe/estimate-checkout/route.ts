@@ -1,20 +1,21 @@
 import Stripe from 'stripe'
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
+import { computeBalance } from '@/lib/estimateBalance'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req: NextRequest) {
-  const { estimateId, type } = await req.json()
+  const { estimateId, mode } = await req.json()
 
-  if (!estimateId || (type !== 'deposit' && type !== 'balance')) {
+  if (!estimateId || (mode !== 'deposit' && mode !== 'balance')) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
 
   const supabase = serverClient()
   const { data: est, error } = await supabase
     .from('estimates')
-    .select('id, client_name, client_email, event_type, package_name, deposit_amount, balance_amount, deposit_paid, balance_paid, share_token')
+    .select('id, client_name, client_email, event_type, package_name, quoted_total, discount_type, discount_value, share_token')
     .eq('id', estimateId)
     .single()
 
@@ -22,14 +23,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Estimate not found' }, { status: 404 })
   }
 
-  if (type === 'deposit' && est.deposit_paid) {
-    return NextResponse.json({ error: 'Deposit already paid' }, { status: 400 })
-  }
-  if (type === 'balance' && (!est.deposit_paid || est.balance_paid)) {
-    return NextResponse.json({ error: 'Balance not payable yet' }, { status: 400 })
+  const { data: paymentRows } = await supabase
+    .from('estimate_payments')
+    .select('amount')
+    .eq('estimate_id', estimateId)
+
+  const balance = computeBalance(est, (paymentRows ?? []).map(p => ({ id: '', method: '', created_at: '', amount: p.amount })))
+
+  if (balance.isPaidInFull) {
+    return NextResponse.json({ error: 'Already paid in full' }, { status: 400 })
   }
 
-  const amount = type === 'deposit' ? est.deposit_amount : est.balance_amount
+  const amount = mode === 'deposit' && balance.totalPaid === 0 ? balance.suggestedDeposit : balance.amountOwed
+  const label = mode === 'deposit' && balance.totalPaid === 0 ? 'Deposit' : 'Remaining Balance'
+
   if (!amount || amount <= 0) {
     return NextResponse.json({ error: 'Nothing due' }, { status: 400 })
   }
@@ -47,17 +54,15 @@ export async function POST(req: NextRequest) {
       price_data: {
         currency: 'usd',
         product_data: {
-          name: `Blue Luna Events — ${est.package_name ?? 'Custom Build'} ${type === 'deposit' ? 'Deposit' : 'Balance'}`,
-          description: type === 'deposit'
-            ? `50% deposit for ${est.event_type ?? 'your'} event.`
-            : `Remaining balance for ${est.event_type ?? 'your'} event.`,
+          name: `Blue Luna Events — ${est.package_name ?? 'Custom Build'} ${label}`,
+          description: `${label} for ${est.event_type ?? 'your'} event.`,
         },
         unit_amount: Math.round(amount * 100),
       },
       quantity: 1,
     }],
-    metadata: { estimate_id: est.id, type },
-    success_url: `${returnUrl}?paid=${type}`,
+    metadata: { estimate_id: est.id, amount: String(amount) },
+    success_url: `${returnUrl}?paid=1`,
     cancel_url: returnUrl,
   })
 

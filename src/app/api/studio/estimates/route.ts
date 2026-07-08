@@ -10,13 +10,20 @@ function adminClient() {
 
 export async function GET() {
   const supabase = adminClient()
-  const { data, error } = await supabase
-    .from('estimates')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const [{ data, error }, { data: payments }] = await Promise.all([
+    supabase.from('estimates').select('*').order('created_at', { ascending: false }),
+    supabase.from('estimate_payments').select('estimate_id, amount'),
+  ])
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+
+  const paidByEstimate: Record<string, number> = {}
+  for (const p of payments ?? []) {
+    paidByEstimate[p.estimate_id] = (paidByEstimate[p.estimate_id] ?? 0) + Number(p.amount)
+  }
+
+  const withPaid = (data ?? []).map(est => ({ ...est, total_paid: paidByEstimate[est.id] ?? 0 }))
+  return NextResponse.json(withPaid)
 }
 
 export async function POST(req: NextRequest) {

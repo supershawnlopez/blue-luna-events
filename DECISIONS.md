@@ -140,6 +140,26 @@ Why: Twilio integration itself is a small lift; the real constraint is A2P 10DLC
 
 ---
 
+## PAYMENTS/ESTIMATES REWORK (July 2026)
+
+Full audit and team discussion: `ESTIMATES_PAYMENTS_AUDIT.md`. Shawn approved explicitly on 2026-07-09.
+
+**[2026-07-09] — Replace fixed 50/50 deposit/balance booleans with a real payment ledger.**
+Approved by: Shawn + Priya Nair + Craig Federighi + Angela Ahrendts
+Why: live testing showed the current model can't represent real payment behavior (partial amounts, cash/Zelle payments that don't match the pre-set split). New model: an `estimate_payments` table logs every individual payment (amount, method, note, date); "amount owed" is always computed fresh as `total − discount − sum(payments)`. Both the client-facing page and the PDF read from the same computed value so they can never disagree.
+
+**[2026-07-09] — Discounts: percent or flat dollar, with Monica's own free-text note.**
+Approved by: Shawn + Steve Jobs
+Why: real business need (birthday/friend discounts), and doubles as a safe way for Shawn to run a real live Stripe test by discounting a test estimate to $1.
+
+**[2026-07-09] — Email-from-Studio is a real one-tap system send, not a `mailto:` link.**
+Approved by: Shawn + Craig Federighi + Marcus Webb + Jony Ive + Angela Ahrendts
+Why: `mailto:` cannot reliably attach a file or render branded HTML across email clients — a hard technical limitation, not a preference — and Shawn requires both a PDF attachment and a live link in the same email. Build: PDF attached + live link included, `reply-to: monica@bluelunaevents.com`, quiet "Sent to [email]" confirmation shown to Monica after sending.
+
+**Build order locked:** payment ledger → discounts → email-from-Studio → Phase 5 Leads/Contacts (previously planned, unchanged).
+
+---
+
 ## FRONTEND REDESIGN DIRECTION (July 2026)
 
 Full audit, research, and team discussion: `FRONTEND_REDESIGN_AUDIT.md`. Shawn read it, gave his own brief, the team responded with researched reasoning (not just opinion), and Shawn approved explicitly on 2026-07-08.

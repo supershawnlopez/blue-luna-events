@@ -17,7 +17,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const body = await req.json()
   const supabase = serverClient()
 
-  const allowed = ['status', 'deposit_paid', 'deposit_paid_at', 'balance_paid', 'balance_paid_at', 'notes']
+  const allowed = ['status', 'notes', 'discount_type', 'discount_value', 'discount_note']
   const update: Record<string, unknown> = {}
   for (const key of allowed) {
     if (key in body) update[key] = body[key]

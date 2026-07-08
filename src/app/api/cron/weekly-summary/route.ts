@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { SITE_CONFIG } from '@/lib/config'
+import { computeBalance } from '@/lib/estimateBalance'
 
 function fmt(n: number) {
   return `$${Math.round(n).toLocaleString()}`
@@ -31,16 +32,16 @@ export async function GET(req: Request) {
   const [
     { data: newLeads, error: leadsError },
     { data: newEstimates },
-    { data: depositsPaid },
-    { data: balancesPaid },
-    { data: outstandingEstimates },
+    { data: recentPayments },
+    { data: sentEstimates },
+    { data: allPayments },
     { data: upcoming },
   ] = await Promise.all([
     supabase.from('leads').select('id, name').gte('created_at', sevenDaysAgo),
     supabase.from('estimates').select('id, quoted_total').gte('created_at', sevenDaysAgo),
-    supabase.from('estimates').select('id, deposit_amount').gte('deposit_paid_at', sevenDaysAgo),
-    supabase.from('estimates').select('id, balance_amount').gte('balance_paid_at', sevenDaysAgo),
-    supabase.from('estimates').select('id, deposit_amount, balance_amount, deposit_paid, balance_paid').eq('status', 'sent'),
+    supabase.from('estimate_payments').select('amount').gte('created_at', sevenDaysAgo),
+    supabase.from('estimates').select('id, quoted_total, discount_type, discount_value').eq('status', 'sent'),
+    supabase.from('estimate_payments').select('estimate_id, amount'),
     supabase.from('estimates').select('client_name, event_type, event_date, quoted_total').gte('event_date', today).lte('event_date', twoWeeksOut).order('event_date', { ascending: true }),
   ])
 
@@ -51,13 +52,16 @@ export async function GET(req: Request) {
   const newLeadCount = newLeads?.length ?? 0
   const newEstimateCount = newEstimates?.length ?? 0
   const newEstimateValue = (newEstimates ?? []).reduce((sum, e) => sum + (Number(e.quoted_total) || 0), 0)
-  const moneyIn =
-    (depositsPaid ?? []).reduce((sum, e) => sum + (Number(e.deposit_amount) || 0), 0) +
-    (balancesPaid ?? []).reduce((sum, e) => sum + (Number(e.balance_amount) || 0), 0)
-  const outstandingTotal = (outstandingEstimates ?? []).reduce((sum, e) => {
-    if (!e.deposit_paid) return sum + (Number(e.deposit_amount) || 0)
-    if (!e.balance_paid) return sum + (Number(e.balance_amount) || 0)
-    return sum
+  const moneyIn = (recentPayments ?? []).reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+
+  const paymentsByEstimate: Record<string, number> = {}
+  for (const p of allPayments ?? []) {
+    paymentsByEstimate[p.estimate_id] = (paymentsByEstimate[p.estimate_id] ?? 0) + Number(p.amount)
+  }
+  const outstandingTotal = (sentEstimates ?? []).reduce((sum, e) => {
+    const paidSoFar = paymentsByEstimate[e.id] ?? 0
+    const balance = computeBalance(e, [{ id: '', method: '', created_at: '', amount: paidSoFar }])
+    return sum + balance.amountOwed
   }, 0)
   const upcomingEvents = upcoming ?? []
 

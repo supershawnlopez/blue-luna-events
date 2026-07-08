@@ -86,8 +86,12 @@ Team's unanimous, and for good reason — this isn't really two competing philos
 - Email-from-Studio includes both the PDF attachment and the live link in the same email.
 - Replies to any estimate email go to `monica@bluelunaevents.com`.
 
-## STILL OPEN FOR SHAWN
+## APPROVED — 2026-07-09
 
-1. **Sequencing** — team recommends: real payment ledger first (Priya/Craig's rework), then discounts, then email-from-Studio (now that the approach is settled), then back to the previously-planned Phase 5 (full Leads/Contacts system). Does that order match what you'd want, given "leads every day" is still the stated top business goal?
+Shawn approved the team's recommendation explicitly: design, details, and build order as stated. Build sequence locked:
+1. Real payment ledger (Priya/Craig's rework) — replaces the fixed 50/50 deposit/balance booleans with a real running balance
+2. Discounts (percent or flat + note)
+3. Email-from-Studio (system-send, PDF + link, reply-to monica@bluelunaevents.com — see Round 2 above)
+4. Phase 5 Leads/Contacts system (previously planned, unchanged)
 
-Read this, add your own view, and we'll decide together — nothing here is being built yet.
+Building now — see `TASKS.md` and `changelog.md` for progress.

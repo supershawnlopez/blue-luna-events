@@ -15,7 +15,15 @@ async function getEstimate(token: string) {
     .select('*')
     .eq('share_token', token)
     .single()
-  return data
+  if (!data) return null
+
+  const { data: payments } = await supabase
+    .from('estimate_payments')
+    .select('*')
+    .eq('estimate_id', data.id)
+    .order('created_at', { ascending: true })
+
+  return { ...data, payments: payments ?? [] }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

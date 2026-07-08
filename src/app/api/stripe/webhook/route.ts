@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session
     const leadId = session.metadata?.lead_id
     const estimateId = session.metadata?.estimate_id
-    const estimatePaymentType = session.metadata?.type
+    const estimateAmount = session.metadata?.amount
 
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -40,17 +40,16 @@ export async function POST(req: NextRequest) {
         .eq('id', leadId)
     }
 
-    if (estimateId && (estimatePaymentType === 'deposit' || estimatePaymentType === 'balance')) {
-      const prefix = estimatePaymentType
+    if (estimateId && estimateAmount) {
       await supabase
-        .from('estimates')
-        .update({
-          [`${prefix}_paid`]: true,
-          [`${prefix}_paid_at`]: new Date().toISOString(),
-          [`${prefix}_stripe_session_id`]: session.id,
-          [`${prefix}_stripe_payment_intent_id`]: session.payment_intent as string,
-        })
-        .eq('id', estimateId)
+        .from('estimate_payments')
+        .insert([{
+          estimate_id: estimateId,
+          amount: Number(estimateAmount),
+          method: 'stripe',
+          stripe_session_id: session.id,
+          stripe_payment_intent_id: session.payment_intent as string,
+        }])
     }
   }
 

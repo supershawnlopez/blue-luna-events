@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Plus, ChevronRight, FileText } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
+import { computeBalance } from '@/lib/estimateBalance'
 
 type Estimate = {
   id: string
@@ -16,24 +17,26 @@ type Estimate = {
   status: 'draft' | 'sent' | 'declined' | string
   created_at: string
   share_token: string
-  deposit_paid: boolean
-  balance_paid: boolean
+  discount_type?: string | null
+  discount_value?: number | null
+  total_paid: number
 }
 
-type DisplayStatus = 'draft' | 'sent' | 'deposit_paid' | 'balance_paid' | 'declined'
+type DisplayStatus = 'draft' | 'sent' | 'partial_paid' | 'paid_full' | 'declined'
 
 const STATUS_STYLES: Record<DisplayStatus, { label: string; bg: string; color: string }> = {
-  draft:         { label: 'Draft',         bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' },
-  sent:          { label: 'Sent',          bg: 'rgba(91,191,191,0.12)',  color: '#5BBFBF' },
-  deposit_paid:  { label: 'Deposit Paid',  bg: 'rgba(91,191,191,0.2)',   color: '#8DD4D4' },
-  balance_paid:  { label: 'Paid in Full',  bg: 'rgba(34,197,94,0.15)',   color: '#4ade80' },
-  declined:      { label: 'Declined',      bg: 'rgba(239,68,68,0.1)',    color: 'rgba(239,68,68,0.7)' },
+  draft:        { label: 'Draft',       bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' },
+  sent:         { label: 'Sent',        bg: 'rgba(91,191,191,0.12)',  color: '#5BBFBF' },
+  partial_paid: { label: 'Partial',     bg: 'rgba(91,191,191,0.2)',   color: '#8DD4D4' },
+  paid_full:    { label: 'Paid in Full', bg: 'rgba(34,197,94,0.15)',  color: '#4ade80' },
+  declined:     { label: 'Declined',    bg: 'rgba(239,68,68,0.1)',    color: 'rgba(239,68,68,0.7)' },
 }
 
 function displayStatus(est: Estimate): DisplayStatus {
   if (est.status === 'declined') return 'declined'
-  if (est.balance_paid) return 'balance_paid'
-  if (est.deposit_paid) return 'deposit_paid'
+  const balance = computeBalance(est, [{ id: '', method: '', created_at: '', amount: est.total_paid }])
+  if (balance.isPaidInFull) return 'paid_full'
+  if (balance.totalPaid > 0) return 'partial_paid'
   if (est.status === 'sent') return 'sent'
   return 'draft'
 }
@@ -123,7 +126,7 @@ export default function EstimatesList() {
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{fmt(est.quoted_total)}</p>
                     <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
-                      {est.deposit_paid ? (est.balance_paid ? 'Paid in full' : '50% deposit paid') : 'Unpaid'}
+                      {est.total_paid > 0 ? `${fmt(est.total_paid)} paid` : 'Unpaid'}
                     </p>
                   </div>
                   <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
