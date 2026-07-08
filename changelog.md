@@ -144,6 +144,27 @@ See `SESSION_HANDOFF.md` → Shawn Test Steps for the full current list.
 
 ---
 
+## Session: July 8, 2026 (Session 4) — Weekly summary email replaces silent keepalive
+**AI:** Claude Code
+**Worked on:** Investigated why the Supabase auto-pause happened despite an existing keepalive cron, then built Shawn's idea of folding the fix into a genuinely useful weekly email instead of a silent ping.
+
+### Completed This Session
+- Investigated the old `/api/cron/keepalive`: confirmed it was correctly coded, registered and enabled on Vercel, and worked perfectly when manually triggered. Could not find a code-level bug — the likely explanation is Vercel Hobby-plan cron reliability, which can't be proven or fixed from application code.
+- Built `/api/cron/weekly-summary` — pulls real data from Supabase (new leads, new estimates + value, money collected, outstanding unpaid balances, events in the next 14 days) and emails it via Resend, styled to match the existing transactional email design.
+- Deleted the old keepalive route (fully superseded, avoids duplicate logic paths).
+- Updated `vercel.json` to point the existing Mon+Thu 10am UTC cron at the new route.
+- Added `WEEKLY_SUMMARY_EMAIL` env var (Shawn's email) rather than hardcoding it, since this repo is meant to be a resellable template per `project.md`'s long-term vision.
+- Verified live end-to-end after deploy: real data returned (`outstandingTotal: 325`, matching the known unpaid test estimate), email actually sent (`emailed: true`).
+
+### Still Open
+- Confirm Stripe test vs. live mode (still waiting on Shawn).
+- Watch for the Monday/Thursday email over the next couple weeks — if it stops arriving, that's the signal the underlying Vercel cron reliability issue is real and needs the external-pinger or Supabase Pro fallback.
+
+### Shawn Test
+Check your email (shawnlopez@me.com) — a "Blue Luna Weekly Update" should have just landed from today's manual test. Confirm it looks right and the numbers match what's actually in Studio.
+
+---
+
 ## Older History
 
 Sessions May 1–14, 2026 (documentation setup, configurator build, custom build path, Stripe + email flow) moved to `CHANGELOG_ARCHIVE.md` on July 6, 2026.

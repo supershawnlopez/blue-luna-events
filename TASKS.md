@@ -41,15 +41,14 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Fix Supabase auto-pause**
-- Owner: Craig / Shawn
-- Status: NOT STARTED — one-time manual restore done 2026-07-07, root cause still open
-- The project was found `INACTIVE` (paused) mid-session — the keepalive cron (`/api/cron/keepalive`, Mon+Thu 10am UTC) is evidently not preventing this. A paused DB breaks the live site for real visitors.
-- Investigate: confirm the Vercel cron is actually registered/firing, or accept periodic manual restores until revenue justifies Supabase Pro ($25/mo removes pausing entirely).
-
-2. **Confirm Stripe test vs. live mode**
+1. **Confirm Stripe test vs. live mode**
 - Owner: Shawn confirms (check Stripe dashboard test-mode toggle, top-left)
 - Status: NOT STARTED — blocks the end-to-end Stripe test. If live mode, do not test with a real card.
+
+2. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
+- Status: MITIGATION SHIPPED 2026-07-08, monitor before considering fully closed
+- Root cause was inconclusive (the old keepalive cron was correctly configured, enabled, and worked when manually triggered — but the DB still paused, suggesting Vercel Hobby-plan cron reliability, not a code bug). Rather than chase an unprovable platform quirk, replaced the silent ping with a real weekly business summary email (`/api/cron/weekly-summary`) on the same Mon+Thu schedule — same protection, but if it silently fails to fire, Shawn will notice from the *missing email* instead of finding out when the site breaks. Verified working end-to-end 2026-07-08 (real data pulled, email sent).
+- If Shawn stops receiving the Monday/Thursday email, that's the signal Vercel's cron isn't firing — worth revisiting the free-external-pinger or Supabase Pro ($25/mo) options from that point.
 
 ---
 
