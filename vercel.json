@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/keepalive",
+      "path": "/api/cron/weekly-summary",
       "schedule": "0 10 * * 1,4"
     }
   ]
