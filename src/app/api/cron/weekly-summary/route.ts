@@ -147,18 +147,46 @@ export async function GET(req: Request) {
 </body>
 </html>`
 
-    await resend.emails.send({
+    const { data: sendData, error: sendError } = await resend.emails.send({
       from: `Blue Luna Events <notifications@bluelunaevents.com>`,
       to: [recipient],
       subject: `Blue Luna Weekly Update — ${newLeadCount} new lead${newLeadCount === 1 ? '' : 's'}, ${fmt(moneyIn)} in`,
       html,
+    })
+
+    if (sendError) {
+      console.error('Weekly summary email failed to send:', sendError)
+      return NextResponse.json({
+        ok: true,
+        sent: new Date().toISOString(),
+        emailed: false,
+        emailError: sendError.message,
+        newLeadCount,
+        newEstimateCount,
+        moneyIn,
+        outstandingTotal,
+        upcomingCount: upcomingEvents.length,
+      })
+    }
+
+    return NextResponse.json({
+      ok: true,
+      sent: new Date().toISOString(),
+      emailed: true,
+      resendId: sendData?.id,
+      newLeadCount,
+      newEstimateCount,
+      moneyIn,
+      outstandingTotal,
+      upcomingCount: upcomingEvents.length,
     })
   }
 
   return NextResponse.json({
     ok: true,
     sent: new Date().toISOString(),
-    emailed: Boolean(recipient && process.env.RESEND_API_KEY),
+    emailed: false,
+    emailError: 'RESEND_API_KEY or WEEKLY_SUMMARY_EMAIL not configured',
     newLeadCount,
     newEstimateCount,
     moneyIn,

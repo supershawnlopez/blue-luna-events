@@ -225,13 +225,14 @@ async function sendMonicaNotification(data: Lead, vision: string) {
 </body>
 </html>`
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: `Blue Luna Events <notifications@bluelunaevents.com>`,
     replyTo: data.email,
     to: [SITE_CONFIG.email],
     subject,
     html,
   })
+  if (error) console.error('Monica notification email failed to send:', error)
 }
 
 // ─── Client confirmation email ─────────────────────────────────────────────────
@@ -407,11 +408,12 @@ async function sendClientConfirmation(data: Lead) {
 </body>
 </html>`
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: `Monica at Blue Luna Events <monica@bluelunaevents.com>`,
     replyTo: SITE_CONFIG.email,
     to: [data.email],
     subject,
     html,
   })
+  if (error) console.error('Client confirmation email failed to send:', error)
 }
