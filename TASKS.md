@@ -47,9 +47,10 @@ Exit criteria for Phase 1:
 - The project was found `INACTIVE` (paused) mid-session — the keepalive cron (`/api/cron/keepalive`, Mon+Thu 10am UTC) is evidently not preventing this. A paused DB breaks the live site for real visitors (leads, estimates, gallery, Studio login all fail).
 - Investigate: confirm the Vercel cron is actually registered/firing (check `vercel.json` + Vercel dashboard cron logs), or accept periodic manual restores until revenue justifies Supabase Pro ($25/mo removes pausing entirely).
 
-2. Set `STUDIO_PASSWORD` env var
-- Owner: Shawn picks the password, Claude sets it via Vercel API
-- Status: NOT STARTED — waiting on Shawn's choice (or "generate one for me")
+2. **Confirm Stripe test vs. live mode** (NEW — found 2026-07-08, blocks safe testing)
+- Owner: Shawn confirms (check Stripe dashboard test-mode toggle, top-left)
+- Status: NOT STARTED
+- Blocks: the end-to-end Stripe test below. If live mode, do not test with a real card — either switch to test mode temporarily or verify checkout opens correctly without completing payment.
 
 3. Calendar/availability system — port from Found, schema built for future iCloud sync
 - Owner: Craig + Priya (schema) → Marcus (wiring into Studio Schedule tab + public configurator)
@@ -59,14 +60,15 @@ Exit criteria for Phase 1:
 
 ---
 
-## DONE (this session, 2026-07-07)
+## DONE (2026-07-07 to 07-08)
 
 - ✅ Stripe estimate checkout — `/api/stripe/estimate-checkout` (deposit + balance), webhook updated to write `estimates.deposit_paid`/`balance_paid`/`*_paid_at`/`*_stripe_session_id`/`*_stripe_payment_intent_id`.
 - ✅ `/studio/estimates/[id]` detail view — client info, line items, payment status, manual "Mark Paid" for Zelle/cash/check, share link, PDF download.
 - ✅ `/api/studio/estimates/[id]/pdf` — PDF receipt via `@react-pdf/renderer`.
 - ✅ Fixed real bug: Studio estimates list page never fetched from Supabase (hardcoded empty array) — now fetches and derives display status from `deposit_paid`/`balance_paid`.
 - ✅ Fixed real bug: `@react-pdf/renderer` was listed in `package.json` but never installed — `npm install` run, `package-lock.json` corrected.
-- ⏳ Still needed before Lane A item 1 is fully done: live end-to-end test with Stripe test card `4242 4242 4242 4242` on the deployed site.
+- ✅ `STUDIO_PASSWORD` set (2026-07-08) — turned out the env var already existed but was blank (Shawn had created a placeholder earlier), which is likely why Studio login wasn't working. Value lives in Vercel + local `.env.local`, not in any committed doc.
+- ⏳ Still needed before Lane A item 1 is fully done: confirm Stripe test/live mode (item 2 above), then live end-to-end test with Stripe test card `4242 4242 4242 4242` on the deployed site. A real test estimate already exists for this: `/q/6644927be9376058f4b3fa5dac11f034`.
 
 ---
 

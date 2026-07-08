@@ -88,6 +88,25 @@ Nothing to test yet — this session was planning/audit only, no code changed.
 
 ---
 
+## Session: July 8, 2026 — STUDIO_PASSWORD set + test steps documented
+**AI:** Claude Code
+**Worked on:** Shawn asked for plain-English testing instructions with real links, saved to the doc system so another AI (Codex, Claude) can pick up full context.
+
+### Completed This Session
+- Set `STUDIO_PASSWORD` via Vercel API. Found it already existed as an empty placeholder (Shawn had created it earlier without a value) — likely why Studio login wasn't working. Value added to local `.env.local` (gitignored) and Vercel production+preview; intentionally not written into any committed doc, per the existing "never commit secrets" rule in `DECISIONS.md`.
+- Confirmed `STRIPE_SECRET_KEY` is stored as Vercel's "sensitive" type — genuinely unreadable via API by anyone, including Claude. Could not determine test vs. live mode this way; needs Shawn to check the Stripe dashboard directly.
+- Found an existing real test estimate (Shawn Lopez, $650, unpaid, `share_token=6644927be9376058f4b3fa5dac11f034`) to use for testing instead of creating a new one.
+- Rewrote `SESSION_HANDOFF.md` → Shawn Test Steps section to reflect the actual current priority (estimate payment flow) instead of the prior session's stale steps (video thumbnails, gallery, social export).
+
+### Still Open
+- Confirm Stripe test vs. live mode before running any payment test (see `TASKS.md` NOW #2).
+- Everything else listed in `SESSION_HANDOFF.md` → Still Needs Work.
+
+### Shawn Test
+See `SESSION_HANDOFF.md` → Shawn Test Steps for the full current list.
+
+---
+
 ## Older History
 
 Sessions May 1–14, 2026 (documentation setup, configurator build, custom build path, Stripe + email flow) moved to `CHANGELOG_ARCHIVE.md` on July 6, 2026.
