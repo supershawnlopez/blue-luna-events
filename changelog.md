@@ -187,6 +187,25 @@ Check your email (shawnlopez@me.com) — a "Blue Luna Weekly Update" should have
 
 ---
 
+## Session: July 8, 2026 (Session 6) — Two more email problems found and fixed
+**AI:** Claude Code
+**Worked on:** Continuing from the Resend domain fix — turned out there were two more stacked problems underneath it.
+
+### Completed This Session
+- **Found the app's live `RESEND_API_KEY` was itself invalid.** A real test send after the domain fix still failed with `"API key is invalid"` — the key configured in Vercel wasn't the working one. Swapped it for the key Shawn provided directly, redeployed, and confirmed via Resend's official per-email status endpoint (`GET /emails/{id}`, not the ambiguous list endpoint) — got a real `"last_event": "sent"` with a genuine Amazon SES message ID.
+- **Found there was no mail server configured for the domain at all.** Shawn confirmed via Namecheap cPanel screenshots that `monica@bluelunaevents.com` is a real, working mailbox hosted on Namecheap's shared hosting — but the domain's DNS (managed by Vercel since June) had zero MX record, meaning nothing routed mail there. This is separate from and more severe than the Resend issues — it means the app's own lead-notification email to Monica could never have been delivered regardless of anything else.
+- Pulled the exact mail server config from Namecheap's cPanel Zone Editor and replicated it in Vercel's DNS: MX record (`mail.bluelunaevents.com`, priority 0), matching A record, root SPF TXT, and DMARC TXT (all confirmed live via public DNS lookup). Also added a DKIM record, transcribed from a screenshot — lower confidence on that specific one, but it only affects outbound spam scoring, not delivery.
+
+### Still Open
+- **Real-world confirmation needed**: send a test email to `monica@bluelunaevents.com` and confirm it's actually received. Ask Monica directly whether she's ever gotten a real lead notification.
+- Confirm Stripe test vs. live mode (still open, several sessions now).
+
+### Shawn Test
+1. Send a test email to `monica@bluelunaevents.com` from any other account (Gmail, etc.) and confirm it shows up in Namecheap's webmail or wherever Monica checks that inbox.
+2. Ask Monica directly: has she ever received a real "new booking" email since the site launched?
+
+---
+
 ## Older History
 
 Sessions May 1–14, 2026 (documentation setup, configurator build, custom build path, Stripe + email flow) moved to `CHANGELOG_ARCHIVE.md` on July 6, 2026.

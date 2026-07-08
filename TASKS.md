@@ -41,11 +41,11 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Confirm real emails have actually been arriving since May** (NEW — critical, found 2026-07-08)
+1. **Confirm real emails have actually been arriving since May** (NEW — critical, found + fixed 2026-07-08)
 - Owner: Shawn / Monica confirm
-- Status: ROOT CAUSE FIXED, IMPACT UNCONFIRMED
-- `bluelunaevents.com`'s Resend domain was `status: "failed"` since the day it was created (2026-05-14) — the 3 required DNS records (DKIM, SPF×2) had simply never been added. Fixed 2026-07-08 (see DECISIONS.md). This means it's plausible **no lead notification or client confirmation email has ever actually delivered** since the booking system was built, and the code had no error-checking to reveal it (also fixed).
-- Ask Monica directly: has she been getting real "new booking" emails when someone submits the public quote form? If not, this was the reason — and every client who ever submitted a quote may never have gotten their confirmation email either.
+- Status: THREE STACKED ROOT CAUSES FIXED, REAL-WORLD IMPACT STILL UNCONFIRMED
+- Found and fixed three separate, stacked problems: (1) `bluelunaevents.com`'s Resend domain was unverified since creation on 2026-05-14 — missing DKIM/SPF records, now added and verified; (2) the app's live `RESEND_API_KEY` in Vercel was itself invalid, separate from #1 — swapped to a confirmed-working key and redeployed; (3) the root domain had **no MX record at all** — nothing routed mail to Monica's real Namecheap-hosted mailbox (`monica@bluelunaevents.com`) — added MX/A/SPF/DMARC records pulled directly from Namecheap's cPanel Zone Editor. All 3 fixes verified live via public DNS lookup and Resend's official per-email status endpoint. Full detail in `DECISIONS.md`.
+- **Real test needed:** send a test email to `monica@bluelunaevents.com` from any outside account and confirm it lands (check Namecheap webmail or wherever Monica normally reads that inbox). Also ask Monica directly whether she's been receiving real "new booking" notification emails at all over the past two months — if not, this is very likely why, and every client who ever submitted the public quote form may never have received their confirmation email either.
 
 2. **Confirm Stripe test vs. live mode**
 - Owner: Shawn confirms (check Stripe dashboard test-mode toggle, top-left)
