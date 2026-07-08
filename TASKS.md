@@ -41,17 +41,11 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Confirm real emails have actually been arriving since May** (NEW — critical, found + fixed 2026-07-08)
-- Owner: Shawn / Monica confirm
-- Status: THREE STACKED ROOT CAUSES FIXED, REAL-WORLD IMPACT STILL UNCONFIRMED
-- Found and fixed three separate, stacked problems: (1) `bluelunaevents.com`'s Resend domain was unverified since creation on 2026-05-14 — missing DKIM/SPF records, now added and verified; (2) the app's live `RESEND_API_KEY` in Vercel was itself invalid, separate from #1 — swapped to a confirmed-working key and redeployed; (3) the root domain had **no MX record at all** — nothing routed mail to Monica's real Namecheap-hosted mailbox (`monica@bluelunaevents.com`) — added MX/A/SPF/DMARC records pulled directly from Namecheap's cPanel Zone Editor. All 3 fixes verified live via public DNS lookup and Resend's official per-email status endpoint. Full detail in `DECISIONS.md`.
-- **Real test needed:** send a test email to `monica@bluelunaevents.com` from any outside account and confirm it lands (check Namecheap webmail or wherever Monica normally reads that inbox). Also ask Monica directly whether she's been receiving real "new booking" notification emails at all over the past two months — if not, this is very likely why, and every client who ever submitted the public quote form may never have received their confirmation email either.
-
-2. **Confirm Stripe test vs. live mode**
+1. **Confirm Stripe test vs. live mode**
 - Owner: Shawn confirms (check Stripe dashboard test-mode toggle, top-left)
 - Status: NOT STARTED — blocks the end-to-end Stripe test. If live mode, do not test with a real card.
 
-3. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
+2. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
 - Status: MITIGATION SHIPPED 2026-07-08, monitor before considering fully closed
 - Root cause was inconclusive (the old keepalive cron was correctly configured, enabled, and worked when manually triggered — but the DB still paused, suggesting Vercel Hobby-plan cron reliability, not a code bug). Replaced the silent ping with a real weekly business summary email (`/api/cron/weekly-summary`) — same protection, but a failure is now visible as a missing email instead of a silently broken site.
 - If Shawn stops receiving the Monday/Thursday email, that's the signal Vercel's cron isn't firing — worth revisiting the free-external-pinger or Supabase Pro ($25/mo) options from that point.
@@ -60,6 +54,7 @@ Exit criteria for Phase 1:
 
 ## DONE (2026-07-07 to 07-08)
 
+- ✅ **Email fully fixed and confirmed working** (2026-07-08): three stacked bugs found and fixed — unverified Resend domain (missing DKIM/SPF since May 14), an invalid `RESEND_API_KEY` in Vercel, and a completely missing MX record so nothing routed mail to Monica's real Namecheap-hosted mailbox at all. Shawn confirmed real-world: **can now both send and receive at `monica@bluelunaevents.com`.** Full detail in `DECISIONS.md`.
 - ✅ **SEO/AEO/GEO 5 fixes shipped** (2026-07-08): `layout.tsx` JSON-LD `@type` fixed to `LocalBusiness`; fake `aggregateRating` (50 claimed, 3 shown) removed pending real data; `/quinceaneras` and `/graduations` converted from unnecessary client components to real Server Components, each now has its own tailored `metadata`; `FAQPage` JSON-LD added to both from existing FAQ content; `src/app/sitemap.ts` and `src/app/robots.ts` added. Commit `8951d7b0`.
 - ✅ Stripe estimate checkout — `/api/stripe/estimate-checkout` (deposit + balance), webhook updated to write `estimates.deposit_paid`/`balance_paid`/`*_paid_at`/`*_stripe_session_id`/`*_stripe_payment_intent_id`.
 - ✅ `/studio/estimates/[id]` detail view — client info, line items, payment status, manual "Mark Paid" for Zelle/cash/check, share link, PDF download.

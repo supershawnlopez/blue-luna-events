@@ -204,6 +204,8 @@ Check your email (shawnlopez@me.com) — a "Blue Luna Weekly Update" should have
 1. Send a test email to `monica@bluelunaevents.com` from any other account (Gmail, etc.) and confirm it shows up in Namecheap's webmail or wherever Monica checks that inbox.
 2. Ask Monica directly: has she ever received a real "new booking" email since the site launched?
 
+**CONFIRMED by Shawn (2026-07-08): can now both send and receive at `monica@bluelunaevents.com`.** All three stacked email bugs are genuinely fixed, not just fixed-on-paper.
+
 ---
 
 ## Older History
