@@ -116,13 +116,11 @@ Answering Steve's question directly: SEO/AEO/GEO is priority #1, full stop — t
 
 ---
 
-## WHERE THIS LEAVES THINGS
+## APPROVED — 2026-07-08
 
-Nothing above is decided. The team's genuine synthesis, in priority order as they see it:
+Shawn read the full audit and team response and approved this direction explicitly. Locked as real decisions in `DECISIONS.md` and `DESIGN_DECISIONS.md`. Execution order lives in `TASKS.md`.
 
 1. Ship the SEO/AEO fixes from Part 2 first — fast, independent, no design work required.
 2. Redesign the configurator around Jony's "show me what I'm building" idea — real photos matching real choices, not just a price ticker — as the core differentiator nobody else in Tucson has.
 3. Keep the dual-path (guided package + custom build) but make the guided path the clear default, per Angela, instead of two equal buttons.
 4. Surface the real deposit/cancellation policy next to the payment CTA instead of leaving it undiscovered until after payment.
-
-Your call on whether this is the right shape before anyone starts building.

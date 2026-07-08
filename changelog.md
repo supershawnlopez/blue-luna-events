@@ -107,6 +107,19 @@ See `SESSION_HANDOFF.md` → Shawn Test Steps for the full current list.
 
 ---
 
+## Session: July 8, 2026 (Session 2) — Frontend redesign direction locked in
+**AI:** Claude Code
+**Worked on:** Shawn read the full frontend audit + team research, gave his own brief (SEO/AEO/GEO is priority #1, site needs to feel like an Apple product, dual-path configurator with deposit psychology), team responded with researched reasoning, Shawn approved explicitly.
+
+### Completed This Session
+- Locked 5 decisions into `DECISIONS.md` and `DESIGN_DECISIONS.md`: SEO/AEO/GEO fixes ship first; configurator redesign shows real matching photos instead of just a price total; guided package path becomes the default over "Build My Own"; deposit/cancellation policy becomes visible next to the payment CTA.
+- Reprioritized `TASKS.md` — SEO/AEO/GEO quick fixes are now NOW #1, configurator redesign is NEXT #1, calendar/booking moved to NEXT #4.
+
+### Still Open
+- Nothing built yet — this session was direction-setting. See `TASKS.md` NOW for the next actual build session.
+
+---
+
 ## Older History
 
 Sessions May 1–14, 2026 (documentation setup, configurator build, custom build path, Stripe + email flow) moved to `CHANGELOG_ARCHIVE.md` on July 6, 2026.

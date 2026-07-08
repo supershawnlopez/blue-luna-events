@@ -113,3 +113,21 @@ Why: Spa Mambo's actual "template" system is hardcoded JS with no owner UI to cr
 **[2026-07-07] — SMS: build sending capability now, defer activation pending carrier registration.**
 Approved by: Shawn + Phil Schiller + Craig Federighi + Chris Lattner + Steve Jobs
 Why: Twilio integration itself is a small lift; the real constraint is A2P 10DLC carrier registration, which is outside the team's control and is Shawn's action item (business phone number + carrier registration).
+
+---
+
+## FRONTEND REDESIGN DIRECTION (July 2026)
+
+Full audit, research, and team discussion: `FRONTEND_REDESIGN_AUDIT.md`. Shawn read it, gave his own brief, the team responded with researched reasoning (not just opinion), and Shawn approved explicitly on 2026-07-08.
+
+**[2026-07-08] — SEO/AEO/GEO fixes ship first, ahead of the visual redesign.**
+Approved by: Shawn + Phil Schiller + Steve Jobs
+Why: Shawn's own framing — "SEO, AEO, and GEO... that's number one." The 5 fixes identified in the audit (invalid schema.org `@type`, fake `aggregateRating` review count, client-component pages structurally blocking their own metadata, missing FAQPage schema, missing sitemap/robots.txt) are independent of the visual redesign, fast to ship, and don't require design work to be done first. Traffic is the growth lever; a great funnel with no traffic is invisible.
+
+**[2026-07-08] — The configurator becomes the core redesign focus: show real photos matching each choice, not just a running price total.**
+Approved by: Shawn + Jony Ive + Craig Federighi + Marcus Webb
+Why: Researched conversion psychology confirms configurators lift conversion by showing the customer something real as they build (Apple's own configurators work this way). No competitor in the Tucson market does this — most are static galleries with a contact form. Requires gallery photos to be tagged by component/color (garland tier, backdrop type, palette), not just `event_type` as they are today — this is scoped data work, not a rebuild, and it also improves the public gallery and social exports as a side effect (see Craig/Marcus notes in the audit).
+
+**[2026-07-08] — Deposit/cancellation policy must be visible next to the payment CTA, not discoverable only after payment.**
+Approved by: Shawn + Angela Ahrendts
+Why: `PRICING_RULES.depositNonRefundableAfter` (7 days) already exists in `src/lib/config.ts` but is never shown to the client. Hiding a real policy doesn't reduce perceived risk — it just moves the moment of discovery to after money has already changed hands, which damages trust rather than protecting it.

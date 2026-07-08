@@ -77,6 +77,24 @@ Why: Calm/Warm reads as refined and unhurried — the right register for an even
 
 ---
 
+## CONFIGURATOR: GUIDED PATH IS THE DEFAULT, CUSTOM BUILD IS SECONDARY (APPROVED — 2026-07-08)
+
+**The package configurator's Step 2 currently shows "premade package" and "Build My Own" as two equal, co-located buttons. That changes: the guided package path leads, the custom build path becomes a quieter secondary option for people who already know exactly what they want.**
+Approved by: Shawn + Angela Ahrendts + Jony Ive
+
+Why: Hick's Law — more equal-weight choices at once measurably lowers completion rates. Air With Flair Decor (a real event-decor competitor nationally) runs this exact hierarchy: a fast, guided default path, with a custom/consultation path available but not competing for the same visual weight. Most people don't know exactly what they want yet when they land on this screen — they should be led, not asked to choose between two unknowns immediately.
+
+---
+
+## CONFIGURATOR: SHOW WHAT'S BEING BUILT, NOT JUST THE PRICE (APPROVED — 2026-07-08)
+
+**As a customer selects garland tier, backdrop, columns, colors, etc. in the configurator, the page should show real photos from Monica's actual gallery matching those choices — not just a running price total.**
+Approved by: Shawn + Jony Ive + Craig Federighi + Marcus Webb
+
+Why: This is the single highest-leverage idea from the July 8 frontend audit. Researched conversion psychology confirms configurators that show something *real* as you build convert better than ones that only update a number — this is why Apple's own product configurators render the actual object at every step. No competitor in the Tucson market shows this; most are static galleries with a separate contact form, disconnected from the pricing/building moment. Implementation requires gallery photos tagged by component/color (garland tier, backdrop type, palette) — not just `event_type` as today — see `DECISIONS.md` for the data-model note. Full reasoning and research sources in `FRONTEND_REDESIGN_AUDIT.md`.
+
+---
+
 ## THE STANDARD
 
 Every Blue Luna Events screen must look like a $10,000 agency built it. Clean. Editorial. Nothing that reads as "local business website." If a stranger from Instagram can't feel calm authority within 3 seconds of landing, it isn't done.

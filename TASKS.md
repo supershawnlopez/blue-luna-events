@@ -41,22 +41,24 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Fix Supabase auto-pause** (NEW — found 2026-07-07, higher priority than anything else)
+1. **SEO/AEO/GEO quick fixes** (APPROVED 2026-07-08 — Shawn's explicit #1 priority, see DECISIONS.md + FRONTEND_REDESIGN_AUDIT.md Part 2)
+- Owner: Craig / Claude Code
+- Status: NOT STARTED
+- Fix invalid `@type: "EventVenueDecorService"` in `layout.tsx` → `LocalBusiness`
+- Fix or remove the fake `aggregateRating` (claims 50 reviews, page shows 3) — real compliance risk, not cosmetic
+- Fix `/quinceaneras` and `/graduations` being `'use client'` components that structurally cannot export their own `metadata` — restructure so each page gets its own tailored title/description
+- Add `FAQPage` JSON-LD wrapping the existing FAQ content on both landing pages
+- Add `src/app/sitemap.ts` and `public/robots.txt` — neither exists
+
+2. **Fix Supabase auto-pause**
 - Owner: Craig / Shawn
 - Status: NOT STARTED — one-time manual restore done 2026-07-07, root cause still open
-- The project was found `INACTIVE` (paused) mid-session — the keepalive cron (`/api/cron/keepalive`, Mon+Thu 10am UTC) is evidently not preventing this. A paused DB breaks the live site for real visitors (leads, estimates, gallery, Studio login all fail).
-- Investigate: confirm the Vercel cron is actually registered/firing (check `vercel.json` + Vercel dashboard cron logs), or accept periodic manual restores until revenue justifies Supabase Pro ($25/mo removes pausing entirely).
+- The project was found `INACTIVE` (paused) mid-session — the keepalive cron (`/api/cron/keepalive`, Mon+Thu 10am UTC) is evidently not preventing this. A paused DB breaks the live site for real visitors.
+- Investigate: confirm the Vercel cron is actually registered/firing, or accept periodic manual restores until revenue justifies Supabase Pro ($25/mo removes pausing entirely).
 
-2. **Confirm Stripe test vs. live mode** (NEW — found 2026-07-08, blocks safe testing)
+3. **Confirm Stripe test vs. live mode**
 - Owner: Shawn confirms (check Stripe dashboard test-mode toggle, top-left)
-- Status: NOT STARTED
-- Blocks: the end-to-end Stripe test below. If live mode, do not test with a real card — either switch to test mode temporarily or verify checkout opens correctly without completing payment.
-
-3. Calendar/availability system — port from Found, schema built for future iCloud sync
-- Owner: Craig + Priya (schema) → Marcus (wiring into Studio Schedule tab + public configurator)
-- Status: NOT STARTED
-- Port `availability` / `availability_blocks` / `bookings` tables + slot algorithm, single-tenant scoped
-- Design schema so a CalDAV-based two-way sync with Monica's iCloud calendar can be added later without a rebuild (external busy-block source + write-back path for confirmed bookings). The sync itself is a near-term follow-on, not required for this task's completion.
+- Status: NOT STARTED — blocks the end-to-end Stripe test. If live mode, do not test with a real card.
 
 ---
 
@@ -88,15 +90,20 @@ Exit criteria for Phase 1:
 
 ---
 
-## NEXT (in order — Platform Rebuild Phases 2–6, see PLATFORM_REBUILD_AUDIT.md)
+## NEXT (in order)
 
-1. **Phase 2 — New Design (Jony-led)**: unified visual rebuild across public site + Studio, one design language. Early exploration can start now (Lane B), full build after Phase 1 Lane A completes.
-2. **Phase 3 — Camera & Photos**: port Found's in-app `CameraSheet` pattern (zoom, torch, aspect ratio, album-at-capture picker), replacing the native file-input "Shoot" button. Keep existing heart/star model + locked video-thumbnail solution.
-3. **Phase 4 — Calendar/Booking UI**: once the Lane A schema/algorithm lands, build Monica's Schedule tab (Calendar/Bookings/Hours) and surface real availability in the public configurator. Follow-on: iCloud CalDAV two-way sync (Monica's personal calendar auto-blocks Blue Luna availability; confirmed bookings push to her iPhone calendar) — requires Monica to generate an Apple ID app-specific password.
-4. **Phase 5 — Leads, Contacts, Email**: real Leads system (temperature/status/source, lead→estimate handoff), Contacts phone book, real owner-editable `email_templates` system + Studio editor + campaign send tool. SMS sending capability (Twilio) built alongside, activation gated on Shawn's A2P 10DLC registration.
-5. **Phase 6 — Social / Branded Image Generation**: extend Social Export into an automatic branded-image pipeline off starred photos, caption assistance, lightweight posting view.
-6. Component photos for custom builder — Image Agent task (see AGENTS.md → Image Agent). Source or generate 15–20 images for à la carte options in Step3Custom, from @BlueLunaMagic Instagram.
-7. Next.js upgrade (14.2 → 16.x) — own session, test build after.
+1. **Configurator redesign — the core of the frontend rebuild** (APPROVED 2026-07-08, see DECISIONS.md + DESIGN_DECISIONS.md + FRONTEND_REDESIGN_AUDIT.md)
+   - Tag gallery photos by component/color (garland tier, backdrop type, palette), not just `event_type` as today — prerequisite data work, owned by Craig/Priya
+   - Configurator shows real matching gallery photos as the customer builds, not just a running price total (Jony's core idea)
+   - Step 2 restructured so the guided package path is the clear default; "Build My Own" becomes a quieter secondary option, not a co-equal button (Angela's fix)
+   - Surface the real deposit/cancellation policy (`PRICING_RULES.depositNonRefundableAfter`) next to the payment CTA — currently exists in code but is never shown to the client
+2. **Phase 2 — Remaining visual rebuild (Jony-led)**: everything outside the configurator — homepage, Studio, remaining sections — one unified design language across public site + Studio.
+3. **Phase 3 — Camera & Photos**: port Found's in-app `CameraSheet` pattern (zoom, torch, aspect ratio, album-at-capture picker), replacing the native file-input "Shoot" button. Keep existing heart/star model + locked video-thumbnail solution.
+4. **Phase 4 — Calendar/Booking**: port Found's `availability`/`availability_blocks`/`bookings` tables + slot algorithm, single-tenant scoped, schema built for future iCloud CalDAV sync. Build Monica's Schedule tab and surface real availability in the public configurator. Follow-on: iCloud two-way sync — requires Monica to generate an Apple ID app-specific password.
+5. **Phase 5 — Leads, Contacts, Email**: real Leads system (temperature/status/source, lead→estimate handoff), Contacts phone book, real owner-editable `email_templates` system + Studio editor + campaign send tool. SMS sending capability (Twilio) built alongside, activation gated on Shawn's A2P 10DLC registration.
+6. **Phase 6 — Social / Branded Image Generation**: extend Social Export into an automatic branded-image pipeline off starred photos, caption assistance, lightweight posting view.
+7. Component photos for custom builder — Image Agent task (see AGENTS.md → Image Agent). Source or generate 15–20 images for à la carte options in Step3Custom, from @BlueLunaMagic Instagram.
+8. Next.js upgrade (14.2 → 16.x) — own session, test build after.
 
 ---
 
