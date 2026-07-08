@@ -208,6 +208,23 @@ Check your email (shawnlopez@me.com) — a "Blue Luna Weekly Update" should have
 
 ---
 
+## Session: July 8, 2026 (Session 7) — Stripe live mode confirmed; same stale-key bug found and fixed
+**AI:** Claude Code
+**Worked on:** Shawn provided his Stripe secret key directly to resolve the open test-vs-live question.
+
+### Completed This Session
+- Confirmed Stripe is in **live mode** (`sk_live_...` prefix, `"livemode": true` per Stripe's own API).
+- Found the exact same category of bug as the Resend key: the `STRIPE_SECRET_KEY` deployed in Vercel didn't match the real, working key — `/api/stripe/estimate-checkout` was crashing with an empty 500 on every call. Verified the key worked fine talking to Stripe directly (real account, `$0` balance ever collected — consistent with checkout never having worked) before concluding the deployed value was the problem.
+- Updated `STRIPE_SECRET_KEY` in Vercel, redeployed, re-tested — the endpoint now returns a real, valid Stripe Checkout URL.
+- Did NOT complete an actual payment, since live mode means real money — see `TASKS.md` NOW #1 for options.
+- **Pattern flagged:** this is the third stale/wrong "sensitive" env var found this session (Resend domain, Resend key, Stripe key). Worth auditing the rest (`STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`) rather than assuming they're fine.
+
+### Still Open
+- Shawn to decide how to validate a real completed payment (test-mode keys vs. one real small transaction vs. trust today's verification).
+- Consider auditing remaining sensitive env vars for the same stale-value pattern.
+
+---
+
 ## Older History
 
 Sessions May 1–14, 2026 (documentation setup, configurator build, custom build path, Stripe + email flow) moved to `CHANGELOG_ARCHIVE.md` on July 6, 2026.

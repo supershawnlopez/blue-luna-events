@@ -41,9 +41,10 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Confirm Stripe test vs. live mode**
-- Owner: Shawn confirms (check Stripe dashboard test-mode toggle, top-left)
-- Status: NOT STARTED — blocks the end-to-end Stripe test. If live mode, do not test with a real card.
+1. **Decide how to fully validate the live Stripe checkout** (was: confirm test/live mode — now confirmed LIVE + a real deployed-key bug found and fixed 2026-07-08)
+- Confirmed: Blue Luna's Stripe is in **live mode** (`sk_live_...`, `"livemode": true` per Stripe's own API). Also found and fixed the same category of bug as the Resend key: the `STRIPE_SECRET_KEY` deployed in Vercel was stale/wrong, causing `/api/stripe/estimate-checkout` to crash outright (empty 500) on every call. Shawn provided the real working key; swapped it in, redeployed, re-tested — the endpoint now returns a real, valid Stripe Checkout URL (`cs_live_...`).
+- **Not yet done:** an actual completed payment. Since this is live mode, that means a real card gets charged. Options: (a) Shawn/Monica get Stripe **test-mode** keys (separate key pair, same account, toggle in Stripe dashboard) so future QA can happen without touching real money — recommended for anything beyond today's verification; (b) do one small real transaction on the existing $325 test estimate and refund it via the Stripe dashboard; (c) treat today's successful session-creation as sufficient confidence and let the first real client be the live proof.
+- Owner: Shawn decides which validation approach he wants.
 
 2. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
 - Status: MITIGATION SHIPPED 2026-07-08, monitor before considering fully closed
