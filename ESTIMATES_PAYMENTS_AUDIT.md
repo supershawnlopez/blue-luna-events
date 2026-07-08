@@ -57,10 +57,37 @@ No new mobile-specific concerns here — whatever ships needs to keep working on
 
 ---
 
-## OPEN QUESTIONS FOR SHAWN
+## ROUND 2 — Shawn asked the team to settle the email-from-Studio approach directly
 
-1. **Sequencing** — Steve's team recommends: real payment ledger first (Priya/Craig's rework), then discounts, then email-from-Studio, then back to the previously-planned Phase 5 (full Leads/Contacts system). Does that order match what you'd want, given "leads every day" is still the stated top business goal?
-2. **Discount test approach** — once discounts exist, do you want to use that to run the real live $1 Stripe test yourself, instead of getting separate test-mode keys?
-3. **Email-from-Studio scope** — just the share link, or the PDF attached too? Should it also notify Monica (bcc/copy her) so she has a record of what was sent?
+Shawn's question: should "Email Estimate" open Monica's own email app with a pre-filled message she taps send on (a `mailto:` link), or should the system send it directly, one-tap, done? He confirmed two requirements while asking: the email needs **both a PDF attachment and a live link** in the same message (different clients think differently — some want to click, some want to print for their records), and replies should land at `monica@bluelunaevents.com`.
+
+### Craig Federighi — Engineering
+This decides itself on a technical fact, not a preference: a `mailto:` link **cannot reliably attach a file** — there's no standard way to attach a PDF through it across email apps and phones, some ignore the attempt entirely, and the message body only supports plain text, not the branded HTML design already built for the other emails. Since Shawn wants a PDF attached in the same message, `mailto:` can't deliver that requirement at all. That's not a close call.
+
+### Marcus Webb — Studio/Integration
+The system-send path is a small, contained build on infrastructure that already exists and is now confirmed working — Resend is proven end-to-end today. One button in the estimate detail page, one new API route: generates the same PDF that already works, attaches it, includes the live link, sends with `reply-to: monica@bluelunaevents.com` — the exact same reply-routing pattern already used and working in the client confirmation email. Nothing new to invent.
+
+### Jony Ive — Design
+One tap, done, beautiful every time — this is the version that actually matches "feel like an iPhone." Monica shouldn't have to compose or proofread anything; the system already knows how to make this look right (see the existing branded email templates). The `mailto:` path would hand her a plain, unstyled draft to manually clean up and send — the opposite of what we're building toward.
+
+### Angela Ahrendts — Client Experience
+Agree on including both the PDF and the live link in one email, exactly as Shawn described — some people will tap the link, some will screenshot or print the PDF for their own records, and there's no reason to force one behavior. Small addition: show Monica a quiet confirmation after sending ("Sent to maria@email.com") so she has peace of mind it went out, without needing her own email app open to check.
+
+### Steve Jobs — Product
+Team's unanimous, and for good reason — this isn't really two competing philosophies, it's one option that technically can't do what was asked and one that can. Build the real send. Shawn's instinct ("why not the system do all the hard work") was correct; the `mailto:` idea was the overthinking, not the other way around.
+
+**Team recommendation: system-send, one tap, PDF attached + live link included, reply-to `monica@bluelunaevents.com`.**
+
+---
+
+## CONFIRMED BY SHAWN (2026-07-09)
+
+- Use the discount trick for the live payment test — Shawn will discount a test estimate to $1 and run a real transaction on himself.
+- Email-from-Studio includes both the PDF attachment and the live link in the same email.
+- Replies to any estimate email go to `monica@bluelunaevents.com`.
+
+## STILL OPEN FOR SHAWN
+
+1. **Sequencing** — team recommends: real payment ledger first (Priya/Craig's rework), then discounts, then email-from-Studio (now that the approach is settled), then back to the previously-planned Phase 5 (full Leads/Contacts system). Does that order match what you'd want, given "leads every day" is still the stated top business goal?
 
 Read this, add your own view, and we'll decide together — nothing here is being built yet.
