@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { Check, CreditCard, Download, Phone } from 'lucide-react'
-import { SITE_CONFIG } from '@/lib/config'
+import { SITE_CONFIG, labelForAddOn, labelForEventType } from '@/lib/config'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
 
 type Estimate = {
@@ -110,7 +110,7 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
           <div style={{ padding: '4px 0' }}>
             {([
               { label: 'Name', value: est.client_name },
-              est.event_type ? { label: 'Event', value: est.event_type } : null,
+              est.event_type ? { label: 'Event', value: labelForEventType(est.event_type) } : null,
               est.event_date ? { label: 'Date', value: est.event_date } : null,
               est.venue ? { label: 'Venue', value: est.venue } : null,
             ].filter((row): row is { label: string; value: string } => row !== null)).map((row, i) => (
@@ -138,7 +138,7 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
             )}
             {addOns.map((a, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: i < addOns.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>{a}</p>
+                <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>{labelForAddOn(a)}</p>
                 <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>Add-on</p>
               </div>
             ))}

@@ -1,6 +1,6 @@
 import React from 'react'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
-import { SITE_CONFIG } from '@/lib/config'
+import { SITE_CONFIG, labelForAddOn, labelForEventType } from '@/lib/config'
 import { computeBalance, type EstimateForBalance, type EstimatePayment } from '@/lib/estimateBalance'
 
 const styles = StyleSheet.create({
@@ -51,7 +51,7 @@ function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
     ['Client', est.client_name],
     ['Email', est.client_email],
     ...(est.client_phone ? [['Phone', est.client_phone] as [string, string]] : []),
-    ...(est.event_type ? [['Event', est.event_type] as [string, string]] : []),
+    ...(est.event_type ? [['Event', labelForEventType(est.event_type)] as [string, string]] : []),
     ...(est.event_date ? [['Date', est.event_date] as [string, string]] : []),
     ...(est.venue ? [['Venue', est.venue] as [string, string]] : []),
   ]
@@ -79,7 +79,7 @@ function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
       ] : []),
       ...addOns.map((a, i) =>
         React.createElement(View, { key: `a${i}`, style: styles.row },
-          React.createElement(Text, { style: styles.rowLabel }, a),
+          React.createElement(Text, { style: styles.rowLabel }, labelForAddOn(a)),
           React.createElement(Text, { style: styles.rowValue }, 'Add-on')
         )
       ),

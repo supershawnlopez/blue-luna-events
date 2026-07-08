@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ChevronLeft, Copy, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
+import { labelForAddOn, labelForEventType } from '@/lib/config'
 
 type Estimate = {
   id: string
@@ -225,7 +226,7 @@ export default function EstimateDetail() {
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px', marginBottom: '16px' }}>
           <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Details</p>
           {[
-            ['Email', est.client_email], ['Phone', est.client_phone], ['Event', est.event_type],
+            ['Email', est.client_email], ['Phone', est.client_phone], ['Event', labelForEventType(est.event_type)],
             ['Date', est.event_date], ['Venue', est.venue], ['Notes', est.notes],
           ].filter(([, v]) => v).map(([label, value], i) => (
             <div key={i} style={{ display: 'flex', padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
@@ -242,7 +243,7 @@ export default function EstimateDetail() {
             <p style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, marginBottom: '6px' }}>{est.package_name} Package</p>
           )}
           {addOns.map((a, i) => (
-            <p key={i} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0' }}>+ {a}</p>
+            <p key={i} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0' }}>+ {labelForAddOn(a)}</p>
           ))}
         </div>
 

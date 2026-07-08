@@ -370,6 +370,18 @@ export const ADD_ONS: AddOn[] = [
   },
 ]
 
+// Helper: human-readable label for a stored add-on ID. Never render raw IDs
+// (e.g. "cp_premium_3pack") on anything a client sees.
+export function labelForAddOn(id: string): string {
+  return ADD_ONS.find(a => a.id === id)?.label ?? id
+}
+
+// Helper: human-readable label for a stored event type ID (e.g. "birthday" -> "Birthday").
+export function labelForEventType(id?: string | null): string {
+  if (!id) return ''
+  return CONFIGURATOR_EVENT_TYPES.find(e => e.id === id)?.label ?? id
+}
+
 // ─── Pricing Rules ─────────────────────────────────────────────────────────────
 
 export const PRICING_RULES = {
