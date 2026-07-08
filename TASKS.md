@@ -41,22 +41,13 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **SEO/AEO/GEO quick fixes** (APPROVED 2026-07-08 — Shawn's explicit #1 priority, see DECISIONS.md + FRONTEND_REDESIGN_AUDIT.md Part 2)
-- Owner: Craig / Claude Code
-- Status: NOT STARTED
-- Fix invalid `@type: "EventVenueDecorService"` in `layout.tsx` → `LocalBusiness`
-- Fix or remove the fake `aggregateRating` (claims 50 reviews, page shows 3) — real compliance risk, not cosmetic
-- Fix `/quinceaneras` and `/graduations` being `'use client'` components that structurally cannot export their own `metadata` — restructure so each page gets its own tailored title/description
-- Add `FAQPage` JSON-LD wrapping the existing FAQ content on both landing pages
-- Add `src/app/sitemap.ts` and `public/robots.txt` — neither exists
-
-2. **Fix Supabase auto-pause**
+1. **Fix Supabase auto-pause**
 - Owner: Craig / Shawn
 - Status: NOT STARTED — one-time manual restore done 2026-07-07, root cause still open
 - The project was found `INACTIVE` (paused) mid-session — the keepalive cron (`/api/cron/keepalive`, Mon+Thu 10am UTC) is evidently not preventing this. A paused DB breaks the live site for real visitors.
 - Investigate: confirm the Vercel cron is actually registered/firing, or accept periodic manual restores until revenue justifies Supabase Pro ($25/mo removes pausing entirely).
 
-3. **Confirm Stripe test vs. live mode**
+2. **Confirm Stripe test vs. live mode**
 - Owner: Shawn confirms (check Stripe dashboard test-mode toggle, top-left)
 - Status: NOT STARTED — blocks the end-to-end Stripe test. If live mode, do not test with a real card.
 
@@ -64,6 +55,7 @@ Exit criteria for Phase 1:
 
 ## DONE (2026-07-07 to 07-08)
 
+- ✅ **SEO/AEO/GEO 5 fixes shipped** (2026-07-08): `layout.tsx` JSON-LD `@type` fixed to `LocalBusiness`; fake `aggregateRating` (50 claimed, 3 shown) removed pending real data; `/quinceaneras` and `/graduations` converted from unnecessary client components to real Server Components, each now has its own tailored `metadata`; `FAQPage` JSON-LD added to both from existing FAQ content; `src/app/sitemap.ts` and `src/app/robots.ts` added. Commit `8951d7b0`.
 - ✅ Stripe estimate checkout — `/api/stripe/estimate-checkout` (deposit + balance), webhook updated to write `estimates.deposit_paid`/`balance_paid`/`*_paid_at`/`*_stripe_session_id`/`*_stripe_payment_intent_id`.
 - ✅ `/studio/estimates/[id]` detail view — client info, line items, payment status, manual "Mark Paid" for Zelle/cash/check, share link, PDF download.
 - ✅ `/api/studio/estimates/[id]/pdf` — PDF receipt via `@react-pdf/renderer`.

@@ -120,6 +120,30 @@ See `SESSION_HANDOFF.md` → Shawn Test Steps for the full current list.
 
 ---
 
+## Session: July 8, 2026 (Session 3) — SEO/AEO/GEO fixes shipped
+**AI:** Claude Code
+**Worked on:** Shawn approved the frontend redesign direction and said go ahead on the SEO/AEO/GEO fixes (his explicit #1 priority).
+
+### Completed This Session
+- Fixed the invalid JSON-LD `@type` (`EventVenueDecorService` → `LocalBusiness`) in `layout.tsx`.
+- Removed the fake `aggregateRating` (claimed 50 reviews, page shows 3) — flagged as a real Google compliance risk, not cosmetic. Left a comment explaining why it's gone and what's needed to safely re-add it.
+- Converted `/quinceaneras` and `/graduations` from `'use client'` to real Server Components — confirmed first that neither used any hooks or client-only APIs, so this was a safe, clean conversion. Each page now exports its own `metadata` (title/description/OG) instead of silently inheriting the homepage's generic ones.
+- Added `FAQPage` JSON-LD to both landing pages, generated directly from the FAQ content that already existed in each page's `FAQS` array.
+- Added `src/app/sitemap.ts` and `src/app/robots.ts` (Next.js's native generators) — neither existed before.
+- Verified everything with `npx tsc --noEmit` (clean) and a grep for client-only APIs in the converted files (none found).
+- Commit `8951d7b0`, pushed to `main`.
+
+### Still Open
+- Supabase auto-pause root cause investigation.
+- Confirm Stripe test vs. live mode (still waiting on Shawn).
+- The bigger configurator redesign (real matching photos, guided-path-default, deposit policy visibility) — not started, see `TASKS.md` NEXT #1.
+
+### Shawn Test
+1. View page source (or use a tool like Google's Rich Results Test) on `/quinceaneras` and `/graduations` — confirm each shows its own unique title tag, not the homepage's.
+2. Confirm `bluelunaevents.com/sitemap.xml` and `bluelunaevents.com/robots.txt` both load once deployed.
+
+---
+
 ## Older History
 
 Sessions May 1–14, 2026 (documentation setup, configurator build, custom build path, Stripe + email flow) moved to `CHANGELOG_ARCHIVE.md` on July 6, 2026.
