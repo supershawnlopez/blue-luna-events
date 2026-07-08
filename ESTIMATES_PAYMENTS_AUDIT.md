@@ -86,6 +86,34 @@ Team's unanimous, and for good reason — this isn't really two competing philos
 - Email-from-Studio includes both the PDF attachment and the live link in the same email.
 - Replies to any estimate email go to `monica@bluelunaevents.com`.
 
+## ROUND 3 — Estimates list page: discount-aware display + declutter (2026-07-09)
+
+Shawn's live testing after the payment ledger shipped: (1) a real bug — raw internal IDs like `shimmer_backdrop`, `cp_premium_3pack` were printing verbatim on the customer-facing PDF instead of proper labels. Fixed directly (not a team question — displaying internal identifiers to a client is just wrong, not a style choice). See `DECISIONS.md`.
+
+Two genuine design questions, brought to the team as asked:
+
+**(a) The estimates list shows the full $650 as "unpaid" even when a $649 discount already brought the real amount owed down to $1.** Shawn wants to glance at the list and immediately understand "this isn't real money at risk, a discount already covers most of it" — not have to open the estimate to find out.
+
+**(b) Does the little file icon on each list row do anything, and do we need the full card wrapper at all — could this just be flat rows with a hairline divider between them?**
+
+### Jony Ive — Design
+On (a): use the standard sale-price pattern — show the *discounted* total as the bold, primary number, with the original total struck through above or beside it (`~~$650~~ **$1**`). Everyone already reads this pattern instantly from any store; it doesn't need new UI vocabulary, and it directly answers "is this really at risk" in the same glance as the price itself.
+
+On (b): the icon is decorative — it's identical on every row, carries zero differentiating information, and is exactly the kind of thing that should go. Same for the card wrapper. This list is a repeating set of rows, not a set of discrete standalone objects — the right pattern is flat rows separated by a hairline divider within one continuous surface, the same principle already locked for Found's estimate builder ("flowing surface, not card-stack" — see `DESIGN_DECISIONS.md`). Removing both frees up real width for the actual useful information: name, status, discount-aware price.
+
+### Angela Ahrendts — Client Experience
+Agree with Jony's price treatment. One addition: keep the "$X paid so far" line, but have it describe the *discounted* total's remaining balance, not the original — so the full picture on one row is "was $650, now $1 after discount, $1 still owed" without ever feeling like three separate facts.
+
+### Craig Federighi — Engineering
+Both changes are presentation-only — no new data needed, `computeBalance()` already returns everything (subtotal, discountAmount, finalTotal, amountOwed). Small, low-risk change.
+
+### Steve Jobs — Product
+Approve both. This is exactly the "make space, no fluff" instinct Shawn had — cut what's decorative, keep what's informative, and don't make him open a record to learn something the list should have told him already.
+
+**Team recommendation: strike-through original price + bold discounted price; remove the icon and card wrapper in favor of flat rows with a hairline divider.**
+
+---
+
 ## APPROVED — 2026-07-09
 
 Shawn approved the team's recommendation explicitly: design, details, and build order as stated. Build sequence locked:
