@@ -1,6 +1,6 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: July 7, 2026*
+*Last updated: July 9, 2026 — handoff from Claude Code to Codex*
 
 ---
 
@@ -19,70 +19,46 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Platform Rebuild Phase 1 (Foundation) is active and approved — full audit in `PLATFORM_REBUILD_AUDIT.md`, locked decisions in `DECISIONS.md`.
-- **Supabase was found `INACTIVE` (paused) on 2026-07-07 mid-session** — manually restored via Management API, but the root cause (keepalive cron apparently not preventing this) is still open. See `TASKS.md` NOW #1. Check project status before assuming the live site works.
-- Stripe estimate checkout is now built: `/api/stripe/estimate-checkout`, webhook writes to `estimates` table, `/studio/estimates/[id]` detail view, PDF receipt route.
-- `STUDIO_PASSWORD` is now set in Vercel (production + preview) and in local `.env.local`. **The value is intentionally not written in this file** — it's a secret, and this file is committed to git. Find it in `.env.local` (gitignored, local only) or ask Shawn directly.
-- **Open blocker before the payment flow can be safely tested: unknown whether Stripe is in test mode or live mode.** Do not test a real payment (deposit/balance) until this is confirmed — a live-mode test with a real card would actually charge money; a live-mode test with the Stripe fake test card (`4242...`) will just fail. Check the Stripe dashboard (test-mode toggle, top-left) or ask Shawn before running the payment test below.
-- A real test estimate already exists: client "Shawn Lopez," $650, unpaid — `share_token` = `6644927be9376058f4b3fa5dac11f034`. Use `/q/6644927be9376058f4b3fa5dac11f034` for the payment test instead of creating a new one.
-- Latest commit: `91b5e67e` — pushed to `main`, Vercel should auto-deploy.
-- **Run `git status` and `git log` before trusting anything below as fully current.**
+- Latest commit: `8e6c20df` — pushed to `main`, Vercel should auto-deploy. **Run `git status` and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time.
+- Full context for everything below lives in three audit docs — read them before making changes in these areas:
+  - `PLATFORM_REBUILD_AUDIT.md` — the original full-scope audit (design, camera, calendar, leads, email, social, SEO)
+  - `FRONTEND_REDESIGN_AUDIT.md` — public site redesign direction (SEO/AEO/GEO priority #1, then configurator shows real matching photos as customer builds, guided path as default)
+  - `ESTIMATES_PAYMENTS_AUDIT.md` — the payment ledger rework (most recent work), including an **approved-but-not-yet-built** design change (see below)
+- All locked decisions are in `DECISIONS.md` (product/technical) and `DESIGN_DECISIONS.md` (visual/UX) — read before assuming something is undecided.
+
+### What's fully working and confirmed (not just "looks done")
+- **Email is completely fixed.** Three stacked bugs (unverified Resend domain since May 14, an invalid Resend API key, a missing MX record so Monica's real Namecheap-hosted mailbox was unreachable) all found and fixed 2026-07-08. Shawn confirmed real-world: can both send and receive at `monica@bluelunaevents.com`.
+- **Stripe is live mode, confirmed**, and a stale/wrong deployed key (same bug pattern as Resend) was found and fixed 2026-07-08. Checkout session creation verified working with a real Stripe Checkout URL.
+- **Payment ledger rework shipped 2026-07-09** (commit `b74a9a4e`) — replaced the old fixed 50/50 deposit/balance booleans with a real `estimate_payments` ledger table + `src/lib/estimateBalance.ts` shared calculation used by the client page, PDF, Studio detail page, and weekly summary email. Built: discount editor (percent/flat + note), manual "Record Payment" (Zelle/cash/check + note), real one-tap "Email Estimate to Client" (PDF attached + live link, system-send not `mailto:`). Live-tested end-to-end on the real production test estimate, then cleaned up.
+- **Raw internal IDs bug fixed 2026-07-09** (commit `02ec1c79`) — add-ons and event types were printing as `shimmer_backdrop`, `cp_premium_3pack` etc. on customer-facing PDF/pages instead of proper labels. Fixed via `labelForAddOn()`/`labelForEventType()` in `config.ts`.
+- **SEO/AEO/GEO 5 fixes shipped 2026-07-08** (commit `8951d7b0`) — fixed invalid JSON-LD `@type`, removed fake review count, fixed `/quinceaneras` + `/graduations` to have their own metadata (were unnecessarily client components), added FAQPage schema, added sitemap.xml + robots.txt.
+
+### Approved but NOT yet built — likely next task
+`ESTIMATES_PAYMENTS_AUDIT.md` "Round 3" — team recommendation approved in principle by Shawn's framing but not yet explicitly greenlit to build, and not built:
+1. Estimates list page: show discounted total as the bold primary price with the original struck through (e.g. `~~$650~~ **$1**`) instead of showing the pre-discount total as if it's fully at risk.
+2. Remove the decorative file icon and the per-row card wrapper on the estimates list — replace with flat rows separated by a hairline divider (consistent with the already-locked "flowing surface, not card-stack" principle in `DESIGN_DECISIONS.md`).
+**Confirm with Shawn whether to proceed with this before building it** — last message in the conversation was Shawn saying he's switching to Codex, not an explicit "yes build it."
+
+### Still open / not started
+- Shawn has not yet run the real live $1 payment test (discount a test estimate near 100%, complete a real Stripe payment on himself) — capability is built, he just hasn't done it yet.
+- Supabase auto-pause: root cause never fully proven (likely Vercel Hobby-plan cron reliability). Mitigated by replacing the silent keepalive ping with a real weekly business-summary email (`/api/cron/weekly-summary`) so a failure becomes visible (missing email) instead of silent. If Shawn stops getting the Monday/Thursday email, that's the signal to investigate further or pay for Supabase Pro ($25/mo).
+- **Pattern worth remembering:** 3 separate "sensitive" Vercel env vars were found stale/wrong this session (Resend domain, Resend key, Stripe key). Nobody has yet audited the remaining ones (`STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`) for the same issue.
+- Calendar/availability system (Platform Rebuild Lane A item 2) — not started. Decided: port Found's `availability`/`availability_blocks`/`bookings` pattern, schema built for a future iCloud CalDAV two-way sync (Monica's calendar is iCloud, not Google).
+- Configurator redesign (`FRONTEND_REDESIGN_AUDIT.md` — real matching photos as customer builds, guided package path as default, visible deposit/cancellation policy) — not started. Requires gallery photos to be tagged by component/color, not just `event_type`, as a prerequisite.
+- Phase 5 — real Leads system, Contacts phone book, owner-editable email template system, SMS (Twilio, capability only — activation needs Shawn's A2P 10DLC carrier registration) — not started, was next after the payments work per the locked build order.
+- Camera/Photos port from Found (in-app `CameraSheet`, replacing the native file-input "Shoot" button) — not started.
 
 ---
 
-## Changed / Finished (most recent known work)
+## Test Estimate for QA
 
-- [x] StudioNav — shared 4-tab bottom nav (Home, My Work, Galleries, Estimates) across all Studio pages.
-- [x] Public `Nav.tsx` hides on `/studio/*` and `/gallery/*` routes.
-- [x] Studio home rebuilt — time-of-day greeting, real stats from `/api/studio/stats`, quick-action cards, logout.
-- [x] My Work (media) page overhaul — safe-area header, 3-column grid, tag bottom sheet, video thumbnail auto-capture.
-- [x] Social Export rebuilt — 3 Instagram canvas formats, star-tagged media, logo + URL + event-type strip on canvas.
-- [x] Public gallery rebuilt — real Supabase data, filter chips by event type, masonry layout, swipe/arrow-key lightbox.
-- [x] Video thumbnail system solved after multiple failed attempts — see `DECISIONS.md` for the root cause and locked fix. Do not re-attempt the approaches listed there as "do not try."
-- [x] Hosting migrated from Netlify to Vercel; custom domain `bluelunaevents.com` pointed at Vercel nameservers.
-
-## Still Needs Work
-
-- [ ] **Supabase auto-pause root cause** — one-time restore is not a fix. Investigate the keepalive cron.
-- [ ] **Confirm Stripe test vs. live mode** before running any payment test — see Current Status above.
-- [ ] End-to-end Stripe test (test card `4242 4242 4242 4242`, test mode only) — checkout code is built and pushed, not yet live-verified.
-- [ ] Calendar/availability system — not started (Lane A item 2).
-- [x] `STUDIO_PASSWORD` — set 2026-07-08.
-- [ ] Update Stripe webhook URL to `bluelunaevents.com` once DNS propagation is confirmed complete.
-- [ ] `next-pwa` PWA manifest — install prompt for Monica's Studio.
-- [ ] Confirm current DNS/domain propagation status — unknown as of this handoff, verify before assuming it's resolved.
+Real test estimate exists — client "Shawn Lopez," originally $650: `id = 1899b5a3-af43-4404-90bd-8932e8a52462`, `share_token = 6644927be9376058f4b3fa5dac11f034`. Use `/q/6644927be9376058f4b3fa5dac11f034` for client-side testing. Currently clean (no payments, no discount) as of last session — Claude added test data to verify the ledger rework, then removed it.
 
 ---
 
-## Shawn Test Steps
+## Credentials note
 
-### 1. Studio login
-1. Go to `bluelunaevents.com/studio/login`.
-2. Password is in `.env.local` under `STUDIO_PASSWORD` (not repeated here — see Current Status above for why).
-3. Confirm login works.
-
-### 2. Estimates list actually shows data (was broken, fixed 2026-07-07)
-1. In Studio, tap **Estimates**.
-2. Confirm you see the real "Shawn Lopez / $650 / unpaid" estimate — not "No estimates yet." (Before this session, this screen was hardcoded to always show empty, regardless of real data.)
-
-### 3. Client payment flow — CONFIRM STRIPE MODE FIRST, see Current Status above
-1. Open `bluelunaevents.com/q/6644927be9376058f4b3fa5dac11f034` (as if you were the client).
-2. Tap "Pay Deposit."
-3. **Test mode:** use card `4242 4242 4242 4242`, any future expiry, any CVV — fake, safe, no real charge.
-   **Live mode:** stop here and tell Claude — do not use a real card just to test.
-4. After a successful test-mode payment, confirm the page shows "Deposit paid" and a "Pay Balance" button appears.
-5. Back in Studio → Estimates → open that estimate, confirm it shows deposit paid with a timestamp.
-
-### 4. Manual "Mark Paid" (for Zelle/check/cash payments)
-1. On the same estimate detail page in Studio, tap "Mark Paid" next to Deposit or Balance.
-2. Confirm it toggles to a green "✓ Paid" state without needing Stripe at all.
-
-### 5. PDF receipt
-1. From either the client-facing `/q/...` page or the Studio detail page, tap the PDF download button.
-2. Confirm a PDF actually downloads and the details/totals look correct.
-
-### 6. Domain / Hosting (carried from prior session — recheck if untested)
-1. Visit `bluelunaevents.com` directly — confirm it loads the live site over HTTPS with no certificate warning.
+`STUDIO_PASSWORD`, Vercel/Supabase/Resend API access, and the Stripe key are held by Claude Code in its own memory system (not in this repo's committed docs — see the security rule in `DECISIONS.md`: never commit secrets). If Codex needs any of these, ask Shawn directly rather than assuming they're discoverable from the repo alone.
 
 ---
 
