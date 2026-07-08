@@ -62,7 +62,7 @@ export const metadata: Metadata = {
 
 const LOCAL_BUSINESS_SCHEMA = {
   '@context': 'https://schema.org',
-  '@type': 'EventVenueDecorService',
+  '@type': 'LocalBusiness',
   name: 'Blue Luna Events',
   description: "Tucson's premier balloon décor and event styling studio. Quinceañeras, weddings, graduations, birthdays, and corporate events.",
   url: 'https://bluelunaevents.com',
@@ -97,11 +97,10 @@ const LOCAL_BUSINESS_SCHEMA = {
   ],
   openingHours: 'Mo-Su 08:00-20:00',
   priceRange: '$$',
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '5.0',
-    reviewCount: '50',
-  },
+  // aggregateRating intentionally omitted — the prior block claimed 50 reviews
+  // while only 3 are shown on-page. Re-add only once backed by a real, verifiable
+  // source (e.g. the actual Google Business Profile rating/count). See
+  // FRONTEND_REDESIGN_AUDIT.md Part 2 #2 and DECISIONS.md.
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

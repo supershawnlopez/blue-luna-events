@@ -1,9 +1,20 @@
-'use client'
-
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Sparkles, Camera, Crown, Check, ArrowRight } from 'lucide-react'
 import { PACKAGE_CATALOG, type Package } from '@/lib/config'
+
+export const metadata: Metadata = {
+  title: 'Quinceañera Balloon Décor in Tucson, AZ | Blue Luna Events',
+  description: 'Quinceañera balloon garlands, shimmer backdrops, and columns in Tucson, AZ. Packages from $450. Custom color palettes, professional installation, same-day takedown.',
+  openGraph: {
+    title: 'Quinceañera Balloon Décor in Tucson, AZ | Blue Luna Events',
+    description: 'Quinceañera balloon garlands, shimmer backdrops, and columns in Tucson, AZ. Packages from $450.',
+    url: 'https://bluelunaevents.com/quinceaneras',
+    images: [{ url: 'https://bluelunaevents.com/images/gal-2.jpg', width: 1200, height: 630, alt: 'Quinceañera balloon décor in Tucson, AZ' }],
+  },
+  alternates: { canonical: 'https://bluelunaevents.com/quinceaneras' },
+}
 
 const FEATURES = [
   { icon: Sparkles, title: 'Custom Luxury Garlands', text: 'Floor-to-ceiling balloon garlands in your exact colors — rose gold, blush, champagne, or anything you envision.' },
@@ -22,9 +33,23 @@ const FAQS = [
   { q: 'Can you match my daughter\'s quinceañera colors exactly?', a: 'Absolutely. We work with any color palette. Just share your vision and we\'ll bring it to life.' },
 ]
 
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(faq => ({
+    '@type': 'Question',
+    name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a },
+  })),
+}
+
 export default function Quinceaneras() {
   return (
     <div style={{ minHeight: '100vh', background: '#FDFCFA' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
+      />
       {/* Hero */}
       <div style={{ background: '#0D0F0F', paddingTop: '72px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 60% 50%, rgba(91,191,191,0.12) 0%, transparent 60%)' }} />

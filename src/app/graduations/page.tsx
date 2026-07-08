@@ -1,9 +1,20 @@
-'use client'
-
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Palette, Camera, Zap, Check, ArrowRight, GraduationCap } from 'lucide-react'
 import { PACKAGE_CATALOG, type Package } from '@/lib/config'
+
+export const metadata: Metadata = {
+  title: 'Graduation Party Balloon Décor in Tucson, AZ | Blue Luna Events',
+  description: 'Graduation party balloon décor in Tucson, AZ. School-color garlands, backdrops, and photo-ready setups. Packages from $299. Fast turnaround for rush bookings.',
+  openGraph: {
+    title: 'Graduation Party Balloon Décor in Tucson, AZ | Blue Luna Events',
+    description: 'Graduation party balloon décor in Tucson, AZ. School-color garlands, backdrops, and photo-ready setups. Packages from $299.',
+    url: 'https://bluelunaevents.com/graduations',
+    images: [{ url: 'https://bluelunaevents.com/images/gal-4.jpg', width: 1200, height: 630, alt: 'Graduation party balloon décor in Tucson, AZ' }],
+  },
+  alternates: { canonical: 'https://bluelunaevents.com/graduations' },
+}
 
 const FEATURES = [
   { icon: Palette, title: 'School Color Palettes', text: "We match your grad's school colors perfectly — garlands, backdrops, and centerpieces all coordinated." },
@@ -22,9 +33,23 @@ const FAQS = [
   { q: 'Do you do outdoor graduation parties?', a: 'Yes! We do both indoor and outdoor setups using weighted bases and wind-resistant techniques.' },
 ]
 
+const FAQ_SCHEMA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: FAQS.map(faq => ({
+    '@type': 'Question',
+    name: faq.q,
+    acceptedAnswer: { '@type': 'Answer', text: faq.a },
+  })),
+}
+
 export default function Graduations() {
   return (
     <div style={{ minHeight: '100vh', background: '#FDFCFA' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
+      />
       {/* Hero */}
       <div style={{ background: '#0D0F0F', paddingTop: '72px', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 40% 50%, rgba(201,169,110,0.1) 0%, transparent 60%)' }} />
