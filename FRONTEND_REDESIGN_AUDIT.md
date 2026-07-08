@@ -84,8 +84,45 @@ Haven't done a full mobile pass in this audit, but worth flagging before any red
 
 ---
 
-## OPEN QUESTION FOR SHAWN
+## SHAWN'S BRIEF (2026-07-08)
 
-Steve's question above is the one that actually needs an answer before the team can give a real recommendation: when you say "we're not happy with it" — is that about how it *looks*, or about what it's *producing* (leads, bookings)? The technical fixes in Part 2 are cheap, fast, and don't require a visual redesign at all. A full ground-up visual redesign is a much bigger, slower undertaking. Knowing which problem you're actually trying to solve changes which one the team would prioritize first.
+Answering Steve's question directly: SEO/AEO/GEO is priority #1, full stop — traffic is the machine that feeds everything else. Priority #2, tightly linked: the site itself has to feel like buying an iPhone — Apple-level design *and* function fused together, not visual polish alone. The build-your-own-price configurator needs to stay, but a custom-quote path has to exist *at the same time*, not as a fallback. The whole point is a psychologically self-guiding machine that leads someone from "just looking" to pulling out a card and putting down a deposit. Shawn explicitly asked the team to think outside the box on this — what hasn't been done in this industry, and separately, what *has* been done elsewhere (any industry) that already works and could be borrowed. He was clear he doesn't know the event-decor industry deeply and wants the team's real thinking here, not just his own instinct.
 
-Read this, add your own view, and we'll decide together — nothing here is being built yet.
+---
+
+## PART 5 — RESEARCH + TEAM RESPONSE TO THE BRIEF (Round 2)
+
+### What proven conversion psychology actually says (external research, not opinion)
+
+- Well-built configurators can lift conversion up to ~40% — the mechanism is that each completed step is a "micro-commitment" that increases the customer's investment in finishing. ([SaleSqueze](https://salesqueze.com/how-configurator-design-impacts-conversions/), [ConvertCalculator](https://www.convertcalculator.com/blog/what-is-a-product-configurator/))
+- Hick's Law: more choices at once = harder to decide, lower purchase probability. 5–7 options at a time converts meaningfully better than 30 shown at once. Progressive disclosure (one decision at a time, real-time price update after each) is the proven structure — which is directionally what Blue Luna's existing 4-step configurator already does. ([Configurator UX Best Practices](https://configurator.tech/blogs/configurator-ux-best-practices-designing-conversion/))
+- Instant quote calculators in service businesses (roofing, contracting) have documented conversion jumps from ~1.8% to ~7.2% after launch — driven by the "commitment and consistency" effect (once someone starts answering questions, they psychologically want to finish) and the "reciprocity" effect (getting a real price up front makes people more willing to hand over contact info in return). ([Silver Spider Media](https://silverspidermedia.com/blog/how-quote-calculators-boost-conversion-rates))
+- The "self-serve + talk to a human" dual path is standard, proven SaaS pricing-page architecture (Zendesk is a commonly cited example) — not a hedge, a deliberate pattern, because different buyers genuinely want different amounts of control. ([Webstacks](https://www.webstacks.com/blog/saas-pricing-page-design))
+- **Directly on-point industry proof:** Air With Flair Decor (Raleigh, NC balloon/event stylist) runs exactly this dual model today — a self-serve "Grab & Go" shop with transparent per-foot pricing, *plus* a custom-consultation path with mockups/color iterations and a 50% deposit tied to a real proposal. Their premium feel comes from designer-consultation framing and visual mockups, not from the contact form itself. This is a working example in the *same industry*, not a hypothetical borrowed from tech. ([airwithflairdecor.com](https://airwithflairdecor.com/))
+
+### Team response
+
+**Jony Ive (Design):** The Apple comparison is the right instinct, but it's not about chrome — Apple's configurators win because every choice shows you something *real* immediately: color, material, a rendered product. Blue Luna's configurator currently shows a running price total, which is good, but it never shows the customer *what they're building*. My recommendation: as someone picks garland tier, backdrop, colors, the page should show real photos from Monica's actual gallery that match those choices — not a generic stock photo, an actual "this is what your columns will look like" moment. That's the single highest-leverage design change available, and it directly answers Shawn's "make it feel like an iPhone" brief — Apple sells the feeling of the object, not a spec sheet.
+
+**Angela Ahrendts (CX):** The dual-path instinct is already correct — Air With Flair proves it works in this exact industry. What I'd tighten: right now "Build My Own" and premade packages are two *equal* buttons on one screen (Hick's Law says that's already a harder decision than it needs to be). Better: lead with the guided package path as the default, fast, low-effort choice, and surface "or build exactly what you want" as a secondary, quieter option for people who already know what they want — not two co-equal doors. And regardless of which path, the deposit CTA needs trust language right next to it addressing the actual fear (what if my date changes, what if I don't love it) — `PRICING_RULES` already has a real cancellation policy (`depositNonRefundableAfter: 7 days`) that isn't shown anywhere on the client-facing side today. Hiding a real policy doesn't reduce risk, it just moves the moment someone discovers it to *after* they've paid, which is worse for trust, not better.
+
+**Phil Schiller (Marketing/SEO):** Sequencing note, not a new idea: don't let the "feel like an iPhone" redesign delay the SEO fixes in Part 2. They're independent — Craig already confirmed neither blocks the other. If the goal is leads every day starting soon, the FAQ schema and the landing-page metadata fix should ship first because they're finished in days, not weeks, and they don't require design to be done first. Traffic without a great funnel is wasted, but a great funnel without traffic is invisible — sequence for the fastest total leads, not for what feels most impressive to ship.
+
+**Steve Jobs (Product):** On "what hasn't been done in this industry" — from what the team found, *nobody* in the Tucson competitive set is doing real-time visual matching (Jony's idea above) or a genuinely designed dual-path flow. Most competitor sites are static galleries with a contact form. That gap is real and winnable. On "what's already proven elsewhere" — the instant-quote-calculator psychology data is unambiguous, and Blue Luna already has the hard part (a working real-time pricing engine) built. This isn't a from-scratch invention — it's finishing what's already 70% there with more conviction, not starting over.
+
+**Craig Federighi (Engineering):** Jony's "show real photos matching the build" idea is buildable without new infrastructure — it just needs Monica's gallery photos tagged by the same attributes the configurator already tracks (garland tier, backdrop type, color). That tagging doesn't fully exist yet (gallery photos are currently tagged by `event_type` only, not by component/color), so this is real but scoped work, not a moonshot.
+
+**Marcus Webb (Integration):** Following on Craig's point — once photos are tagged by component/color (not just event type), the same tagging feeds three things at once: this live-matching configurator idea, a better filtered public gallery, and better-targeted social exports. One piece of data work, three payoffs.
+
+---
+
+## WHERE THIS LEAVES THINGS
+
+Nothing above is decided. The team's genuine synthesis, in priority order as they see it:
+
+1. Ship the SEO/AEO fixes from Part 2 first — fast, independent, no design work required.
+2. Redesign the configurator around Jony's "show me what I'm building" idea — real photos matching real choices, not just a price ticker — as the core differentiator nobody else in Tucson has.
+3. Keep the dual-path (guided package + custom build) but make the guided path the clear default, per Angela, instead of two equal buttons.
+4. Surface the real deposit/cancellation policy next to the payment CTA instead of leaving it undiscovered until after payment.
+
+Your call on whether this is the right shape before anyone starts building.
