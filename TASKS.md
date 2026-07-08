@@ -41,10 +41,9 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Decide how to fully validate the live Stripe checkout** (was: confirm test/live mode — now confirmed LIVE + a real deployed-key bug found and fixed 2026-07-08)
-- Confirmed: Blue Luna's Stripe is in **live mode** (`sk_live_...`, `"livemode": true` per Stripe's own API). Also found and fixed the same category of bug as the Resend key: the `STRIPE_SECRET_KEY` deployed in Vercel was stale/wrong, causing `/api/stripe/estimate-checkout` to crash outright (empty 500) on every call. Shawn provided the real working key; swapped it in, redeployed, re-tested — the endpoint now returns a real, valid Stripe Checkout URL (`cs_live_...`).
-- **Not yet done:** an actual completed payment. Since this is live mode, that means a real card gets charged. Options: (a) Shawn/Monica get Stripe **test-mode** keys (separate key pair, same account, toggle in Stripe dashboard) so future QA can happen without touching real money — recommended for anything beyond today's verification; (b) do one small real transaction on the existing $325 test estimate and refund it via the Stripe dashboard; (c) treat today's successful session-creation as sufficient confidence and let the first real client be the live proof.
-- Owner: Shawn decides which validation approach he wants.
+1. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
+- Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
+- Owner: Shawn runs the test.
 
 2. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
 - Status: MITIGATION SHIPPED 2026-07-08, monitor before considering fully closed
@@ -53,8 +52,9 @@ Exit criteria for Phase 1:
 
 ---
 
-## DONE (2026-07-07 to 07-08)
+## DONE (2026-07-07 to 07-09)
 
+- ✅ **Payment ledger rework shipped** (2026-07-09, commit `b74a9a4e`): replaced the fixed 50/50 deposit/balance booleans with a real `estimate_payments` ledger + `src/lib/estimateBalance.ts` shared calculation. Built: discount editor (percent/flat + note), manual "Record Payment" flow (Zelle/cash/check + note), real "Email Estimate to Client" system-send (PDF attached + live link, reply-to Monica), PDF and client page both rewritten to show subtotal/discount/total/paid/owed live. Stripe checkout now charges the actual amount owed instead of a fixed split. Live-tested end-to-end on the real production estimate (added a payment, applied a discount, generated PDF, created a real Stripe session, confirmed math, then cleaned up test data). Full detail in `ESTIMATES_PAYMENTS_AUDIT.md` and `DECISIONS.md`.
 - ✅ **Email fully fixed and confirmed working** (2026-07-08): three stacked bugs found and fixed — unverified Resend domain (missing DKIM/SPF since May 14), an invalid `RESEND_API_KEY` in Vercel, and a completely missing MX record so nothing routed mail to Monica's real Namecheap-hosted mailbox at all. Shawn confirmed real-world: **can now both send and receive at `monica@bluelunaevents.com`.** Full detail in `DECISIONS.md`.
 - ✅ **SEO/AEO/GEO 5 fixes shipped** (2026-07-08): `layout.tsx` JSON-LD `@type` fixed to `LocalBusiness`; fake `aggregateRating` (50 claimed, 3 shown) removed pending real data; `/quinceaneras` and `/graduations` converted from unnecessary client components to real Server Components, each now has its own tailored `metadata`; `FAQPage` JSON-LD added to both from existing FAQ content; `src/app/sitemap.ts` and `src/app/robots.ts` added. Commit `8951d7b0`.
 - ✅ Stripe estimate checkout — `/api/stripe/estimate-checkout` (deposit + balance), webhook updated to write `estimates.deposit_paid`/`balance_paid`/`*_paid_at`/`*_stripe_session_id`/`*_stripe_payment_intent_id`.

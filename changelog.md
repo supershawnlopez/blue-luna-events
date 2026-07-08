@@ -13,6 +13,33 @@
 
 ---
 
+## Session: July 9, 2026 — Payment Ledger Rework
+**AI:** Claude Code
+**Worked on:** Shawn's live testing of the estimate/payment system surfaced real gaps (no dynamic balance display, no discounts, no email-from-Studio). Full team meeting, Shawn approved the recommendation explicitly, built it.
+
+### Completed This Session
+- New `estimate_payments` table — every payment (Stripe, Zelle, cash, check) logs as its own entry with amount/method/note/date, replacing the old fixed 50/50 deposit/balance booleans.
+- `discount_type`/`discount_value`/`discount_note` added to `estimates` — Monica can apply a percent or flat discount with her own note.
+- `src/lib/estimateBalance.ts` — single shared function computing subtotal → discount → total → paid → amount owed. The client page, Studio detail page, PDF, and weekly summary email all read from this one function now.
+- Studio estimate detail page rebuilt: discount editor, "Record Payment" manual entry (Zelle/cash/check + note), live payment history with delete, real balance breakdown.
+- New "Email Estimate to Client" button — system-send (not `mailto:`, which can't reliably attach files), PDF attached + live link, reply-to `monica@bluelunaevents.com`.
+- Client-facing page and PDF rewritten to show a real running balance instead of static paid/unpaid checkmarks.
+- Stripe checkout now charges the actual computed amount owed, not a fixed split. Webhook logs a ledger entry instead of toggling booleans.
+- Weekly summary email's money-in/outstanding numbers updated to read from the new ledger (would have silently gone stale otherwise).
+- Live-tested the entire flow end-to-end on the real production test estimate — added a payment, applied a discount, verified the math, generated a PDF, created a real Stripe checkout session — then cleaned up all test data.
+
+### Still Open
+- Shawn to run the real live $1 payment test using the discount trick (apply a near-100% discount, complete a real Stripe payment on himself).
+- Everything else in `TASKS.md` NEXT (Phase 5 Leads/Contacts, calendar, configurator redesign) — unstarted, unchanged priority.
+
+### Shawn Test
+1. Open a real (non-shared) estimate in Studio, add a manual payment, confirm the balance updates live.
+2. Apply a discount, confirm the total recalculates.
+3. Tap "Email Estimate to Client" (use your own email as a safe test) — confirm you receive it with both the PDF attached and a working link.
+4. Open the client-facing link — confirm it shows the same numbers as Studio.
+
+---
+
 ## Session: July 6, 2026 — Documentation System Rebuild
 **AI:** Claude Code
 **Worked on:** Shawn asked to verify the Blue Luna agent team against Found Co.'s, and copy over Found's updated file system (current-truth handoff + locked decision logs + the git-status safeguard Found just added after a near-miss with uncommitted docs).
