@@ -41,13 +41,19 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Confirm Stripe test vs. live mode**
+1. **Confirm real emails have actually been arriving since May** (NEW — critical, found 2026-07-08)
+- Owner: Shawn / Monica confirm
+- Status: ROOT CAUSE FIXED, IMPACT UNCONFIRMED
+- `bluelunaevents.com`'s Resend domain was `status: "failed"` since the day it was created (2026-05-14) — the 3 required DNS records (DKIM, SPF×2) had simply never been added. Fixed 2026-07-08 (see DECISIONS.md). This means it's plausible **no lead notification or client confirmation email has ever actually delivered** since the booking system was built, and the code had no error-checking to reveal it (also fixed).
+- Ask Monica directly: has she been getting real "new booking" emails when someone submits the public quote form? If not, this was the reason — and every client who ever submitted a quote may never have gotten their confirmation email either.
+
+2. **Confirm Stripe test vs. live mode**
 - Owner: Shawn confirms (check Stripe dashboard test-mode toggle, top-left)
 - Status: NOT STARTED — blocks the end-to-end Stripe test. If live mode, do not test with a real card.
 
-2. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
+3. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
 - Status: MITIGATION SHIPPED 2026-07-08, monitor before considering fully closed
-- Root cause was inconclusive (the old keepalive cron was correctly configured, enabled, and worked when manually triggered — but the DB still paused, suggesting Vercel Hobby-plan cron reliability, not a code bug). Rather than chase an unprovable platform quirk, replaced the silent ping with a real weekly business summary email (`/api/cron/weekly-summary`) on the same Mon+Thu schedule — same protection, but if it silently fails to fire, Shawn will notice from the *missing email* instead of finding out when the site breaks. Verified working end-to-end 2026-07-08 (real data pulled, email sent).
+- Root cause was inconclusive (the old keepalive cron was correctly configured, enabled, and worked when manually triggered — but the DB still paused, suggesting Vercel Hobby-plan cron reliability, not a code bug). Replaced the silent ping with a real weekly business summary email (`/api/cron/weekly-summary`) — same protection, but a failure is now visible as a missing email instead of a silently broken site.
 - If Shawn stops receiving the Monday/Thursday email, that's the signal Vercel's cron isn't firing — worth revisiting the free-external-pinger or Supabase Pro ($25/mo) options from that point.
 
 ---

@@ -82,6 +82,15 @@ Why: Zero-cost infrastructure keeps margins attractive while the site is still p
 
 ---
 
+## INFRASTRUCTURE FINDINGS (July 2026)
+
+**[2026-07-08] — Resend domain verification for `bluelunaevents.com` was broken from day one; fixed.**
+Approved by: Shawn (provided Resend API key for investigation) + Craig Federighi
+Why this matters: the domain's required DNS records (1 DKIM TXT, 1 SPF MX, 1 SPF TXT) were never added when the domain was created on 2026-05-14 — confirmed via Resend's domain status API (`"status": "failed"`, unchanged since creation) and Vercel's DNS records API (only Vercel's own system records existed, none of the 3 required ones). Every `resend.emails.send()` call in the codebase also never checked the returned `{data, error}` shape, so a rejected send looked identical to a successful one in the app's own logs — meaning this failure mode was completely silent and could have been happening since the booking/email system was built. Fixed by adding all 3 DNS records via Vercel's DNS API (same nameservers already in use), confirming them live via independent public DNS lookup, then triggering Resend re-verification. Domain is now `verified`. Error-checking added to all `resend.emails.send()` call sites (`src/lib/actions.ts`, `src/app/api/cron/weekly-summary/route.ts`) so future failures are logged instead of silent.
+**Unconfirmed impact:** whether any real client has ever actually received a confirmation/notification email since May 14 — ask Monica directly. See `TASKS.md` NOW #1.
+
+---
+
 ## SECURITY RULES (LOCKED)
 
 - `bl_pricing.json` is PRIVATE — contains Monica's home address. Never show on client-facing docs or public routes. Never add to any prompt or export that a client could see.

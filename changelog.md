@@ -165,6 +165,28 @@ Check your email (shawnlopez@me.com) — a "Blue Luna Weekly Update" should have
 
 ---
 
+## Session: July 8, 2026 (Session 5) — Resend domain was broken since May 14, now fixed
+**AI:** Claude Code
+**Worked on:** Shawn gave me a Resend API key to investigate why the weekly summary email never arrived. Found something much bigger than the weekly email.
+
+### Completed This Session
+- Checked `bluelunaevents.com`'s domain status in Resend: `"status": "failed"`, unchanged since the domain was created on **2026-05-14** — the same day the original Stripe/email booking system was built.
+- Confirmed via Vercel's DNS API that the 3 records Resend requires (1 DKIM TXT, 1 SPF MX, 1 SPF TXT) simply never existed — only Vercel's own system records were present.
+- Added all 3 missing DNS records via Vercel's DNS API, confirmed they were live worldwide via an independent public DNS lookup (`dns.google`), then triggered Resend to re-verify. Domain status is now `verified`.
+- Found and fixed a second, related bug: every place in the code that calls `resend.emails.send()` — Monica's lead notification, the client confirmation email, and today's new weekly summary — never checked the return value for an error. A rejected send from Resend looked exactly like a successful one in the app's own logs. Added real error checking/logging to all three.
+- Saved the Resend key + this finding to persistent memory for future sessions.
+
+### Still Open
+- **Need Monica/Shawn to confirm**: has she actually been receiving real "new booking" notification emails since May 14 when clients submit the public quote form? If not, this domain issue was the reason, and it's likely every real client has also never received their confirmation email either.
+- Confirm Stripe test vs. live mode (still open).
+- Supabase auto-pause monitoring (still open, see prior session).
+
+### Shawn Test
+1. Check your inbox now — the weekly summary email should actually arrive this time since the domain is verified.
+2. Ask Monica directly whether she's been getting real booking notification emails over the past two months. This is the real-world confirmation of whether this bug had actual business impact.
+
+---
+
 ## Older History
 
 Sessions May 1–14, 2026 (documentation setup, configurator build, custom build path, Stripe + email flow) moved to `CHANGELOG_ARCHIVE.md` on July 6, 2026.
