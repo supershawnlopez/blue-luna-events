@@ -1,32 +1,41 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Plus, ChevronRight, FileText } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
-
-type EstimateStatus = 'draft' | 'sent' | 'deposit_paid' | 'balance_paid' | 'completed' | 'declined'
 
 type Estimate = {
   id: string
   client_name: string
   client_email: string
-  event_type: string
-  event_date?: string
+  event_type: string | null
+  event_date?: string | null
+  package_name?: string | null
   quoted_total: number
-  status: EstimateStatus
+  status: 'draft' | 'sent' | 'declined' | string
   created_at: string
   share_token: string
   deposit_paid: boolean
   balance_paid: boolean
 }
 
-const STATUS_STYLES: Record<EstimateStatus, { label: string; bg: string; color: string }> = {
+type DisplayStatus = 'draft' | 'sent' | 'deposit_paid' | 'balance_paid' | 'declined'
+
+const STATUS_STYLES: Record<DisplayStatus, { label: string; bg: string; color: string }> = {
   draft:         { label: 'Draft',         bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' },
   sent:          { label: 'Sent',          bg: 'rgba(91,191,191,0.12)',  color: '#5BBFBF' },
   deposit_paid:  { label: 'Deposit Paid',  bg: 'rgba(91,191,191,0.2)',   color: '#8DD4D4' },
   balance_paid:  { label: 'Paid in Full',  bg: 'rgba(34,197,94,0.15)',   color: '#4ade80' },
-  completed:     { label: 'Complete',      bg: 'rgba(34,197,94,0.15)',   color: '#4ade80' },
   declined:      { label: 'Declined',      bg: 'rgba(239,68,68,0.1)',    color: 'rgba(239,68,68,0.7)' },
+}
+
+function displayStatus(est: Estimate): DisplayStatus {
+  if (est.status === 'declined') return 'declined'
+  if (est.balance_paid) return 'balance_paid'
+  if (est.deposit_paid) return 'deposit_paid'
+  if (est.status === 'sent') return 'sent'
+  return 'draft'
 }
 
 function fmt(n: number) {
@@ -34,8 +43,15 @@ function fmt(n: number) {
 }
 
 export default function EstimatesList() {
-  // This will be populated from Supabase once connected
-  const estimates: Estimate[] = []
+  const [estimates, setEstimates] = useState<Estimate[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetch('/api/studio/estimates')
+      .then(res => res.json())
+      .then(data => setEstimates(Array.isArray(data) ? data : []))
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
@@ -58,7 +74,11 @@ export default function EstimatesList() {
       </div>
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 24px 0' }}>
-        {estimates.length === 0 ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px 0' }}>
+            <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.3)' }}>Loading…</p>
+          </div>
+        ) : estimates.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <FileText size={40} color="rgba(255,255,255,0.1)" style={{ marginBottom: '16px' }} />
             <p style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>No estimates yet</p>
@@ -75,7 +95,7 @@ export default function EstimatesList() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {estimates.map(est => {
-              const s = STATUS_STYLES[est.status]
+              const s = STATUS_STYLES[displayStatus(est)]
               return (
                 <Link key={est.id} href={`/studio/estimates/${est.id}`} style={{
                   display: 'flex', alignItems: 'center', gap: '14px',

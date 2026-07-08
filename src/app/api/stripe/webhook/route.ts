@@ -22,12 +22,15 @@ export async function POST(req: NextRequest) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const leadId = session.metadata?.lead_id
+    const estimateId = session.metadata?.estimate_id
+    const estimatePaymentType = session.metadata?.type
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
 
     if (leadId) {
-      const supabase = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      )
       await supabase
         .from('leads')
         .update({
@@ -35,6 +38,19 @@ export async function POST(req: NextRequest) {
           stripe_payment_intent_id: session.payment_intent as string,
         })
         .eq('id', leadId)
+    }
+
+    if (estimateId && (estimatePaymentType === 'deposit' || estimatePaymentType === 'balance')) {
+      const prefix = estimatePaymentType
+      await supabase
+        .from('estimates')
+        .update({
+          [`${prefix}_paid`]: true,
+          [`${prefix}_paid_at`]: new Date().toISOString(),
+          [`${prefix}_stripe_session_id`]: session.id,
+          [`${prefix}_stripe_payment_intent_id`]: session.payment_intent as string,
+        })
+        .eq('id', estimateId)
     }
   }
 
