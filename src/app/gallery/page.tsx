@@ -166,7 +166,7 @@ export default function Gallery() {
           <p style={{ fontSize: '0.95rem', fontWeight: 300, color: 'rgba(255,255,255,0.5)', marginBottom: '32px' }}>
             Let&apos;s build something beautiful for your event.
           </p>
-          <Link href="/get-a-quote"
+          <Link href="/event-questionnaire"
             style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', background: '#5BBFBF', color: '#0D0F0F', fontSize: '0.8rem', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', padding: '15px 36px', borderRadius: '999px', textDecoration: 'none', boxShadow: '0 4px 24px rgba(91,191,191,0.35)' }}>
             Get a Free Estimate
           </Link>

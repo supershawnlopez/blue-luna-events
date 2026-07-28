@@ -71,7 +71,7 @@ export default function Packages() {
                 </ul>
 
                 <Link
-                  href="/get-a-quote"
+                  href="/event-questionnaire"
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                     width: '100%', padding: '13px',
@@ -102,7 +102,7 @@ export default function Packages() {
 
         <p className="reveal" style={{ fontFamily: 'Inter, sans-serif', textAlign: 'center', marginTop: '28px', fontSize: '0.85rem', fontWeight: 300, color: '#6B7280' }}>
           Need something custom?{' '}
-          <Link href="/get-a-quote" style={{ color: '#5BBFBF', borderBottom: '1px solid #5BBFBF', textDecoration: 'none' }}>
+          <Link href="/event-questionnaire" style={{ color: '#5BBFBF', borderBottom: '1px solid #5BBFBF', textDecoration: 'none' }}>
             Build it yourself
           </Link>
           {' '}— à la carte pricing, you choose every piece.{' '}

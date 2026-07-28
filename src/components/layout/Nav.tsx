@@ -69,7 +69,7 @@ export default function Nav() {
                 {l.label}
               </Link>
             ))}
-            <Link href="/get-a-quote" style={{
+            <Link href="/event-questionnaire" style={{
               fontFamily: 'Inter, sans-serif',
               background: '#5BBFBF', color: '#0D0F0F',
               fontSize: '0.78rem', fontWeight: 700,
@@ -176,7 +176,7 @@ export default function Nav() {
 
           {/* CTA link */}
           <Link
-            href="/get-a-quote"
+            href="/event-questionnaire"
             onClick={() => setOpen(false)}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',

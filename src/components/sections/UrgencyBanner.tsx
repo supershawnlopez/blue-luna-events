@@ -30,7 +30,7 @@ export default function UrgencyBanner() {
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)', margin: 0 }}>
           <strong style={{ fontWeight: 600, color: 'white' }}>May & June dates filling fast</strong> — don&apos;t miss your window
         </p>
-        <Link href="/get-a-quote" style={{
+        <Link href="/event-questionnaire" style={{
           display: 'inline-flex', alignItems: 'center', gap: '6px',
           background: '#5BBFBF', color: '#0D0F0F',
           fontFamily: 'Inter, sans-serif',

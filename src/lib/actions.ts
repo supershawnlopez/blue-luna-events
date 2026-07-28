@@ -149,7 +149,7 @@ async function sendMonicaNotification(data: Lead, vision: string) {
         </td>
         <td align="right" style="padding-bottom:20px;vertical-align:top">
           <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#5BBFBF;color:#0D0F0F;font-size:13px;font-weight:700;padding:10px 20px;border-radius:999px;text-decoration:none;white-space:nowrap">
-            📞 Call ${first}
+            📞 Call
           </a>
         </td>
       </tr>
@@ -206,12 +206,12 @@ async function sendMonicaNotification(data: Lead, vision: string) {
         <tr>
           <td style="padding-right:8px">
             <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
-              📞 Call ${first}
+              📞 Call
             </a>
           </td>
           <td>
             <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:11px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
-              💬 Text ${first}
+              💬 Text
             </a>
           </td>
         </tr>
@@ -478,7 +478,7 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
         </td>
         <td align="right" style="padding-bottom:20px;vertical-align:top">
           <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#5BBFBF;color:#0D0F0F;font-size:13px;font-weight:700;padding:10px 20px;border-radius:999px;text-decoration:none;white-space:nowrap">
-            📞 Call ${first}
+            📞 Call
           </a>
         </td>
       </tr>
@@ -547,12 +547,12 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
         <tr>
           <td style="padding-right:8px">
             <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
-              📞 Call ${first}
+              📞 Call
             </a>
           </td>
           <td>
             <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:11px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
-              💬 Text ${first}
+              💬 Text
             </a>
           </td>
         </tr>

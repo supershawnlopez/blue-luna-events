@@ -402,7 +402,7 @@ export const HOMEPAGE_PACKAGES = PACKAGE_CATALOG.filter(
   p => ['essential', 'signature', 'luxury'].includes(p.id)
 )
 
-// ─── Inquiry Form (/get-a-quote) ───────────────────────────────────────────────
+// ─── Inquiry Form (/event-questionnaire) ───────────────────────────────────────────────
 // No live pricing — Monica quotes personally after reviewing the submission.
 
 export const INQUIRY_EVENT_TYPES = [

@@ -101,7 +101,7 @@ export default function GalleryView({ gallery }: { gallery: Gallery }) {
             <Share2 size={15} />
             Share on Facebook
           </a>
-          <Link href="/get-a-quote"
+          <Link href="/event-questionnaire"
             style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#5BBFBF', borderRadius: '12px', padding: '13px', textDecoration: 'none', color: '#0D0F0F', fontSize: '0.8rem', fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>
             Book Your Event →
           </Link>
@@ -175,7 +175,7 @@ export default function GalleryView({ gallery }: { gallery: Gallery }) {
               style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: '#1877F2', borderRadius: '12px', padding: '12px', textDecoration: 'none', color: 'white', fontSize: '0.78rem', fontWeight: 700 }}>
               <Share2 size={13} /> Share
             </a>
-            <Link href="/get-a-quote"
+            <Link href="/event-questionnaire"
               style={{ flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#5BBFBF', borderRadius: '12px', padding: '12px', textDecoration: 'none', color: '#0D0F0F', fontSize: '0.78rem', fontWeight: 700 }}>
               Book Your Event →
             </Link>

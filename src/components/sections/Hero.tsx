@@ -74,7 +74,7 @@ export default function Hero() {
             display: 'flex', gap: '12px', flexWrap: 'wrap',
             animation: 'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.45s both',
           }}>
-            <Link href="/get-a-quote" className="btn-primary" style={{ fontSize: '0.85rem', padding: '15px 32px' }}>
+            <Link href="/event-questionnaire" className="btn-primary" style={{ fontSize: '0.85rem', padding: '15px 32px' }}>
               Event Questionnaire <ArrowRight size={15} />
             </Link>
           </div>

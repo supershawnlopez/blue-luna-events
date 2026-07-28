@@ -72,7 +72,7 @@ export default function Graduations() {
               <a href="#packages" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,#C9A96E,#E8CCA0)', color: '#0D0F0F', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 700, padding: '14px 28px', borderRadius: '999px', textDecoration: 'none', boxShadow: '0 4px 20px rgba(201,169,110,0.4)' }}>
                 See Packages <ArrowRight size={15} />
               </a>
-              <Link href="/get-a-quote" className="btn-ghost">Tell Us Your Vision</Link>
+              <Link href="/event-questionnaire" className="btn-ghost">Tell Us Your Vision</Link>
             </div>
           </div>
           <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)', borderRadius: '20px', overflow: 'hidden' }}>
@@ -86,7 +86,7 @@ export default function Graduations() {
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 500, color: '#0D0F0F' }}>
           <GraduationCap size={14} style={{ display: 'inline', marginRight: '6px', verticalAlign: 'middle' }} />
           <strong>Graduation season is here.</strong> Limited May &amp; June dates remaining —{' '}
-          <Link href="/get-a-quote" style={{ color: '#0D0F0F', fontWeight: 700, textDecoration: 'underline' }}>reach out before your date is gone.</Link>
+          <Link href="/event-questionnaire" style={{ color: '#0D0F0F', fontWeight: 700, textDecoration: 'underline' }}>reach out before your date is gone.</Link>
         </p>
       </div>
 
@@ -136,7 +136,7 @@ export default function Graduations() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/get-a-quote" style={{ width: '100%', padding: '12px', background: pkg.color === 'teal' ? '#5BBFBF' : pkg.color === 'gold' ? 'linear-gradient(135deg,#C9A96E,#E8CCA0)' : 'transparent', color: '#0D0F0F', border: pkg.color === 'gray' ? '1.5px solid #E5E7EB' : 'none', borderRadius: '10px', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}>
+                  <Link href="/event-questionnaire" style={{ width: '100%', padding: '12px', background: pkg.color === 'teal' ? '#5BBFBF' : pkg.color === 'gold' ? 'linear-gradient(135deg,#C9A96E,#E8CCA0)' : 'transparent', color: '#0D0F0F', border: pkg.color === 'gray' ? '1.5px solid #E5E7EB' : 'none', borderRadius: '10px', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}>
                     {pkg.cta} <ArrowRight size={13} />
                   </Link>
                 </div>
@@ -167,7 +167,7 @@ export default function Graduations() {
             Packages from $299. Dates are filling fast.
           </p>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: '#E8CCA0', marginBottom: '28px' }}>May &amp; June availability is limited</p>
-          <Link href="/get-a-quote" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,#C9A96E,#E8CCA0)', color: '#0D0F0F', fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 700, padding: '15px 32px', borderRadius: '999px', textDecoration: 'none', boxShadow: '0 4px 20px rgba(201,169,110,0.4)' }}>
+          <Link href="/event-questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,#C9A96E,#E8CCA0)', color: '#0D0F0F', fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 700, padding: '15px 32px', borderRadius: '999px', textDecoration: 'none', boxShadow: '0 4px 20px rgba(201,169,110,0.4)' }}>
             Ask About Your Graduation Date <ArrowRight size={15} />
           </Link>
         </div>

@@ -10,6 +10,15 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/get-a-quote',
+        destination: '/event-questionnaire',
+        permanent: true,
+      },
+    ]
+  },
 }
 
 export default nextConfig

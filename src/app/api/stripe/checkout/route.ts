@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     }],
     metadata: { lead_id: leadId, customer_name: name },
     success_url: `${baseUrl}/booking-confirmed?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${baseUrl}/get-a-quote`,
+    cancel_url: `${baseUrl}/event-questionnaire`,
   })
 
   return NextResponse.json({ url: session.url })

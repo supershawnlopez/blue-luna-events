@@ -44,7 +44,7 @@ export default function CTA() {
           </p>
 
           <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '20px' }} className="reveal reveal-delay-2">
-            <Link href="/get-a-quote" className="btn-primary" style={{ fontSize: '0.88rem', padding: '16px 36px' }}>
+            <Link href="/event-questionnaire" className="btn-primary" style={{ fontSize: '0.88rem', padding: '16px 36px' }}>
               Start the Event Questionnaire <ArrowRight size={15} />
             </Link>
             <Link href="tel:5202226142" style={{

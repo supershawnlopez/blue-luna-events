@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Check, ArrowRight, Phone, Mail, User, Calendar, MapPin, Clock, Users, Image as ImageIcon, X, Loader2 } from 'lucide-react'
 import { INQUIRY_EVENT_TYPES, LOOKING_FOR_CATEGORIES, BUDGET_RANGES } from '@/lib/config'
 import { submitLead } from '@/lib/actions'
@@ -69,6 +69,10 @@ export default function InquiryForm() {
   const [validationMsg, setValidationMsg] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    if (done) window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [done])
+
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm(prev => ({ ...prev, [key]: value }))
   }
@@ -82,34 +86,47 @@ export default function InquiryForm() {
     }))
   }
 
+  async function uploadOne(file: File): Promise<string | null> {
+    try {
+      const signRes = await fetch('/api/leads/sign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filename: file.name, contentType: file.type }),
+      })
+      if (!signRes.ok) return null
+      const { signedUrl, publicUrl } = await signRes.json()
+
+      const ok = await new Promise<boolean>(resolve => {
+        const xhr = new XMLHttpRequest()
+        xhr.onload = () => resolve(xhr.status < 300)
+        xhr.onerror = () => resolve(false)
+        xhr.open('PUT', signedUrl)
+        xhr.setRequestHeader('Content-Type', file.type)
+        xhr.send(file)
+      })
+      return ok ? publicUrl : null
+    } catch {
+      return null
+    }
+  }
+
   async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []).slice(0, 6 - photos.length)
+    const files = Array.from(e.target.files ?? []).filter(f => f.type.startsWith('image/')).slice(0, 6 - photos.length)
     if (files.length === 0) return
     e.target.value = ''
 
     const placeholders = files.map(f => ({ url: URL.createObjectURL(f), uploading: true }))
     setPhotos(prev => [...prev, ...placeholders].slice(0, 6))
 
-    const fd = new FormData()
-    files.forEach(f => fd.append('files', f))
-
-    try {
-      const res = await fetch('/api/leads/upload', { method: 'POST', body: fd })
-      const { urls } = await res.json()
-      setPhotos(prev => {
-        const next = [...prev]
-        let ui = 0
-        for (let i = 0; i < next.length; i++) {
-          if (next[i].uploading && placeholders.includes(next[i])) {
-            next[i] = { url: urls[ui] ?? next[i].url, uploading: false }
-            ui++
-          }
-        }
-        return next
-      })
-    } catch {
-      setPhotos(prev => prev.filter(p => !placeholders.includes(p)))
-    }
+    // Each file uploads directly to Supabase Storage via its own signed URL —
+    // avoids Vercel's serverless request-body size limit, which silently
+    // dropped photos when several full-size phone photos went in one request.
+    await Promise.all(placeholders.map(async (placeholder, i) => {
+      const publicUrl = await uploadOne(files[i])
+      setPhotos(prev => prev
+        .map(p => p === placeholder ? (publicUrl ? { url: publicUrl, uploading: false } : null) : p)
+        .filter((p): p is { url: string; uploading: boolean } => p !== null))
+    }))
   }
 
   function removePhoto(url: string) {
@@ -227,7 +244,7 @@ export default function InquiryForm() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
-              <SectionLabel icon={<Clock size={12} />} optional>Setup Time Allowed</SectionLabel>
+              <SectionLabel icon={<Clock size={12} />} optional>Setup Time</SectionLabel>
               <input className="input-field" placeholder="e.g. Anytime after 2 PM" value={form.setupTime} onChange={e => set('setupTime', e.target.value)} />
             </div>
             <div>

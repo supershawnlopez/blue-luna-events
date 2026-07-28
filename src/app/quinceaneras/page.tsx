@@ -64,7 +64,7 @@ export default function Quinceaneras() {
             </p>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <a href="#packages" className="btn-primary">See Packages <ArrowRight size={15} /></a>
-              <Link href="/get-a-quote" className="btn-ghost">Tell Us Your Vision</Link>
+              <Link href="/event-questionnaire" className="btn-ghost">Tell Us Your Vision</Link>
             </div>
           </div>
           <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)', borderRadius: '20px', overflow: 'hidden' }}>
@@ -127,7 +127,7 @@ export default function Quinceaneras() {
                       </li>
                     ))}
                   </ul>
-                  <Link href="/get-a-quote" style={{ width: '100%', padding: '12px', background: pkg.color === 'teal' ? '#5BBFBF' : pkg.color === 'gold' ? 'linear-gradient(135deg,#C9A96E,#E8CCA0)' : pkg.color === 'rose' ? 'linear-gradient(135deg,#F9A8D4,#FBCFE8)' : 'transparent', color: '#0D0F0F', border: pkg.color === 'gray' ? '1.5px solid #E5E7EB' : 'none', borderRadius: '10px', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}>
+                  <Link href="/event-questionnaire" style={{ width: '100%', padding: '12px', background: pkg.color === 'teal' ? '#5BBFBF' : pkg.color === 'gold' ? 'linear-gradient(135deg,#C9A96E,#E8CCA0)' : pkg.color === 'rose' ? 'linear-gradient(135deg,#F9A8D4,#FBCFE8)' : 'transparent', color: '#0D0F0F', border: pkg.color === 'gray' ? '1.5px solid #E5E7EB' : 'none', borderRadius: '10px', fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', textDecoration: 'none' }}>
                     {pkg.cta} <ArrowRight size={13} />
                   </Link>
                 </div>
@@ -157,7 +157,7 @@ export default function Quinceaneras() {
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: 'rgba(255,255,255,0.55)', marginBottom: '28px', maxWidth: '440px', margin: '0 auto 28px' }}>
             Packages from $450. Custom estimates in 24 hours. 50% deposit holds your date.
           </p>
-          <Link href="/get-a-quote" className="btn-primary">Get a Free Estimate <ArrowRight size={15} /></Link>
+          <Link href="/event-questionnaire" className="btn-primary">Get a Free Estimate <ArrowRight size={15} /></Link>
         </div>
       </div>
 
