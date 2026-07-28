@@ -49,13 +49,19 @@ export async function submitLead(data: Lead) {
     return { success: false, error: error.message }
   }
 
-  // Both fire-and-forget — neither blocks lead submission
+  // Awaited (not fire-and-forget) — on Vercel, an unawaited promise can get cut off
+  // mid-request when the function's response returns and the runtime freezes it.
+  // Errors are still caught per-call so a failed send never fails the submission itself.
   if (data.source === 'inquiry') {
-    sendMonicaInquiryNotification(data, vision).catch(err => console.error('Monica notification error:', err))
-    sendClientInquiryConfirmation(data).catch(err => console.error('Client confirmation error:', err))
+    await Promise.all([
+      sendMonicaInquiryNotification(data, vision).catch(err => console.error('Monica notification error:', err)),
+      sendClientInquiryConfirmation(data).catch(err => console.error('Client confirmation error:', err)),
+    ])
   } else {
-    sendMonicaNotification(data, vision).catch(err => console.error('Monica notification error:', err))
-    sendClientConfirmation(data).catch(err => console.error('Client confirmation error:', err))
+    await Promise.all([
+      sendMonicaNotification(data, vision).catch(err => console.error('Monica notification error:', err)),
+      sendClientConfirmation(data).catch(err => console.error('Client confirmation error:', err)),
+    ])
   }
 
   return { success: true, leadId: inserted.id as string }
