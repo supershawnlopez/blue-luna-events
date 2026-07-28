@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import InquiryForm from '@/components/ui/InquiryForm'
 
 export const metadata: Metadata = {
-  title: 'Get a Quote | Blue Luna Events — Tucson Balloon Décor',
-  description: 'Tell us about your event and Monica will personally reach out with a custom quote. Blue Luna Events — quinceañeras, graduations, weddings, birthdays, and more in Tucson, AZ.',
+  title: 'Event Questionnaire | Blue Luna Events — Tucson Balloon Décor',
+  description: 'Tell us about your event and vision — Monica will personally reach out to help bring it to life. Blue Luna Events — quinceañeras, graduations, weddings, birthdays, and more in Tucson, AZ.',
 }
 
 export default function GetAQuote() {
@@ -17,7 +17,7 @@ export default function GetAQuote() {
           Tell Us About Your <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Event</em>
         </h1>
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: '#6B7280', maxWidth: '440px', margin: '0 auto', lineHeight: 1.7 }}>
-          Share your vision and Monica will personally reach out with a custom quote made just for you. No payment, no obligation — just a real conversation.
+          Share your vision and Monica will personally reach out to help bring it to life. No payment, no obligation — just a real conversation.
         </p>
       </div>
       <InquiryForm />

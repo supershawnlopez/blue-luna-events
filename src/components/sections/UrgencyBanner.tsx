@@ -40,7 +40,7 @@ export default function UrgencyBanner() {
           boxShadow: '0 4px 16px rgba(91,191,191,0.4)',
           animation: 'pulse-teal 2.5s ease-in-out infinite',
         }}>
-          Reserve Your Date <ArrowRight size={13} />
+          Ask About Your Date <ArrowRight size={13} />
         </Link>
       </div>
     </div>

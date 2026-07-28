@@ -205,12 +205,12 @@ async function sendMonicaNotification(data: Lead, vision: string) {
       <table cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
           <td style="padding-right:8px">
-            <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">
+            <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
               📞 Call ${first}
             </a>
           </td>
           <td>
-            <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:11px 24px;border-radius:999px;text-decoration:none">
+            <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:11px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
               💬 Text ${first}
             </a>
           </td>
@@ -380,12 +380,12 @@ async function sendClientConfirmation(data: Lead) {
       <table cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
           <td style="padding-right:8px">
-            <a href="tel:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:11px 22px;border-radius:999px;text-decoration:none">
+            <a href="tel:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:11px 22px;border-radius:999px;text-decoration:none;white-space:nowrap">
               📞 ${SITE_CONFIG.phone}
             </a>
           </td>
           <td>
-            <a href="sms:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:10px 22px;border-radius:999px;text-decoration:none">
+            <a href="sms:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:10px 22px;border-radius:999px;text-decoration:none;white-space:nowrap">
               💬 Send a Text
             </a>
           </td>
@@ -439,7 +439,7 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
   const label = eventLabel(data.event_type)
   const lookingFor = data.looking_for ?? []
   const photos = data.inspo_photos ?? []
-  const subject = `🎈 New Event Inquiry — ${data.name} · ${data.event_type}`
+  const subject = `🎈 New Lead — ${data.name} · ${data.event_type}`
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -457,7 +457,7 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
   <!-- Header -->
   <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:28px 32px">
     <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
-    <h1 style="margin:0 0 14px;font-size:22px;font-weight:700;color:#FFFFFF;line-height:1.2">💫 New Event Inquiry</h1>
+    <h1 style="margin:0 0 14px;font-size:22px;font-weight:700;color:#FFFFFF;line-height:1.2">💫 New Lead</h1>
     <table cellpadding="0" cellspacing="0" border="0">
       <tr>
         <td style="background:rgba(91,191,191,0.2);border:1px solid #5BBFBF;border-radius:999px;padding:5px 14px">
@@ -546,12 +546,12 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
       <table cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
           <td style="padding-right:8px">
-            <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">
+            <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
               📞 Call ${first}
             </a>
           </td>
           <td>
-            <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:11px 24px;border-radius:999px;text-decoration:none">
+            <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:11px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
               💬 Text ${first}
             </a>
           </td>
@@ -660,12 +660,12 @@ async function sendClientInquiryConfirmation(data: Lead) {
       <table cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
           <td style="padding-right:8px">
-            <a href="tel:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:11px 22px;border-radius:999px;text-decoration:none">
+            <a href="tel:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:11px 22px;border-radius:999px;text-decoration:none;white-space:nowrap">
               📞 ${SITE_CONFIG.phone}
             </a>
           </td>
           <td>
-            <a href="sms:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:10px 22px;border-radius:999px;text-decoration:none">
+            <a href="sms:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:10px 22px;border-radius:999px;text-decoration:none;white-space:nowrap">
               💬 Send a Text
             </a>
           </td>

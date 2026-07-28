@@ -64,7 +64,7 @@ export default function Quinceaneras() {
             </p>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <a href="#packages" className="btn-primary">See Packages <ArrowRight size={15} /></a>
-              <Link href="/get-a-quote" className="btn-ghost">Get a Custom Quote</Link>
+              <Link href="/get-a-quote" className="btn-ghost">Tell Us Your Vision</Link>
             </div>
           </div>
           <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)', borderRadius: '20px', overflow: 'hidden' }}>
