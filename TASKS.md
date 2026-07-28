@@ -50,6 +50,18 @@ Exit criteria for Phase 1:
 - Root cause was inconclusive (the old keepalive cron was correctly configured, enabled, and worked when manually triggered — but the DB still paused, suggesting Vercel Hobby-plan cron reliability, not a code bug). Replaced the silent ping with a real weekly business summary email (`/api/cron/weekly-summary`) — same protection, but a failure is now visible as a missing email instead of a silently broken site.
 - If Shawn stops receiving the Monday/Thursday email, that's the signal Vercel's cron isn't firing — worth revisiting the free-external-pinger or Supabase Pro ($25/mo) options from that point.
 
+3. **Deploy + verify the lead-submission fix (URGENT)**
+- Found 2026-07-27 while building the inquiry form: lead capture was completely broken at the database level (RLS policy blocked the read-back after insert, so the whole insert rolled back). Fixed in code (`submitLead()` now uses the service-role client) but **not yet pushed to `main`** — the live site is still on the broken version until this deploys. See `DECISIONS.md` for full root cause.
+- Owner: Shawn approves the push, or asks Claude to push.
+
+---
+
+## DONE (2026-07-27)
+
+- ✅ **`/get-a-quote` replaced: inquiry form instead of pricing configurator** — see `DECISIONS.md` "INQUIRY FORM REPLACES CONFIGURATOR" for full reasoning. New `InquiryForm.tsx`, all-white page, no pricing shown anywhere. Feeds the same `leads` table Monica already sees; she quotes manually via the existing Studio estimate tool (no new payment surface built or needed).
+- ✅ **Real production bug fixed: lead submission was completely broken (RLS)** — see `DECISIONS.md` for root cause. Not yet deployed — see NOW #3 above.
+- ⚠️ **NEXT #1 below ("Configurator redesign") is now superseded** by the decision above — do not resume building real-time-pricing-with-photos work on `/get-a-quote` without a fresh conversation with Shawn first, since the whole premise (showing price live) is what today's change reverses.
+
 ---
 
 ## DONE (2026-07-07 to 07-09)

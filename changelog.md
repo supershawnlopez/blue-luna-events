@@ -13,6 +13,33 @@
 
 ---
 
+## Session: July 27, 2026 — Inquiry Form Replaces Pricing Configurator
+**AI:** Claude Code
+**Worked on:** Monica wants to go back to a manual-quote model — she finds visible pricing scares off price-sensitive clients before she can explain the value. Team meeting (Steve, Jony) reopened the May 1 "configurator replaces manual form" decision; Shawn gave direct input on the design. Built the replacement, then found a real production bug while testing it.
+
+### Completed This Session
+- New `src/components/ui/InquiryForm.tsx` — single-scroll form modeled closely on Monica's real Tally form (`tally.so/r/nWBaVe`), customized for the site's design system. Chip/button selection wherever possible to minimize typing; free text only for name/phone/email/vibe description.
+- `/get-a-quote` now renders `InquiryForm` instead of `PackageConfigurator` — all-white background (first step toward the site-wide light redesign Shawn wants next), no pricing shown.
+- `leads` table gained 4 columns: `guest_count`, `setup_time`, `looking_for` (jsonb), `inspo_photos` (jsonb).
+- New public route `/api/leads/upload` — lets visitors upload inspiration photos without needing Studio auth; uploads to the existing `media` bucket under `lead-inspo/`.
+- Two new email templates (`sendMonicaInquiryNotification`, `sendClientInquiryConfirmation` in `actions.ts`) — no pricing/deposit language; client confirmation signed "— Monica" per Shawn's request.
+- Nav/Hero/ProcessStrip copy updated — "Build My Package" / "See your price in real time" language removed since it no longer describes what happens on the page.
+- `PackageConfigurator.tsx`, `pricing.ts`, `/api/stripe/checkout` intentionally left in place, unused — not deleted, since they represent real prior work and might be revisited.
+- **Found and fixed a real, pre-existing bug**: lead submission has likely been completely broken in production. `submitLead()` used the anon Supabase key with `.insert().select().single()` — the `leads` table has an INSERT policy for anon but no SELECT policy, so the implicit read-back required by `.select()` failed RLS, and since `INSERT...RETURNING` is atomic, the whole insert rolled back. Fixed by switching to the existing `serverClient()` helper (service-role key) — same pattern already used by every Studio API route. Full root-cause detail in `DECISIONS.md`.
+
+### Still Open
+- **Not yet deployed** — needs a push to `main` for both the new form and (more urgently) the lead-submission fix to go live.
+- Whether the homepage `Packages` section's visible pricing should also change — out of scope this session, flagged for Shawn.
+- Real Resend/Stripe keys were also missing from local `.env.local` (placeholders only) — filled in real Supabase keys to make local testing possible; Resend/Stripe local keys left as placeholders since they weren't needed to verify this feature and touching them wasn't requested.
+
+### Shawn Test
+1. Push to `main`, confirm Vercel deploy finishes.
+2. On your phone, fill out `bluelunaevents.com/get-a-quote` for real and submit.
+3. Confirm the "New Event Inquiry" email lands at `monica@bluelunaevents.com`, and the confirmation email lands at whatever address you used, signed "— Monica."
+4. Check the Supabase `leads` table (or ask Claude) to confirm the row saved with everything you entered.
+
+---
+
 ## Session: July 9, 2026 — Payment Ledger Rework
 **AI:** Claude Code
 **Worked on:** Shawn's live testing of the estimate/payment system surfaced real gaps (no dynamic balance display, no discounts, no email-from-Studio). Full team meeting, Shawn approved the recommendation explicitly, built it.

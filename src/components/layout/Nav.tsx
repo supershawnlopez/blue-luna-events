@@ -79,7 +79,7 @@ export default function Nav() {
               boxShadow: '0 4px 20px rgba(91,191,191,0.4)',
               transition: 'all 0.2s',
             }}>
-              Build My Package
+              Get a Quote
             </Link>
           </div>
 
@@ -191,7 +191,7 @@ export default function Nav() {
               fontFamily: 'Cormorant Garamond, Georgia, serif',
               fontSize: '2.2rem', fontWeight: 300, color: '#5BBFBF',
             }}>
-              Build My Package
+              Get a Quote
             </span>
             <ArrowRight size={20} color="#5BBFBF" />
           </Link>

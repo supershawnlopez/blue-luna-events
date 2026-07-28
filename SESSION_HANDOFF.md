@@ -1,6 +1,20 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: July 9, 2026 — handoff from Claude Code to Codex*
+*Last updated: July 27, 2026 — Claude Code*
+
+## Latest Session (2026-07-27)
+
+**What changed:** `/get-a-quote` no longer shows live pricing — it's now a simple inquiry form (`InquiryForm.tsx`) matching Monica's real Tally form, all-white background. Monica quotes manually afterward using the Studio estimate tool. Full reasoning in `DECISIONS.md`. Also found and fixed a real bug: lead submission was completely broken at the database level (an RLS policy issue meant every insert silently rolled back) — likely affecting the live site this whole time, not just this new form.
+
+**Not yet deployed** — both changes exist locally/on this branch only. Push to `main` to go live.
+
+**Shawn, test this:**
+1. Ask Claude to push to `main` and confirm the Vercel deploy finished.
+2. Visit `bluelunaevents.com/get-a-quote` on your phone — fill it out with real-feeling info (skip the phone number's real value if you don't want a text) and submit.
+3. Confirm you get a "New Event Inquiry" email at `monica@bluelunaevents.com`, and check the email address you used for the inquiry — you should get a warm confirmation signed "— Monica."
+4. Still open: whether the homepage `Packages` section (which shows prices) should also lose its pricing — not touched this session, flagged for a future conversation.
+
+---
 
 ---
 

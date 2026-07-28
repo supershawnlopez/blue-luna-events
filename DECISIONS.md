@@ -160,6 +160,24 @@ Why: `mailto:` cannot reliably attach a file or render branded HTML across email
 
 ---
 
+## INQUIRY FORM REPLACES CONFIGURATOR (July 2026)
+
+**[2026-07-27] — REVISES the 2026-05-01 decision above. `/get-a-quote` is now a no-pricing inquiry form, not the live-pricing configurator.**
+Approved by: Shawn + Steve Jobs + Jony Ive
+Why: Monica reports the opposite failure mode from the one the configurator was built to solve — clients see a number with no relationship or context yet and bounce, especially ones who don't yet understand the value behind the price. Steve's read: this isn't a contradiction of the May decision, it's the same root cause (sticker shock) from the other side — the fix is selling before pricing, not after. Team recommendation: separate **inquiry** (public, no price, feeds Monica a real quote she builds herself) from **quoting** (Monica, in Studio, using the estimate ledger already built in the July 9 payments rework). No new payment surface needed — Monica sends the client a `/q/[token]` link exactly like she already does for referrals.
+- New component `src/components/ui/InquiryForm.tsx` — single-scroll (not paginated like the old Tally form), chip/button selection wherever the answer is a fixed set of options, free text only where it has to be (name/phone/email, vibe description). Modeled closely on Monica's real Tally form (`tally.so/r/nWBaVe`) and two real submissions she shared for reference, customized to the site's design system.
+- `/get-a-quote` renders `InquiryForm`, all-white background (first step toward the site-wide light redesign Shawn wants next), no pricing copy anywhere on the page.
+- `PackageConfigurator.tsx`, `pricing.ts`, and `/api/stripe/checkout` are **left in place, unused** — not deleted. They represent real, previously-live-tested Stripe work and the July 8 frontend-redesign decision (below) to eventually invest further in a configurator-with-real-photos. Revisit explicitly with Shawn before deleting.
+- `leads` table gained 4 new nullable columns: `guest_count`, `setup_time`, `looking_for` (jsonb), `inspo_photos` (jsonb) — inspiration photos upload to the existing `media` storage bucket under `lead-inspo/`, via a new public route `/api/leads/upload` (mirrors the existing Studio upload pattern, no auth needed since this is a public form).
+- Both lead emails (`sendMonicaNotification`/`sendClientConfirmation` in `actions.ts`) got inquiry-specific siblings (`sendMonicaInquiryNotification`/`sendClientInquiryConfirmation`) — no price/deposit language, client confirmation is signed "— Monica" per Shawn's explicit ask.
+- **Still open, not yet decided:** whether the homepage `Packages` section (which shows package prices) also needs to change. Out of scope for this session — Shawn scoped today's work to the form specifically, with the full site-wide light redesign as an explicit "next step."
+
+**[2026-07-27] — Fixed a real, pre-existing bug: lead submission was completely broken (RLS).**
+Approved by: Shawn (implicitly — discovered while building the item above, not requested separately, but blocking)
+Why this matters: `submitLead()` used the anon Supabase key and called `.insert([...]).select('id').single()`. The `leads` table has an RLS policy allowing anon INSERT, but no SELECT policy for anon/public — so the implicit read-back required by `.select()` failed RLS, and because `INSERT ... RETURNING` is atomic in Postgres, **the entire insert rolled back**. Confirmed via direct REST calls against the anon key (fails) vs `Prefer: return=minimal` (succeeds) vs the service-role key (succeeds). This means **every lead submission through the app — old configurator and new inquiry form alike — has likely been failing outright**, showing the customer a "Something went wrong" error rather than silently losing the lead. Fixed by switching `submitLead()` to the existing `serverClient()` helper (service-role key, already used by every Studio API route) instead of manually constructing an anon client — this is a `'use server'` function, never runs in the browser, so using the service-role key here is safe and matches the codebase's existing pattern. No RLS policy changes were made (kept `leads` SELECT locked down — granting public SELECT would leak every customer's contact info to any anon caller). **Not yet deployed** — fix exists in the branch, needs a push to `main` to take effect on the live site. Given this may have been silently failing in production, treat deploying this as high priority.
+
+---
+
 ## FRONTEND REDESIGN DIRECTION (July 2026)
 
 Full audit, research, and team discussion: `FRONTEND_REDESIGN_AUDIT.md`. Shawn read it, gave his own brief, the team responded with researched reasoning (not just opinion), and Shawn approved explicitly on 2026-07-08.

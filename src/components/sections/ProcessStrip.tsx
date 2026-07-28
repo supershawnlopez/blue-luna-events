@@ -1,7 +1,7 @@
 export default function ProcessStrip() {
   const steps = [
-    { n: '01', title: 'Build Your Package', body: 'Choose your event type, base package, and any add-ons. See your price in real time — no waiting, no guessing.' },
-    { n: '02', title: 'Monica Confirms Your Date', body: 'She reviews your request and reaches out personally within a few hours to lock in your date.' },
+    { n: '01', title: 'Share Your Vision', body: 'Tell us about your event, your style, and what you\'re dreaming up. Takes about 2 minutes — no pricing pressure, no guesswork.' },
+    { n: '02', title: 'Monica Sends Your Quote', body: 'She reviews your request personally and reaches out with a custom quote made just for you.' },
     { n: '03', title: 'We Handle Everything', body: 'We arrive, we set up, we take down. You walk into a transformed space and focus on the moment.' },
   ]
 

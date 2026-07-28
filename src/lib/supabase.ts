@@ -61,9 +61,14 @@ export type Lead = {
   deposit_paid?: boolean
   deposit_amount?: number
   stripe_payment_intent_id?: string
-  source?: 'configurator' | 'direct'
+  source?: 'configurator' | 'direct' | 'inquiry'
   custom_build?: Record<string, unknown>
   custom_request?: string
+  // Inquiry form fields
+  guest_count?: string
+  setup_time?: string
+  looking_for?: string[]
+  inspo_photos?: string[]
 }
 
 export type GalleryPhoto = {

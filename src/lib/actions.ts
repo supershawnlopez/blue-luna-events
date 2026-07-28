@@ -1,15 +1,11 @@
 'use server'
 
-import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { Lead } from './supabase'
+import { Lead, serverClient } from './supabase'
 import { SITE_CONFIG } from './config'
 
 export async function submitLead(data: Lead) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = serverClient()
 
   let vision = data.vision ?? ''
   if (data.package_name && !vision.includes('Package:')) {
@@ -40,6 +36,10 @@ export async function submitLead(data: Lead) {
       source: data.source ?? 'direct',
       custom_build: data.custom_build ?? null,
       custom_request: data.custom_request ?? null,
+      guest_count: data.guest_count ?? null,
+      setup_time: data.setup_time ?? null,
+      looking_for: data.looking_for ?? null,
+      inspo_photos: data.inspo_photos ?? null,
     }])
     .select('id')
     .single()
@@ -50,8 +50,13 @@ export async function submitLead(data: Lead) {
   }
 
   // Both fire-and-forget — neither blocks lead submission
-  sendMonicaNotification(data, vision).catch(err => console.error('Monica notification error:', err))
-  sendClientConfirmation(data).catch(err => console.error('Client confirmation error:', err))
+  if (data.source === 'inquiry') {
+    sendMonicaInquiryNotification(data, vision).catch(err => console.error('Monica notification error:', err))
+    sendClientInquiryConfirmation(data).catch(err => console.error('Client confirmation error:', err))
+  } else {
+    sendMonicaNotification(data, vision).catch(err => console.error('Monica notification error:', err))
+    sendClientConfirmation(data).catch(err => console.error('Client confirmation error:', err))
+  }
 
   return { success: true, leadId: inserted.id as string }
 }
@@ -416,4 +421,285 @@ async function sendClientConfirmation(data: Lead) {
     html,
   })
   if (error) console.error('Client confirmation email failed to send:', error)
+}
+
+// ─── Inquiry form emails (no pricing — Monica quotes personally) ──────────────
+
+function detailRow(label: string, value?: string | null) {
+  return value
+    ? `<tr><td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">${label}</td><td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${value}</td></tr>`
+    : ''
+}
+
+async function sendMonicaInquiryNotification(data: Lead, vision: string) {
+  if (!process.env.RESEND_API_KEY) return
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const first = firstName(data.name)
+  const label = eventLabel(data.event_type)
+  const lookingFor = data.looking_for ?? []
+  const photos = data.inspo_photos ?? []
+  const subject = `🎈 New Event Inquiry — ${data.name} · ${data.event_type}`
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background:#F3F4F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;-webkit-font-smoothing:antialiased">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F3F4F6;padding:32px 16px">
+<tr><td align="center">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+  <!-- Header -->
+  <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:28px 32px">
+    <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
+    <h1 style="margin:0 0 14px;font-size:22px;font-weight:700;color:#FFFFFF;line-height:1.2">💫 New Event Inquiry</h1>
+    <table cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="background:rgba(91,191,191,0.2);border:1px solid #5BBFBF;border-radius:999px;padding:5px 14px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#5BBFBF">Needs a quote</span>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- Contact card -->
+  <tr><td style="background:#FFFFFF;padding:28px 32px 0">
+    <p style="margin:0 0 16px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Contact</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="padding-bottom:20px">
+          <p style="margin:0 0 2px;font-size:22px;font-weight:700;color:#0D0F0F;line-height:1">${data.name}</p>
+          <p style="margin:0;font-size:13px;color:#6B7280">${label}</p>
+        </td>
+        <td align="right" style="padding-bottom:20px;vertical-align:top">
+          <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#5BBFBF;color:#0D0F0F;font-size:13px;font-weight:700;padding:10px 20px;border-radius:999px;text-decoration:none;white-space:nowrap">
+            📞 Call ${first}
+          </a>
+        </td>
+      </tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #F3F4F6">
+      <tr>
+        <td style="padding:12px 0;width:50%;border-right:1px solid #F3F4F6">
+          <p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF">Phone</p>
+          <a href="tel:${data.phone.replace(/\D/g,'')}" style="font-size:15px;font-weight:600;color:#5BBFBF;text-decoration:none">${data.phone}</a>
+        </td>
+        <td style="padding:12px 0 12px 20px;width:50%">
+          <p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF">Email</p>
+          <a href="mailto:${data.email}" style="font-size:14px;font-weight:500;color:#374151;text-decoration:none;word-break:break-all">${data.email}</a>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+
+  <!-- Event details -->
+  <tr><td style="background:#FFFFFF;padding:20px 32px 0">
+    <p style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Event Details</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #F3F4F6;border-radius:12px;overflow:hidden">
+      <tr style="background:#F9FAFB">
+        <td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
+        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
+      </tr>
+      ${detailRow('Date', data.event_date)}
+      ${detailRow('Venue', data.venue)}
+      ${detailRow('Setup Time', data.setup_time)}
+      ${detailRow('Guests', data.guest_count)}
+      ${detailRow('Budget', data.budget_range)}
+    </table>
+  </td></tr>
+
+  ${lookingFor.length > 0 ? `
+  <!-- Looking for -->
+  <tr><td style="background:#FFFFFF;padding:20px 32px 0">
+    <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">What They're Looking For</p>
+    <div>${lookingFor.map(item => `<span style="display:inline-block;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:999px;padding:5px 12px;margin:0 6px 6px 0;font-size:12px;color:#374151">${item}</span>`).join('')}</div>
+  </td></tr>` : ''}
+
+  ${vision ? `
+  <!-- Notes -->
+  <tr><td style="background:#FFFFFF;padding:20px 32px 0">
+    <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Vibe, Theme & Colors</p>
+    <div style="background:#F9FAFB;border-left:3px solid #5BBFBF;border-radius:0 8px 8px 0;padding:14px 16px">
+      <p style="margin:0;font-size:13px;color:#374151;line-height:1.6">${vision}</p>
+    </div>
+  </td></tr>` : ''}
+
+  ${photos.length > 0 ? `
+  <!-- Inspo photos -->
+  <tr><td style="background:#FFFFFF;padding:20px 32px 0">
+    <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Inspiration Photos</p>
+    <table cellpadding="0" cellspacing="0" border="0"><tr>
+      ${photos.slice(0, 6).map(url => `<td style="padding:0 6px 6px 0"><a href="${url}"><img src="${url}" width="90" height="90" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid #E5E7EB;display:block"></a></td>`).join('')}
+    </tr></table>
+  </td></tr>` : ''}
+
+  <!-- Action -->
+  <tr><td style="background:#FFFFFF;padding:24px 32px 28px">
+    <div style="background:rgba(91,191,191,0.08);border:1px solid rgba(91,191,191,0.25);border-radius:12px;padding:20px;text-align:center">
+      <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#0D0F0F">Reply with a personal quote</p>
+      <p style="margin:0 0 16px;font-size:13px;color:#6B7280">${first} is waiting to hear from you.</p>
+      <table cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td style="padding-right:8px">
+            <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">
+              📞 Call ${first}
+            </a>
+          </td>
+          <td>
+            <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:11px 24px;border-radius:999px;text-decoration:none">
+              💬 Text ${first}
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="background:#F9FAFB;border-top:1px solid #E5E7EB;border-radius:0 0 16px 16px;padding:16px 32px;text-align:center">
+    <p style="margin:0;font-size:11px;color:#9CA3AF">${SITE_CONFIG.name} · ${SITE_CONFIG.location} · <a href="mailto:${SITE_CONFIG.email}" style="color:#9CA3AF;text-decoration:none">${SITE_CONFIG.email}</a></p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`
+
+  const { error } = await resend.emails.send({
+    from: `Blue Luna Events <notifications@bluelunaevents.com>`,
+    replyTo: data.email,
+    to: [SITE_CONFIG.email],
+    subject,
+    html,
+  })
+  if (error) console.error('Monica inquiry notification email failed to send:', error)
+}
+
+async function sendClientInquiryConfirmation(data: Lead) {
+  if (!process.env.RESEND_API_KEY) return
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const first = firstName(data.name)
+  const subject = `We got your info, ${first}! 💫 Monica will be in touch soon`
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="x-apple-disable-message-reformatting">
+<title>${subject}</title>
+</head>
+<body style="margin:0;padding:0;background:#F3F4F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;-webkit-font-smoothing:antialiased">
+
+<div style="display:none;max-height:0;overflow:hidden;mso-hide:all">Monica will personally reach out soon to talk through your vision.&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌&nbsp;‌</div>
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F3F4F6;padding:32px 16px">
+<tr><td align="center">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+  <!-- Header -->
+  <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:36px 32px;text-align:center">
+    <p style="margin:0 0 12px;font-size:36px;line-height:1">💫</p>
+    <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
+    <h1 style="margin:0;font-size:24px;font-weight:700;color:#FFFFFF;line-height:1.3">Thanks for sharing your vision,<br>${first}!</h1>
+  </td></tr>
+
+  <!-- Status message -->
+  <tr><td style="background:#5BBFBF;padding:16px 32px;text-align:center">
+    <p style="margin:0;font-size:14px;font-weight:600;color:#0D0F0F;line-height:1.5">
+      I personally review every request — I'll reach out <strong>as soon as possible</strong> to talk through pricing and next steps.
+    </p>
+  </td></tr>
+
+  <!-- What you told us -->
+  <tr><td style="background:#FFFFFF;padding:28px 32px 0">
+    <p style="margin:0 0 14px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">What You Told Me</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #F3F4F6;border-radius:12px;overflow:hidden">
+      <tr style="background:#F9FAFB">
+        <td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
+        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
+      </tr>
+      ${detailRow('Date', data.event_date)}
+      ${detailRow('Venue', data.venue)}
+    </table>
+  </td></tr>
+
+  <!-- Next steps -->
+  <tr><td style="background:#FFFFFF;padding:28px 32px 0">
+    <p style="margin:0 0 16px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">What Happens Next</p>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      ${[
+        ['1', 'I review your vision', 'I look over every photo, color, and detail you shared.'],
+        ['2', 'I reach out personally', 'Expect a call or text soon — I\'ll ask a few follow-up questions if needed.'],
+        ['3', 'You get a real, accurate quote', 'Priced for exactly what you want — no guesswork, no surprises.'],
+      ].map(([n, title, desc]) => `
+      <tr>
+        <td style="padding-bottom:16px;vertical-align:top;width:36px">
+          <div style="width:28px;height:28px;border-radius:50%;background:rgba(91,191,191,0.12);border:1.5px solid #5BBFBF;text-align:center;line-height:28px;font-size:12px;font-weight:700;color:#5BBFBF">${n}</div>
+        </td>
+        <td style="padding-bottom:16px;padding-left:12px;vertical-align:top">
+          <p style="margin:0 0 3px;font-size:14px;font-weight:600;color:#0D0F0F">${title}</p>
+          <p style="margin:0;font-size:13px;color:#6B7280;line-height:1.5">${desc}</p>
+        </td>
+      </tr>`).join('')}
+    </table>
+  </td></tr>
+
+  <!-- Monica signature -->
+  <tr><td style="background:#FFFFFF;padding:24px 32px 28px">
+    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:14px;padding:20px;text-align:center">
+      <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#0D0F0F">Questions in the meantime?</p>
+      <p style="margin:0 0 16px;font-size:13px;color:#6B7280">Text or call — I answer these myself.</p>
+      <table cellpadding="0" cellspacing="0" border="0" align="center">
+        <tr>
+          <td style="padding-right:8px">
+            <a href="tel:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:11px 22px;border-radius:999px;text-decoration:none">
+              📞 ${SITE_CONFIG.phone}
+            </a>
+          </td>
+          <td>
+            <a href="sms:${SITE_CONFIG.phoneRaw}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:10px 22px;border-radius:999px;text-decoration:none">
+              💬 Send a Text
+            </a>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:20px 0 0;font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-size:19px;color:#0D0F0F">— Monica</p>
+    </div>
+  </td></tr>
+
+  <!-- Social proof -->
+  <tr><td style="background:#FDFCFA;border-top:1px solid #E5E7EB;padding:20px 32px;text-align:center">
+    <p style="margin:0 0 6px;font-size:13px;color:#6B7280">Trusted by hundreds of Tucson families since 2018.</p>
+    <a href="${SITE_CONFIG.instagram}" style="font-size:12px;font-weight:600;color:#5BBFBF;text-decoration:none">${SITE_CONFIG.instagramHandle}</a>
+    <span style="font-size:12px;color:#D1D5DB"> · </span>
+    <a href="https://${SITE_CONFIG.website}" style="font-size:12px;color:#9CA3AF;text-decoration:none">${SITE_CONFIG.website}</a>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="background:#F3F4F6;border-top:1px solid #E5E7EB;border-radius:0 0 16px 16px;padding:16px 32px;text-align:center">
+    <p style="margin:0;font-size:11px;color:#9CA3AF">${SITE_CONFIG.name} · ${SITE_CONFIG.location} · <a href="mailto:${SITE_CONFIG.email}" style="color:#9CA3AF;text-decoration:none">${SITE_CONFIG.email}</a></p>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`
+
+  const { error } = await resend.emails.send({
+    from: `Monica at Blue Luna Events <monica@bluelunaevents.com>`,
+    replyTo: SITE_CONFIG.email,
+    to: [data.email],
+    subject,
+    html,
+  })
+  if (error) console.error('Client inquiry confirmation email failed to send:', error)
 }

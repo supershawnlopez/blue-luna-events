@@ -75,7 +75,7 @@ export default function Hero() {
             animation: 'fadeUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.45s both',
           }}>
             <Link href="/get-a-quote" className="btn-primary" style={{ fontSize: '0.85rem', padding: '15px 32px' }}>
-              Build Your Package <ArrowRight size={15} />
+              Get a Quote <ArrowRight size={15} />
             </Link>
           </div>
         </div>

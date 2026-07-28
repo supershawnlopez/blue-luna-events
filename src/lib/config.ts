@@ -401,3 +401,54 @@ export const PRICING_RULES = {
 export const HOMEPAGE_PACKAGES = PACKAGE_CATALOG.filter(
   p => ['essential', 'signature', 'luxury'].includes(p.id)
 )
+
+// ─── Inquiry Form (/get-a-quote) ───────────────────────────────────────────────
+// No live pricing — Monica quotes personally after reviewing the submission.
+
+export const INQUIRY_EVENT_TYPES = [
+  { id: 'birthday',   label: 'Birthday',       emoji: '🎈' },
+  { id: 'baby',       label: 'Baby Shower',    emoji: '🌸' },
+  { id: 'bridal',     label: 'Bridal Shower',  emoji: '💐' },
+  { id: 'wedding',    label: 'Wedding',        emoji: '💍' },
+  { id: 'corporate',  label: 'Corporate Event',emoji: '✨' },
+  { id: 'graduation', label: 'Graduation',     emoji: '🎓' },
+  { id: 'holiday',    label: 'Holiday Party',  emoji: '🎄' },
+  { id: 'other',      label: 'Other',          emoji: '🎉' },
+] as const
+
+export const BUDGET_RANGES = [
+  'Under $500',
+  '$500 – $1,000',
+  '$1,000 – $2,000',
+  '$2,000+',
+  "Not sure yet — help me figure it out",
+]
+
+export type LookingForCategory = {
+  label: string
+  emoji: string
+  options: string[]
+}
+
+export const LOOKING_FOR_CATEGORIES: LookingForCategory[] = [
+  {
+    label: 'Balloon Installations',
+    emoji: '🎈',
+    options: ['Arch', 'Garland', 'Hoop', 'Column(s)', 'Not sure'],
+  },
+  {
+    label: 'Backdrops & Focal Points',
+    emoji: '🖼️',
+    options: ['Fabric Backdrop', 'Shimmer Wall', 'Neon Sign', 'Custom Vinyl / Text', 'Main Decor (sweetheart table, entrance, etc.)'],
+  },
+  {
+    label: 'Table Styling',
+    emoji: '🌸',
+    options: ['Cake Table', 'Gift Table', 'Centerpieces', 'Full Table Styling', 'Sweetheart Table Styling', 'Linen Rentals', 'Candle Décor'],
+  },
+  {
+    label: 'Ceiling & Add-Ons',
+    emoji: '✨',
+    options: ['Ceiling Balloons', 'Hanging Installations', 'Uplighting', 'Entry Arch', 'Grab & Go Balloons', 'Partnered Photo Booth'],
+  },
+]
