@@ -168,7 +168,7 @@ export default function InquiryForm() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <SectionLabel icon={<User size={12} />}>Full Name</SectionLabel>
-            <input className="input-field" placeholder="Maria Hernandez" required value={form.name} onChange={e => set('name', e.target.value)} />
+            <input className="input-field" placeholder="Your full name" required value={form.name} onChange={e => set('name', e.target.value)} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
@@ -177,7 +177,7 @@ export default function InquiryForm() {
             </div>
             <div>
               <SectionLabel icon={<Mail size={12} />}>Email</SectionLabel>
-              <input className="input-field" type="email" placeholder="maria@email.com" required value={form.email} onChange={e => set('email', e.target.value)} />
+              <input className="input-field" type="email" placeholder="you@email.com" required value={form.email} onChange={e => set('email', e.target.value)} />
             </div>
           </div>
         </div>
