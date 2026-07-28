@@ -195,7 +195,7 @@ async function sendMonicaNotification(data: Lead, vision: string) {
   <tr><td style="background:#FFFFFF;padding:20px 32px 0">
     <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Notes from ${first}</p>
     <div style="background:#F9FAFB;border-left:3px solid #5BBFBF;border-radius:0 8px 8px 0;padding:14px 16px">
-      <p style="margin:0;font-size:13px;color:#374151;line-height:1.6">${vision}</p>
+      <p style="margin:0;font-size:14px;color:#374151;line-height:1.6">${vision}</p>
     </div>
   </td></tr>` : ''}
 
@@ -461,13 +461,13 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
 
   <!-- Header -->
-  <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:28px 32px">
-    <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
-    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#FFFFFF;line-height:1.2">💫 New Lead</h1>
+  <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:36px 32px">
+    <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
+    <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:700;color:#FFFFFF;line-height:1.2">💫 New Lead</h1>
     <table cellpadding="0" cellspacing="0" border="0">
       <tr>
-        <td style="background:rgba(91,191,191,0.2);border:1px solid #5BBFBF;border-radius:999px;padding:5px 14px">
-          <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#5BBFBF">Needs a quote</span>
+        <td style="background:rgba(91,191,191,0.2);border:1px solid #5BBFBF;border-radius:999px;padding:6px 16px">
+          <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#5BBFBF">Needs a quote</span>
         </td>
       </tr>
     </table>
@@ -479,11 +479,11 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
         <td style="padding-bottom:20px">
-          <p style="margin:0 0 2px;font-size:22px;font-weight:700;color:#0D0F0F;line-height:1">${data.name}</p>
-          <p style="margin:0;font-size:13px;color:#6B7280">${label}</p>
+          <p style="margin:0 0 3px;font-size:24px;font-weight:700;color:#0D0F0F;line-height:1.1">${data.name}</p>
+          <p style="margin:0;font-size:14px;color:#6B7280">${label}</p>
         </td>
         <td align="right" style="padding-bottom:20px;vertical-align:top">
-          <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#5BBFBF;color:#0D0F0F;font-size:13px;font-weight:700;padding:10px 20px;border-radius:999px;text-decoration:none;white-space:nowrap">
+          <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#5BBFBF;color:#0D0F0F;font-size:14px;font-weight:700;padding:11px 22px;border-radius:999px;text-decoration:none;white-space:nowrap">
             📞 Call
           </a>
         </td>
@@ -491,13 +491,13 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
     </table>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #F3F4F6">
       <tr>
-        <td style="padding:12px 0;width:50%;border-right:1px solid #F3F4F6">
-          <p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF">Phone</p>
-          <a href="tel:${data.phone.replace(/\D/g,'')}" style="font-size:15px;font-weight:600;color:#5BBFBF;text-decoration:none">${data.phone}</a>
+        <td style="padding:14px 0;width:50%;border-right:1px solid #F3F4F6">
+          <p style="margin:0 0 3px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF">Phone</p>
+          <a href="tel:${data.phone.replace(/\D/g,'')}" style="font-size:16px;font-weight:600;color:#5BBFBF;text-decoration:none">${data.phone}</a>
         </td>
-        <td style="padding:12px 0 12px 20px;width:50%">
-          <p style="margin:0 0 2px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF">Email</p>
-          <a href="mailto:${data.email}" style="font-size:14px;font-weight:500;color:#374151;text-decoration:none;word-break:break-all">${data.email}</a>
+        <td style="padding:14px 0 14px 20px;width:50%">
+          <p style="margin:0 0 3px;font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9CA3AF">Email</p>
+          <a href="mailto:${data.email}" style="font-size:15px;font-weight:500;color:#374151;text-decoration:none;word-break:break-all">${data.email}</a>
         </td>
       </tr>
     </table>
@@ -523,7 +523,7 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
   <!-- Looking for -->
   <tr><td style="background:#FFFFFF;padding:20px 32px 0">
     <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">What They're Looking For</p>
-    <div>${lookingFor.map(item => `<span style="display:inline-block;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:999px;padding:5px 12px;margin:0 6px 6px 0;font-size:12px;color:#374151">${item}</span>`).join('')}</div>
+    <div>${lookingFor.map(item => `<span style="display:inline-block;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:999px;padding:6px 13px;margin:0 6px 6px 0;font-size:13px;color:#374151">${item}</span>`).join('')}</div>
   </td></tr>` : ''}
 
   ${vision ? `
@@ -531,7 +531,7 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
   <tr><td style="background:#FFFFFF;padding:20px 32px 0">
     <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Vibe, Theme & Colors</p>
     <div style="background:#F9FAFB;border-left:3px solid #5BBFBF;border-radius:0 8px 8px 0;padding:14px 16px">
-      <p style="margin:0;font-size:13px;color:#374151;line-height:1.6">${vision}</p>
+      <p style="margin:0;font-size:14px;color:#374151;line-height:1.6">${vision}</p>
     </div>
   </td></tr>` : ''}
 
@@ -546,18 +546,18 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
 
   <!-- Action -->
   <tr><td style="background:#FFFFFF;padding:24px 32px 28px">
-    <div style="background:rgba(91,191,191,0.08);border:1px solid rgba(91,191,191,0.25);border-radius:12px;padding:20px;text-align:center">
-      <p style="margin:0 0 6px;font-size:15px;font-weight:700;color:#0D0F0F">Reply with a personal quote</p>
-      <p style="margin:0 0 16px;font-size:13px;color:#6B7280">${first} is waiting to hear from you.</p>
+    <div style="background:rgba(91,191,191,0.08);border:1px solid rgba(91,191,191,0.25);border-radius:12px;padding:22px 20px">
+      <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0D0F0F">Reply with a personal quote</p>
+      <p style="margin:0 0 18px;font-size:14px;color:#6B7280">${first} is waiting to hear from you.</p>
       <table cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
           <td style="padding-right:8px">
-            <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:13px;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
+            <a href="tel:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:#0D0F0F;color:#FFFFFF;font-size:14px;font-weight:700;padding:13px 26px;border-radius:999px;text-decoration:none;white-space:nowrap">
               📞 Call
             </a>
           </td>
           <td>
-            <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:13px;font-weight:600;padding:11px 24px;border-radius:999px;text-decoration:none;white-space:nowrap">
+            <a href="sms:${data.phone.replace(/\D/g,'')}" style="display:inline-block;background:white;border:1.5px solid #E5E7EB;color:#374151;font-size:14px;font-weight:600;padding:12px 26px;border-radius:999px;text-decoration:none;white-space:nowrap">
               💬 Text
             </a>
           </td>
