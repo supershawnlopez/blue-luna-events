@@ -127,7 +127,7 @@ async function sendMonicaNotification(data: Lead, vision: string) {
   <!-- Header -->
   <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:28px 32px">
     <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
-    <h1 style="margin:0 0 14px;font-size:22px;font-weight:700;color:#FFFFFF;line-height:1.2">
+    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#FFFFFF;line-height:1.2">
       ${isConsultation ? '✨ New Consultation Request' : '🎈 New Booking Request'}
     </h1>
     <table cellpadding="0" cellspacing="0" border="0">
@@ -179,8 +179,8 @@ async function sendMonicaNotification(data: Lead, vision: string) {
     <p style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Event Details</p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #F3F4F6;border-radius:12px;overflow:hidden">
       <tr style="background:#F9FAFB">
-        <td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
-        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
+        <td style="padding:12px 16px;font-size:13px;font-weight:500;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
+        <td style="padding:12px 16px;font-size:14px;font-weight:700;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
       </tr>
       ${data.event_date ? `<tr><td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;border-bottom:1px solid #F3F4F6">Date</td><td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_date}</td></tr>` : ''}
       ${data.venue ? `<tr><td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;border-bottom:1px solid #F3F4F6">Venue</td><td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.venue}</td></tr>` : ''}
@@ -299,7 +299,7 @@ async function sendClientConfirmation(data: Lead) {
   <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:36px 32px;text-align:center">
     <p style="margin:0 0 12px;font-size:36px;line-height:1">${isConsultation ? '✨' : '🎈'}</p>
     <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
-    <h1 style="margin:0;font-size:24px;font-weight:700;color:#FFFFFF;line-height:1.3">
+    <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:#FFFFFF;line-height:1.3">
       ${isConsultation ? `We got your request,<br>${first}!` : `You're all set,<br>${first}!`}
     </h1>
   </td></tr>
@@ -318,8 +318,8 @@ async function sendClientConfirmation(data: Lead) {
     <p style="margin:0 0 14px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Your Selection</p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #F3F4F6;border-radius:12px;overflow:hidden">
       <tr style="background:#F9FAFB">
-        <td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
-        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
+        <td style="padding:12px 16px;font-size:13px;font-weight:500;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
+        <td style="padding:12px 16px;font-size:14px;font-weight:700;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
       </tr>
       ${data.event_date ? `<tr><td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;border-bottom:1px solid #F3F4F6">Date</td><td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_date}</td></tr>` : ''}
       ${data.venue ? `<tr><td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;border-bottom:1px solid #F3F4F6">Venue</td><td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.venue}</td></tr>` : ''}
@@ -433,7 +433,7 @@ async function sendClientConfirmation(data: Lead) {
 
 function detailRow(label: string, value?: string | null) {
   return value
-    ? `<tr><td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">${label}</td><td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${value}</td></tr>`
+    ? `<tr><td style="padding:12px 16px;font-size:13px;font-weight:500;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">${label}</td><td style="padding:12px 16px;font-size:14px;font-weight:700;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${value}</td></tr>`
     : ''
 }
 
@@ -463,7 +463,7 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
   <!-- Header -->
   <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:28px 32px">
     <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
-    <h1 style="margin:0 0 14px;font-size:22px;font-weight:700;color:#FFFFFF;line-height:1.2">💫 New Lead</h1>
+    <h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:700;color:#FFFFFF;line-height:1.2">💫 New Lead</h1>
     <table cellpadding="0" cellspacing="0" border="0">
       <tr>
         <td style="background:rgba(91,191,191,0.2);border:1px solid #5BBFBF;border-radius:999px;padding:5px 14px">
@@ -508,8 +508,8 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
     <p style="margin:0 0 12px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Event Details</p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #F3F4F6;border-radius:12px;overflow:hidden">
       <tr style="background:#F9FAFB">
-        <td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
-        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
+        <td style="padding:12px 16px;font-size:13px;font-weight:500;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
+        <td style="padding:12px 16px;font-size:14px;font-weight:700;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
       </tr>
       ${detailRow('Date', data.event_date)}
       ${detailRow('Venue', data.venue)}
@@ -614,7 +614,7 @@ async function sendClientInquiryConfirmation(data: Lead) {
   <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:36px 32px;text-align:center">
     <p style="margin:0 0 12px;font-size:36px;line-height:1">💫</p>
     <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
-    <h1 style="margin:0;font-size:24px;font-weight:700;color:#FFFFFF;line-height:1.3">Thanks for sharing your vision,<br>${first}!</h1>
+    <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:700;color:#FFFFFF;line-height:1.3">Thanks for sharing your vision,<br>${first}!</h1>
   </td></tr>
 
   <!-- Status message -->
@@ -629,8 +629,8 @@ async function sendClientInquiryConfirmation(data: Lead) {
     <p style="margin:0 0 14px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">What You Told Me</p>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #F3F4F6;border-radius:12px;overflow:hidden">
       <tr style="background:#F9FAFB">
-        <td style="padding:10px 16px;font-size:12px;font-weight:600;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
-        <td style="padding:10px 16px;font-size:13px;font-weight:600;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
+        <td style="padding:12px 16px;font-size:13px;font-weight:500;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">Event</td>
+        <td style="padding:12px 16px;font-size:14px;font-weight:700;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${data.event_type}</td>
       </tr>
       ${detailRow('Date', data.event_date)}
       ${detailRow('Venue', data.venue)}
