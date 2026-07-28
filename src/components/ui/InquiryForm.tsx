@@ -45,6 +45,9 @@ function chip(active: boolean) {
     fontSize: '0.85rem',
     fontWeight: active ? 700 : 400,
     transition: 'all 0.15s',
+    whiteSpace: 'normal',
+    textAlign: 'center',
+    maxWidth: '100%',
   } as React.CSSProperties
 }
 
@@ -63,6 +66,7 @@ export default function InquiryForm() {
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
   const [error, setError] = useState(false)
+  const [validationMsg, setValidationMsg] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -114,7 +118,21 @@ export default function InquiryForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.eventType || !form.budget) return
+
+    const missing =
+      !form.name.trim() ? 'your full name' :
+      !form.phone.trim() ? 'your phone number' :
+      !form.email.trim() ? 'your email' :
+      !form.eventType ? "what you're celebrating, above" :
+      !form.vibe.trim() ? 'the vibe or theme' :
+      !form.budget ? 'a budget range, below' :
+      null
+
+    if (missing) {
+      setValidationMsg(`Please fill in ${missing} before sending.`)
+      return
+    }
+    setValidationMsg(null)
 
     setLoading(true)
     setError(false)
@@ -205,7 +223,7 @@ export default function InquiryForm() {
           </div>
           <div>
             <SectionLabel icon={<MapPin size={12} />} optional>Venue Name or Address</SectionLabel>
-            <input className="input-field" placeholder="Hacienda del Sol, or a full address" value={form.venue} onChange={e => set('venue', e.target.value)} />
+            <input className="input-field" placeholder="Venue name or address" value={form.venue} onChange={e => set('venue', e.target.value)} />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
             <div>
@@ -214,7 +232,7 @@ export default function InquiryForm() {
             </div>
             <div>
               <SectionLabel icon={<Users size={12} />} optional>Guest Count</SectionLabel>
-              <input className="input-field" type="number" min={1} placeholder="70" value={form.guestCount} onChange={e => set('guestCount', e.target.value)} />
+              <input className="input-field" type="number" inputMode="numeric" min={1} placeholder="70" value={form.guestCount} onChange={e => set('guestCount', e.target.value)} />
             </div>
           </div>
         </div>
@@ -231,7 +249,6 @@ export default function InquiryForm() {
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                 {cat.options.map(opt => (
                   <button key={opt} type="button" onClick={() => toggleLookingFor(opt)} style={chip(form.lookingFor.includes(opt))}>
-                    {form.lookingFor.includes(opt) && <Check size={11} style={{ marginRight: 5, verticalAlign: -1 }} />}
                     {opt}
                   </button>
                 ))}
@@ -337,6 +354,11 @@ export default function InquiryForm() {
         <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: '#9CA3AF', textAlign: 'center', lineHeight: 1.5, marginTop: 10 }}>
           No payment now. Monica reviews every request personally and reaches out to talk pricing.
         </p>
+        {validationMsg && (
+          <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: '#B45309', textAlign: 'center', marginTop: 10 }}>
+            {validationMsg}
+          </p>
+        )}
         {error && (
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: '#EF4444', textAlign: 'center', marginTop: 10 }}>
             Something went wrong — please try again or call Monica at (520) 222-6142.
