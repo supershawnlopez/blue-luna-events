@@ -314,7 +314,10 @@ export default function InquiryForm() {
 
       {/* Delivery */}
       <div>
-        <p className="eyebrow-text" style={{ marginBottom: 14 }}>Will You Need Delivery & Setup?</p>
+        <p className="eyebrow-text" style={{ marginBottom: 14 }}>
+          Will You Need Delivery & Setup?
+          <span style={{ color: '#9CA3AF', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}> (optional)</span>
+        </p>
         <div style={{ display: 'flex', gap: 8 }}>
           {(['Yes', 'No'] as const).map(v => (
             <button key={v} type="button" onClick={() => set('delivery', v)} style={chip(form.delivery === v)}>{v}</button>
