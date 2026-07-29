@@ -41,19 +41,20 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Configurator-with-real-photos — the next real redesign lever, not yet started**
-- The full White/Twilight redesign is now done sitewide (homepage, Nav, Footer, Gallery, Quinceañeras, Graduations — see DONE below). The team's own July 8 audit called the Event Questionnaire showing real matching photos as someone fills it out the single highest-leverage, most-differentiated idea versus every competitor in Tucson — bigger than the homepage work, needs gallery photos tagged by component/color (not just event type) as a prerequisite.
-- **False start 2026-07-29:** began building this same-day (added a `components` column to `gallery_media`) before confirming scope with Shawn — he stopped it, clarified he meant finishing the homepage visual work, not starting this project. Column was reverted. Real go-ahead for this specific project still needed before touching schema/data again.
-- Owner: needs a fresh, explicit team conversation with Shawn before building — don't resume from the false start assuming it's still the plan.
+1. **Get Shawn's real-phone reaction to the Orbital redesign, now live** — see DONE below for full scope
+- Circular/orbital design language shipped sitewide 2026-07-29 (Hero, WhyMonica, Packages, Reviews, CTA, Gallery, Quinceañeras, Graduations). This was a genuine full pass, not incremental patching — confirm with Shawn it lands as "modern, fresh, out of the ordinary" as directed, not just another variation.
+- Owner: Shawn reviews live.
 
-2. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
+2. **Configurator-with-real-photos — the next real redesign lever, not yet started**
+- The team's July 8 audit called the Event Questionnaire showing real matching photos as someone fills it out the single highest-leverage, most-differentiated idea versus every competitor in Tucson. Needs gallery photos tagged by component/color (not just event type) as a prerequisite — the vocabulary already exists in `LOOKING_FOR_CATEGORIES` in `config.ts`.
+- **False start 2026-07-29:** began building this same-day (added a `components` column to `gallery_media`) before confirming scope with Shawn — he stopped it twice, clarified this was NOT what "next steps" meant either time. Column was reverted. Do not resume this without Shawn explicitly re-opening it by name — general "keep going" / "move forward" language does NOT authorize starting this specific project.
+- Owner: needs a fresh, explicit team conversation with Shawn before building.
+
+3. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
 - Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
 - Owner: Shawn runs the test.
 
-3. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
-- Status: MITIGATION SHIPPED 2026-07-08, monitor before considering fully closed
-- Root cause was inconclusive (the old keepalive cron was correctly configured, enabled, and worked when manually triggered — but the DB still paused, suggesting Vercel Hobby-plan cron reliability, not a code bug). Replaced the silent ping with a real weekly business summary email (`/api/cron/weekly-summary`) — same protection, but a failure is now visible as a missing email instead of a silently broken site.
-- If Shawn stops receiving the Monday/Thursday email, that's the signal Vercel's cron isn't firing — worth revisiting the free-external-pinger or Supabase Pro ($25/mo) options from that point.
+*(Supabase auto-pause watch, mitigation shipped 2026-07-08, moved off NOW to make room — still passively monitored via the weekly summary email; revisit only if that email stops arriving.)*
 
 ---
 
@@ -77,6 +78,10 @@ Exit criteria for Phase 1:
 - ✅ Added future "Grab & Go" budget-friendly self-serve page to BACKLOG.
 - ✅ **Nav + Footer converted to light theme, merged and LIVE.** Nav now goes light everywhere except transparent-over-hero on the homepage — previously every other page (gallery, event questionnaire, quince/grad) always showed a dark nav regardless of scroll. Mobile full-screen nav rebuilt to actually match the "Calm/Warm" white slide-in-from-right spec that's been locked in `DESIGN_DECISIONS.md` since June 19 but was never built that way — real bug fix, not just a recolor. Footer flipped to match. This closes out Shawn's "is there more than a color swap" feedback — Nav/Footer/homepage are now a coherent, structurally-updated whole.
 - ✅ **Gallery, Quinceañeras, Graduations converted to light theme too — LIVE.** Same treatment as the homepage. Gallery's full-screen lightbox stays dark intentionally (standard photo-viewer UX, same reasoning as the homepage CTA staying dark). Also fixed real leftover pricing text on the quince/grad FAQ and CTA copy that the earlier Packages-component-only pass missed (specific dollar figures like "$450," "$75 rush fee") — reworded to the same consultive framing used everywhere else. SEO meta descriptions on both pages still mention pricing — left alone since that's not visible page content, flagged for Shawn to decide separately.
+- ⚠️ **Correction, same day:** the above (Nav/Footer/Gallery/Quince/Grad light theme) was still incremental patching, section by section. Shawn stopped this process directly, said it wasted his time and money, and directed one real full redesign pass instead — see the ORBITAL entry below and `DECISIONS.md`/`DESIGN_DECISIONS.md` for the full account, including a false start on the unrelated configurator project that had to be reverted.
+- ✅ **Orbital/circular design language — full redesign pass, LIVE.** Real photos cropped as circles and staggered like balloons clustering, echoing Blue Luna's own crescent-moon/balloon logo — the sitewide signature motif per Shawn's direct brief ("modern, fresh, out of the ordinary, not your usual"). Shipped across Hero (floating circular photo cluster with float animation), WhyMonica (circular accent photo), Packages (numbered circular tier markers), Reviews (twilight glow accent), CTA (orbital ring accents), and circular hero-image crops on Quinceañeras/Graduations/Gallery. See `DESIGN_DECISIONS.md` "ORBITAL / CIRCULAR DESIGN LANGUAGE" for the full locked spec.
+- ✅ **Real bug found and fixed: homepage GalleryPreview was unfiltered.** Was fetching every photo Monica's ever uploaded, including non-decor candids, instead of her curated `show_on_website` set — same bug class as the silent-failure pattern found repeatedly this week. Fixed to match the real `/gallery` page's existing filter.
+- ✅ **Real bug found and fixed: circular hero images not loading.** Next.js `Image fill` without `priority` never fired for these above-the-fold circular crops (confirmed via devtools — the image request never fired, not a timing delay). Added `priority` + `sizes` sitewide to every above-the-fold circular image.
 
 ---
 

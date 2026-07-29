@@ -12,11 +12,20 @@ Why: The site must feel like a luxury brand, not a local balloon company. Teal r
 
 ---
 
-## TWILIGHT ACCENT — SCOPED, NOT A REPLACEMENT (LOCKED — 2026-07-29)
+## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)
 
-**A secondary "Twilight" accent (blush `#F6DDD3`, lavender `#E4D6EC`, gold `#E8CFA0`, plus a soft radial glow) exists for mood/atmosphere in photo-heavy, editorial moments ONLY — currently the homepage Hero and GalleryPreview. It does not replace teal anywhere else.**
+**A secondary "Twilight" glow (soft blush/lavender/gold radial gradient, `--twilight-glow` in `globals.css`) is used as a subtle atmospheric accent behind circular photo elements sitewide. It never becomes a solid fill, never appears as flat blush/lavender/gold blocks, and never replaces teal as the primary functional color (buttons, links, active states, borders).**
 Approved by: Shawn + Jony Ive
-Why: Started as an exploration on branch `redesign/gallery-twilight`; the original commit describing it as "pulled directly from the crescent-moon logo mark" was imprecise — the real logo contains none of these colors, it's solid teal. Twilight is a dusk/moonlight *mood* accent, not a brand palette extraction. Shawn responded well to the white/bright layout shift in the preview, not to teal being displaced. WhyMonica, Packages, Reviews, CTA, Nav, Footer, and every page besides the homepage Hero/Gallery keep teal as-is.
+Why: Originally scoped to homepage Hero + GalleryPreview only (see the entry this revises, same date). Same day, Shawn reviewed the shipped result and said it still read as a color-swap on the existing layout, not a real redesign — directed the team to do one real, cohesive pass instead of incremental patches. The result is the ORBITAL/CIRCULAR DESIGN LANGUAGE below, which uses the Twilight glow as connective atmosphere behind circular photo crops on every page (Hero, WhyMonica, Reviews, Gallery, Quinceañeras). Teal remains the only *solid* color used for buttons, links, and functional UI — Twilight is glow/atmosphere only, never a competing solid brand color.
+
+---
+
+## ORBITAL / CIRCULAR DESIGN LANGUAGE (LOCKED — 2026-07-29)
+
+**Real photos are cropped as circles and staggered like balloons clustering — not rectangular cards — as the sitewide signature motif, echoing Blue Luna's own crescent-moon/balloon logo mark.**
+Approved by: Shawn + Jony Ive
+Why: Direct instruction from Shawn after seeing the first homepage pass: wanted something "modern, fresh, out of the ordinary, not your usual" — specifically not another templated luxury-brand look every competitor site can copy. Jony's reasoning: Blue Luna's own mark is already a circle; no competitor in Tucson is designed around that shape. Applied as: a floating cluster of circular real-photo crops in the Hero (subtle continuous float animation), a circular accent photo overlapping Monica's portrait in WhyMonica, numbered circular tier markers on Packages cards, a Twilight glow accent behind Reviews, orbital ring accents on the closing CTA, and circular hero-image crops on the Quinceañera/Graduation landing pages (replacing single rectangular photos).
+- Technical note for future work: circular photos using Next.js `Image fill` above the fold must have `priority` set — `loading="lazy"` (the default) was found not to reliably fire for these nested absolutely-positioned circular crops, leaving them blank. Fixed sitewide 2026-07-29.
 
 ---
 
