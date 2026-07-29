@@ -431,6 +431,12 @@ async function sendClientConfirmation(data: Lead) {
 
 // ─── Inquiry form emails (no pricing — Monica quotes personally) ──────────────
 
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
+  return out
+}
+
 function detailRow(label: string, value?: string | null) {
   return value
     ? `<tr><td style="padding:12px 16px;font-size:13px;font-weight:500;color:#9CA3AF;width:110px;border-bottom:1px solid #F3F4F6">${label}</td><td style="padding:12px 16px;font-size:14px;font-weight:700;color:#0D0F0F;border-bottom:1px solid #F3F4F6">${value}</td></tr>`
@@ -538,10 +544,10 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
   ${photos.length > 0 ? `
   <!-- Inspo photos -->
   <tr><td style="background:#FFFFFF;padding:20px 32px 0">
-    <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Inspiration Photos</p>
-    <table cellpadding="0" cellspacing="0" border="0"><tr>
-      ${photos.slice(0, 6).map(url => `<td style="padding:0 6px 6px 0"><a href="${url}"><img src="${url}" width="90" height="90" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid #E5E7EB;display:block"></a></td>`).join('')}
-    </tr></table>
+    <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Inspiration Photos (${photos.length})</p>
+    <table cellpadding="0" cellspacing="0" border="0">
+      ${chunk(photos, 5).map(row => `<tr>${row.map(url => `<td style="padding:0 6px 6px 0"><a href="${url}"><img src="${url}" width="90" height="90" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid #E5E7EB;display:block"></a></td>`).join('')}</tr>`).join('')}
+    </table>
   </td></tr>` : ''}
 
   <!-- Action -->

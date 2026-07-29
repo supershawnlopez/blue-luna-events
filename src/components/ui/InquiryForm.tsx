@@ -10,6 +10,7 @@ const DARK = '#0D0F0F'
 const MUTED = '#6B7280'
 const BORDER = '#E5E7EB'
 const WARM = '#F9FAFB'
+const MAX_PHOTOS = 15
 
 type FormState = {
   name: string
@@ -111,12 +112,12 @@ export default function InquiryForm() {
   }
 
   async function handlePhotoSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []).filter(f => f.type.startsWith('image/')).slice(0, 6 - photos.length)
+    const files = Array.from(e.target.files ?? []).filter(f => f.type.startsWith('image/')).slice(0, MAX_PHOTOS - photos.length)
     if (files.length === 0) return
     e.target.value = ''
 
     const placeholders = files.map(f => ({ url: URL.createObjectURL(f), uploading: true }))
-    setPhotos(prev => [...prev, ...placeholders].slice(0, 6))
+    setPhotos(prev => [...prev, ...placeholders].slice(0, MAX_PHOTOS))
 
     // Each file uploads directly to Supabase Storage via its own signed URL —
     // avoids Vercel's serverless request-body size limit, which silently
@@ -321,7 +322,7 @@ export default function InquiryForm() {
               )}
             </div>
           ))}
-          {photos.length < 6 && (
+          {photos.length < MAX_PHOTOS && (
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
