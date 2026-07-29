@@ -55,7 +55,7 @@ export async function submitLead(data: Lead) {
   if (data.source === 'inquiry') {
     await Promise.all([
       sendMonicaInquiryNotification(data, vision).catch(err => console.error('Monica notification error:', err)),
-      sendClientInquiryConfirmation(data).catch(err => console.error('Client confirmation error:', err)),
+      sendClientInquiryConfirmation(data, vision).catch(err => console.error('Client confirmation error:', err)),
     ])
   } else {
     await Promise.all([
@@ -611,11 +611,13 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
   if (error) console.error('Monica inquiry notification email failed to send:', error)
 }
 
-async function sendClientInquiryConfirmation(data: Lead) {
+async function sendClientInquiryConfirmation(data: Lead, vision: string) {
   if (!process.env.RESEND_API_KEY) return
 
   const resend = new Resend(process.env.RESEND_API_KEY)
   const first = firstName(data.name)
+  const lookingFor = data.looking_for ?? []
+  const photos = data.inspo_photos ?? []
   const subject = `We got your info, ${first}! 💫 Monica will be in touch soon`
 
   const html = `<!DOCTYPE html>
@@ -658,8 +660,36 @@ async function sendClientInquiryConfirmation(data: Lead) {
       </tr>
       ${detailRow('Date', data.event_date)}
       ${detailRow('Venue', data.venue)}
+      ${detailRow('Setup Time', data.setup_time)}
+      ${detailRow('Guests', data.guest_count)}
+      ${detailRow('Budget', data.budget_range)}
     </table>
   </td></tr>
+
+  ${lookingFor.length > 0 ? `
+  <!-- Looking for -->
+  <tr><td style="background:#FFFFFF;padding:20px 32px 0">
+    <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">What You're Looking For</p>
+    <div>${lookingFor.map(item => `<span style="display:inline-block;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:999px;padding:6px 13px;margin:0 6px 6px 0;font-size:13px;color:#374151">${item}</span>`).join('')}</div>
+  </td></tr>` : ''}
+
+  ${vision ? `
+  <!-- Vibe -->
+  <tr><td style="background:#FFFFFF;padding:20px 32px 0">
+    <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Your Vibe, Theme & Colors</p>
+    <div style="background:#F9FAFB;border-left:3px solid #5BBFBF;border-radius:0 8px 8px 0;padding:14px 16px">
+      <p style="margin:0;font-size:14px;color:#374151;line-height:1.6">${vision}</p>
+    </div>
+  </td></tr>` : ''}
+
+  ${photos.length > 0 ? `
+  <!-- Photos -->
+  <tr><td style="background:#FFFFFF;padding:20px 32px 0">
+    <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:#9CA3AF">Your Inspiration Photos (${photos.length})</p>
+    <table cellpadding="0" cellspacing="0" border="0">
+      ${chunk(photos, 5).map(row => `<tr>${row.map(url => `<td style="padding:0 6px 6px 0"><a href="${url}"><img src="${url}" width="90" height="90" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid #E5E7EB;display:block"></a></td>`).join('')}</tr>`).join('')}
+    </table>
+  </td></tr>` : ''}
 
   <!-- Next steps -->
   <tr><td style="background:#FFFFFF;padding:28px 32px 0">
