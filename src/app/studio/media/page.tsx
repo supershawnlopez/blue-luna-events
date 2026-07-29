@@ -160,9 +160,18 @@ export default function StudioMedia() {
 
   async function compressImage(file: File): Promise<{ file: File; type: string }> {
     return new Promise(resolve => {
+      let done = false
+      const finishRaw = () => { if (done) return; done = true; URL.revokeObjectURL(url); resolve({ file, type: file.type }) }
+      // Safety net — if decode never fires onload or onerror (seen with some HEIC edge
+      // cases), fall back to the original file instead of hanging the upload forever.
+      const timeout = setTimeout(finishRaw, 10000)
+
       const img = new window.Image()
       const url = URL.createObjectURL(file)
       img.onload = () => {
+        if (done) return
+        done = true
+        clearTimeout(timeout)
         URL.revokeObjectURL(url)
         const MAX = 1920
         let { width, height } = img
@@ -172,14 +181,16 @@ export default function StudioMedia() {
         }
         const canvas = document.createElement('canvas')
         canvas.width = width; canvas.height = height
-        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { resolve({ file, type: file.type }); return }
+        ctx.drawImage(img, 0, 0, width, height)
         canvas.toBlob(blob => {
           if (!blob) { resolve({ file, type: file.type }); return }
           const webp = new File([blob], file.name.replace(/\.[^.]+$/, '.webp'), { type: 'image/webp' })
           resolve({ file: webp, type: 'image/webp' })
         }, 'image/webp', 0.85)
       }
-      img.onerror = () => { URL.revokeObjectURL(url); resolve({ file, type: file.type }) }
+      img.onerror = () => { clearTimeout(timeout); finishRaw() }
       img.src = url
     })
   }
@@ -278,8 +289,10 @@ export default function StudioMedia() {
     const { signedUrl, path } = await signRes.json()
     const ok = await new Promise<boolean>(resolve => {
       const xhr = new XMLHttpRequest()
+      xhr.timeout = 30000
       xhr.onload = () => resolve(xhr.status < 300)
       xhr.onerror = () => resolve(false)
+      xhr.ontimeout = () => resolve(false)
       xhr.open('PUT', signedUrl)
       xhr.setRequestHeader('Content-Type', 'image/webp')
       xhr.send(thumb)
@@ -338,9 +351,11 @@ export default function StudioMedia() {
 
     await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest()
+      xhr.timeout = 60000
       xhr.upload.onprogress = e => { if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100)) }
-      xhr.onload = () => xhr.status < 300 ? resolve() : reject()
-      xhr.onerror = reject
+      xhr.onload = () => xhr.status < 300 ? resolve() : reject(new Error(`Upload failed: ${xhr.status}`))
+      xhr.onerror = () => reject(new Error('Network error during upload'))
+      xhr.ontimeout = () => reject(new Error('Upload timed out'))
       xhr.open('PUT', signedUrl)
       xhr.setRequestHeader('Content-Type', contentType)
       xhr.send(uploadFile)
@@ -416,12 +431,19 @@ export default function StudioMedia() {
     setPendingFiles(chosen)
     setUploading(true)
     setUploadProgress(0)
+    let failCount = 0
     for (let i = 0; i < chosen.length; i++) {
-      const item = await uploadFile(chosen[i], etype, pct => {
-        const base = (i / chosen.length) * 100
-        setUploadProgress(Math.round(base + pct / chosen.length))
-      })
-      if (item) setMedia(prev => [item, ...prev])
+      try {
+        const item = await uploadFile(chosen[i], etype, pct => {
+          const base = (i / chosen.length) * 100
+          setUploadProgress(Math.round(base + pct / chosen.length))
+        })
+        if (item) setMedia(prev => [item, ...prev])
+        else failCount++
+      } catch (err) {
+        console.error('Upload failed for', chosen[i].name, err)
+        failCount++
+      }
       setUploadProgress(Math.round(((i + 1) / chosen.length) * 100))
     }
     setUploading(false)
@@ -431,6 +453,9 @@ export default function StudioMedia() {
     setUploadProgress(0)
     if (fileRef.current)   fileRef.current.value = ''
     if (cameraRef.current) cameraRef.current.value = ''
+    if (failCount > 0) {
+      showToast(`${failCount} of ${chosen.length} file${chosen.length !== 1 ? 's' : ''} failed to upload — check your connection and try again.`)
+    }
   }
 
   async function toggle(id: string, field: 'show_on_website' | 'social_export', current: boolean) {
