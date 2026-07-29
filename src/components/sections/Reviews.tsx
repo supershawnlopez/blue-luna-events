@@ -39,8 +39,13 @@ function Stars() {
 
 export default function Reviews() {
   return (
-    <section id="reviews" style={{ padding: 'clamp(56px,8vw,96px) 0', background: '#FDFCFA', overflow: 'hidden' }}>
-      <div className="container">
+    <section id="reviews" style={{ padding: 'clamp(56px,8vw,96px) 0', background: '#FDFCFA', overflow: 'hidden', position: 'relative' }}>
+      <div style={{
+        position: 'absolute', top: '-10%', left: '-6%', width: '340px', height: '340px',
+        borderRadius: '50%', background: 'var(--twilight-glow)', filter: 'blur(30px)',
+        pointerEvents: 'none', opacity: 0.6,
+      }} />
+      <div className="container" style={{ position: 'relative' }}>
 
         {/* Header */}
         <div style={{ marginBottom: '56px' }} className="reveal">

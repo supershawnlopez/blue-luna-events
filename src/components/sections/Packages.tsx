@@ -31,6 +31,17 @@ export default function Packages() {
               <div style={{ position: 'relative', height: `${190 + i * 30}px`, overflow: 'hidden' }}>
                 <Image src={pkg.image} alt={pkg.name} fill style={{ objectFit: 'cover', transition: 'transform 0.5s' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(13,15,15,0.6) 100%)' }} />
+                {/* Orbital tier marker — same circular language as the hero/WhyMonica */}
+                <div style={{
+                  position: 'absolute', top: '14px', left: '16px', width: '44px', height: '44px',
+                  borderRadius: '50%', background: 'white', border: '1px solid #E5E7EB',
+                  boxShadow: '0 4px 16px rgba(13,15,15,0.14)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span className="font-display" style={{ fontSize: '1rem', fontWeight: 600, color: pkg.color === 'gold' ? '#C9A96E' : '#5BBFBF' }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
                 {pkg.badge && (
                   <div style={{
                     position: 'absolute', top: '12px', right: '12px',

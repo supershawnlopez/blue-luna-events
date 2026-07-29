@@ -15,6 +15,11 @@ export default function CTA() {
         filter: 'blur(60px)', pointerEvents: 'none',
       }} />
 
+      {/* Orbital ring accents — same circular language, closing out the page */}
+      <div style={{ position: 'absolute', top: '8%', left: '6%', width: '90px', height: '90px', borderRadius: '50%', border: '1px solid rgba(91,191,191,0.2)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '10%', right: '8%', width: '130px', height: '130px', borderRadius: '50%', border: '1px solid rgba(91,191,191,0.15)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '20%', right: '14%', width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(91,191,191,0.1)', pointerEvents: 'none' }} />
+
       <div className="container" style={{ position: 'relative', zIndex: 2 }}>
         <div style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'center' }}>
 
