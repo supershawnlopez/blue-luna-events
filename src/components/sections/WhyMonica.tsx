@@ -11,12 +11,12 @@ const TRUST_ITEMS = [
 
 export default function WhyMonica() {
   return (
-    <section id="about" style={{ padding: 'clamp(64px,9vw,112px) 0', background: '#0D0F0F', position: 'relative', overflow: 'hidden' }}>
+    <section id="about" style={{ padding: 'clamp(64px,9vw,112px) 0', background: '#FDFCFA', position: 'relative', overflow: 'hidden' }}>
       {/* Ambient glow */}
       <div style={{
         position: 'absolute', top: '-20%', right: '-10%',
         width: '600px', height: '600px', borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(91,191,191,0.07) 0%, transparent 65%)',
+        background: 'radial-gradient(circle, rgba(91,191,191,0.12) 0%, transparent 65%)',
         filter: 'blur(80px)', pointerEvents: 'none',
       }} />
 
@@ -77,7 +77,7 @@ export default function WhyMonica() {
             <h2 className="font-display" style={{
               fontSize: 'clamp(2.2rem,4vw,3.4rem)',
               fontWeight: 400,
-              color: 'white',
+              color: '#0D0F0F',
               lineHeight: 1.05,
               marginBottom: '28px',
             }}>
@@ -89,7 +89,7 @@ export default function WhyMonica() {
               fontFamily: 'Inter, sans-serif',
               fontSize: 'clamp(0.95rem,1.4vw,1.05rem)',
               fontWeight: 300,
-              color: 'rgba(255,255,255,0.65)',
+              color: '#6B7280',
               lineHeight: 1.85,
               marginBottom: '18px',
             }}>
@@ -100,7 +100,7 @@ export default function WhyMonica() {
               fontFamily: 'Inter, sans-serif',
               fontSize: 'clamp(0.95rem,1.4vw,1.05rem)',
               fontWeight: 300,
-              color: 'rgba(255,255,255,0.65)',
+              color: '#6B7280',
               lineHeight: 1.85,
               marginBottom: '44px',
             }}>
@@ -112,15 +112,15 @@ export default function WhyMonica() {
               display: 'grid',
               gridTemplateColumns: 'repeat(3,1fr)',
               gap: '1px',
-              background: 'rgba(255,255,255,0.08)',
+              background: '#E5E7EB',
               borderRadius: '16px',
               overflow: 'hidden',
               marginBottom: '36px',
-              border: '1px solid rgba(255,255,255,0.08)',
+              border: '1px solid #E5E7EB',
             }}>
               {TRUST_ITEMS.map((t, i) => (
                 <div key={i} style={{
-                  background: 'rgba(13,15,15,0.8)',
+                  background: 'white',
                   padding: '24px 16px',
                   textAlign: 'center',
                 }}>
@@ -135,7 +135,7 @@ export default function WhyMonica() {
                     fontFamily: 'Inter, sans-serif',
                     fontSize: '0.7rem',
                     fontWeight: 400,
-                    color: 'rgba(255,255,255,0.4)',
+                    color: '#9CA3AF',
                     letterSpacing: '0.06em',
                     textTransform: 'uppercase',
                   }}>{t.label}</p>
@@ -155,13 +155,13 @@ export default function WhyMonica() {
                 fontSize: '1.05rem',
                 fontWeight: 400,
                 fontStyle: 'italic',
-                color: 'rgba(255,255,255,0.75)',
+                color: '#374151',
                 lineHeight: 1.7,
                 marginBottom: '10px',
               }}>
                 &ldquo;I walked into my daughter&apos;s quinceañera and started crying. I had no idea balloons could look like that.&rdquo;
               </p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>
+              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 500 }}>
                 — Gabriela Morales, Tucson AZ
               </p>
             </div>

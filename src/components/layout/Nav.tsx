@@ -20,6 +20,9 @@ export default function Nav() {
 
   if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/')) return null
 
+  // Homepage hero is full-bleed video — let it show through the nav until scrolled past it.
+  const overHero = pathname === '/' && !scrolled
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 40)
     window.addEventListener('scroll', fn, { passive: true })
@@ -36,9 +39,9 @@ export default function Nav() {
       <nav style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
         height: '72px',
-        background: scrolled ? 'rgba(13,15,15,0.97)' : 'rgba(13,15,15,0.88)',
-        backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
-        borderBottom: `1px solid ${scrolled ? 'rgba(91,191,191,0.2)' : 'rgba(255,255,255,0.06)'}`,
+        background: overHero ? 'transparent' : scrolled ? 'rgba(13,15,15,0.97)' : 'rgba(13,15,15,0.88)',
+        backdropFilter: overHero ? 'none' : 'blur(24px)', WebkitBackdropFilter: overHero ? 'none' : 'blur(24px)',
+        borderBottom: overHero ? '1px solid transparent' : `1px solid ${scrolled ? 'rgba(91,191,191,0.2)' : 'rgba(255,255,255,0.06)'}`,
         transition: 'all 0.3s ease',
       }}>
         <div style={{

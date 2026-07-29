@@ -20,6 +20,15 @@
   --gold: #C9A96E;
   --gold-l: #E8CCA0;
   --r: 999px;
+
+  /* Twilight — the accent language for the fresh redesign. Not a dark mode:
+     used as soft washes/glows on white, the way the sky looks minutes after
+     sunset, echoing the moon in the logo mark. */
+  --twilight-blush: #F6DDD3;
+  --twilight-lavender: #E4D6EC;
+  --twilight-gold: #E8CFA0;
+  --twilight-glow: radial-gradient(circle, rgba(246,221,211,0.55) 0%, rgba(228,214,236,0.38) 45%, rgba(232,207,160,0.18) 75%, transparent 100%);
+  --twilight-line: linear-gradient(90deg, var(--twilight-blush), var(--twilight-lavender), var(--twilight-gold));
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
