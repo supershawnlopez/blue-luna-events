@@ -54,14 +54,6 @@ export default function Hero() {
 
       <div className="container" style={{ position: 'relative', zIndex: 2, paddingTop: '120px', paddingBottom: '100px' }}>
         <div style={{ maxWidth: '620px' }}>
-          <Image
-            src="/images/logo-white.png"
-            alt="Blue Luna Events"
-            width={280} height={90}
-            style={{ height: 'clamp(52px,7vw,72px)', width: 'auto', objectFit: 'contain', marginBottom: '32px', animation: 'fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.05s both' }}
-            priority
-          />
-
           <div className="eyebrow" style={{ marginBottom: '24px', animation: 'fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s both' }}>
             <div className="eyebrow-line" style={{ background: 'var(--twilight-gold)' }} />
             <span className="eyebrow-text" style={{ color: 'var(--twilight-gold)' }}>Tucson, AZ · Southern Arizona</span>
