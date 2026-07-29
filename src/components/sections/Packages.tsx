@@ -28,7 +28,7 @@ export default function Packages() {
               border: pkg.color === 'teal' ? '1.5px solid #5BBFBF' : '1px solid #E5E7EB',
               boxShadow: pkg.color === 'teal' ? '0 8px 40px rgba(91,191,191,0.18)' : undefined,
             }}>
-              <div style={{ position: 'relative', height: '220px', overflow: 'hidden' }}>
+              <div style={{ position: 'relative', height: `${190 + i * 30}px`, overflow: 'hidden' }}>
                 <Image src={pkg.image} alt={pkg.name} fill style={{ objectFit: 'cover', transition: 'transform 0.5s' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(13,15,15,0.6) 100%)' }} />
                 {pkg.badge && (
@@ -53,13 +53,7 @@ export default function Packages() {
               <div style={{ padding: '24px' }}>
                 <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '10px', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: '4px' }}>{pkg.tier}</p>
                 <h3 className="font-display" style={{ fontSize: '1.6rem', fontWeight: 400, color: '#0D0F0F', marginBottom: '3px' }}>{pkg.name}</h3>
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 300, color: '#6B7280', marginBottom: '18px', lineHeight: 1.5 }}>{pkg.tagline}</p>
-
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '18px', paddingBottom: '18px', borderBottom: '1px solid #F3F4F6' }}>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: '#9CA3AF' }}>from</span>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '2.2rem', fontWeight: 700, color: '#0D0F0F', lineHeight: 1, letterSpacing: '-0.02em' }}>${pkg.price.toLocaleString()}</span>
-                  <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', color: '#9CA3AF', paddingBottom: '4px' }}>{pkg.priceNote}</span>
-                </div>
+                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 300, color: '#6B7280', marginBottom: '18px', lineHeight: 1.5, paddingBottom: '18px', borderBottom: '1px solid #F3F4F6' }}>{pkg.tagline}</p>
 
                 <ul style={{ listStyle: 'none', marginBottom: '22px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {pkg.features.map(f => (
@@ -91,22 +85,17 @@ export default function Packages() {
                 >
                   {pkg.cta} <ArrowRight size={14} />
                 </Link>
-
-                <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', color: '#9CA3AF', textAlign: 'center', marginTop: '10px' }}>
-                  50% deposit · Balance due 1 week before
-                </p>
               </div>
             </div>
           ))}
         </div>
 
         <p className="reveal" style={{ fontFamily: 'Inter, sans-serif', textAlign: 'center', marginTop: '28px', fontSize: '0.85rem', fontWeight: 300, color: '#6B7280' }}>
-          Need something custom?{' '}
+          Don't see exactly what you're picturing?{' '}
           <Link href="/event-questionnaire" style={{ color: '#5BBFBF', borderBottom: '1px solid #5BBFBF', textDecoration: 'none' }}>
-            Build it yourself
+            Tell us your vision
           </Link>
-          {' '}— à la carte pricing, you choose every piece.{' '}
-          <strong style={{ color: '#0D0F0F', fontWeight: 500 }}>Zelle · Check · Cash accepted.</strong>
+          {' '}— every event is custom-built around you.
         </p>
       </div>
     </section>
