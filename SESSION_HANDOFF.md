@@ -18,15 +18,20 @@
 - Footer flipped to the same light background/logo as everything else.
 - Visually verified desktop/tablet nav behavior directly in browser before merging; mobile menu was a same-pattern value change (color/direction only, no new logic), verified via clean build.
 
-**Next up, not yet scoped:** the configurator-with-real-photos idea from `FRONTEND_REDESIGN_AUDIT.md` — still the single highest-leverage, most-differentiated idea from the July 8 audit, never started. Needs gallery photos tagged by component/color first, and a fresh team conversation before building — don't assume it's automatically next without re-confirming with Shawn.
+**Round 3, same day: Gallery, Quinceañeras, Graduations — also LIVE.** Same light treatment extended to the last untouched public pages. Gallery's lightbox stays dark on purpose (standard full-screen photo-viewer pattern). Also found and fixed real leftover pricing text in the quince/grad FAQ and CTA copy (specific dollar amounts) that the earlier Packages-component pricing removal missed — same consultive reframing applied. SEO meta descriptions on those two pages still mention pricing; left alone as out of scope (not visible page content) but flagged for Shawn.
+
+**A false start worth remembering:** mid-session, "move forward with Jony's lead on design" was misread as approval to start the full configurator-with-real-photos project — a `components` column was added to `gallery_media` before Shawn caught it and clarified he meant finishing the homepage visual work. Column was reverted immediately, no lasting effect. **Lesson: don't infer approval for the big unstarted audit item from general forward-momentum language — confirm explicitly.**
+
+**Next up, not yet scoped:** the configurator-with-real-photos idea from `FRONTEND_REDESIGN_AUDIT.md` — still the single highest-leverage, most-differentiated idea from the July 8 audit, never started. Needs gallery photos tagged by component/color first (the vocabulary already exists in `LOOKING_FOR_CATEGORIES` in `config.ts` — nothing to invent there), and a real, explicit team conversation with Shawn before touching schema or building — don't resume from the false start assuming it's still the plan.
 
 **Shawn, test this:**
 1. Visit `bluelunaevents.com` on your phone — homepage should load with the new video hero and white sections throughout.
 2. Navigate to Gallery, the Event Questionnaire, and the quinceañera/graduation pages — the top nav bar should now be white/light on all of them, not dark.
 3. Open the mobile menu (hamburger icon) — it should slide in from the right as a white panel with a teal left edge, not a dark overlay from the top.
 4. Scroll to the very bottom of any page — Footer should be light, matching the rest of the site.
-5. Check Packages, and the quinceañera/graduation pages — confirm no dollar amounts show anywhere.
-6. Confirm the site still feels like Blue Luna (teal, not a different brand) outside the hero/gallery area.
+5. Check Packages, and the quinceañera/graduation pages — confirm no dollar amounts show anywhere on the page itself.
+6. Confirm the site still feels like Blue Luna (teal, or gold on graduation pages — not a different brand) outside the homepage hero/gallery area.
+7. Visit `/gallery`, `/quinceaneras`, `/graduations` directly — all three should now be light/bright like the homepage, not dark.
 
 ---
 
@@ -74,8 +79,8 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `1915bd32` — Nav/Footer light theme + mobile menu fix, confirmed live in production on Vercel 2026-07-29. Combined with the earlier White/Twilight merge same day, homepage + Nav + Footer are now a coherent light-themed whole.
-- Both feature branches (`redesign/gallery-twilight`, `redesign/nav-footer-light`) were merged and deleted — further redesign work should branch fresh off `main`.
+- Latest `main` commit: `88cba55d` — Gallery/Quinceañeras/Graduations light theme, confirmed live in production on Vercel 2026-07-29. Combined with the homepage and Nav/Footer merges earlier the same day, the entire public site is now one coherent light-themed whole.
+- All three feature branches (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:
   - `PLATFORM_REBUILD_AUDIT.md` — the original full-scope audit (design, camera, calendar, leads, email, social, SEO)

@@ -42,8 +42,9 @@ Exit criteria for Phase 1:
 ## NOW (MAX 3)
 
 1. **Configurator-with-real-photos — the next real redesign lever, not yet started**
-- Nav/Footer + homepage are now done (see DONE below). The team's own July 8 audit called the Event Questionnaire showing real matching photos as someone fills it out the single highest-leverage, most-differentiated idea versus every competitor in Tucson — bigger than the homepage work, needs gallery photos tagged by component/color (not just event type) as a prerequisite. Not yet scoped for a build session.
-- Owner: needs a fresh team conversation with Shawn before building.
+- The full White/Twilight redesign is now done sitewide (homepage, Nav, Footer, Gallery, Quinceañeras, Graduations — see DONE below). The team's own July 8 audit called the Event Questionnaire showing real matching photos as someone fills it out the single highest-leverage, most-differentiated idea versus every competitor in Tucson — bigger than the homepage work, needs gallery photos tagged by component/color (not just event type) as a prerequisite.
+- **False start 2026-07-29:** began building this same-day (added a `components` column to `gallery_media`) before confirming scope with Shawn — he stopped it, clarified he meant finishing the homepage visual work, not starting this project. Column was reverted. Real go-ahead for this specific project still needed before touching schema/data again.
+- Owner: needs a fresh, explicit team conversation with Shawn before building — don't resume from the false start assuming it's still the plan.
 
 2. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
 - Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
@@ -75,6 +76,7 @@ Exit criteria for Phase 1:
 - ✅ **Pricing removed from Packages sitewide** (homepage, quinceañeras, graduations) — final, per Monica's direct ask to feel consultive not transactional. Tier names/taglines/features untouched; card images escalate per tier instead.
 - ✅ Added future "Grab & Go" budget-friendly self-serve page to BACKLOG.
 - ✅ **Nav + Footer converted to light theme, merged and LIVE.** Nav now goes light everywhere except transparent-over-hero on the homepage — previously every other page (gallery, event questionnaire, quince/grad) always showed a dark nav regardless of scroll. Mobile full-screen nav rebuilt to actually match the "Calm/Warm" white slide-in-from-right spec that's been locked in `DESIGN_DECISIONS.md` since June 19 but was never built that way — real bug fix, not just a recolor. Footer flipped to match. This closes out Shawn's "is there more than a color swap" feedback — Nav/Footer/homepage are now a coherent, structurally-updated whole.
+- ✅ **Gallery, Quinceañeras, Graduations converted to light theme too — LIVE.** Same treatment as the homepage. Gallery's full-screen lightbox stays dark intentionally (standard photo-viewer UX, same reasoning as the homepage CTA staying dark). Also fixed real leftover pricing text on the quince/grad FAQ and CTA copy that the earlier Packages-component-only pass missed (specific dollar figures like "$450," "$75 rush fee") — reworded to the same consultive framing used everywhere else. SEO meta descriptions on both pages still mention pricing — left alone since that's not visible page content, flagged for Shawn to decide separately.
 
 ---
 
