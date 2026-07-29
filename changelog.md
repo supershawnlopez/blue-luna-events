@@ -13,6 +13,40 @@
 
 ---
 
+## Session: July 28, 2026 — Real-Device Testing Fixes + Gallery/Twilight Redesign Started
+**AI:** Claude Code
+**Worked on:** Shawn phone-tested the inquiry form live and found several real bugs; fixed them same-day and deployed to production. Then started a from-scratch homepage redesign on a separate branch (Jony's "Gallery + Twilight" direction). Session ended when the computer crashed before end-of-session docs were updated — this entry was reconstructed 2026-07-29 from `git log` and Vercel deploy history.
+
+### Completed This Session (all on `main`, confirmed live in production 8:06 PM)
+- Deployed the 2026-07-27 inquiry form + lead-submission RLS fix (had been sitting unpushed).
+- Renamed `/get-a-quote` → `/event-questionnaire` (route + every visible label), with a permanent redirect from the old path. Real-device feedback: the old name implied pricing/instant booking.
+- Fixed a real bug: Monica got zero emails on a live double-submission test — sends were unawaited "fire and forget" and failing silently. Fixed via `Promise.all`.
+- Fixed a real bug: 3 of 4 uploaded inspiration photos never reached Monica — a Vercel serverless body-size limit was silently truncating uploads, and the client marked failures as "done" anyway. Also raised the photo cap 6 → 15 and fixed the email's photo grid to wrap.
+- Found and dropped a leftover Supabase trigger (`notify_new_lead`) that was independently firing a second, unwanted "View in Supabase" email on every lead insert — a direct database fix, not a code change.
+- Renamed Monica's lead email "New Event Inquiry" → "New Lead," split it into acknowledge-first/quote-second blocks, brought it up to the same visual scale as the client email, and applied serif headlines + clearer tables to both templates per Jony's review.
+- Client confirmation email now shows everything the client submitted (theme/colors, inspiration photos) for full parity with what Monica sees.
+- Fixed a Studio upload hang: `compressImage()` and both upload XHRs had no timeout, so a stuck HEIC decode or a stalled network request left Monica stuck mid-upload with no error and no feedback.
+
+### Started This Session (branch `redesign/gallery-twilight` — preview only, NOT merged to `main`)
+- Fresh homepage direction: white/bright "Gallery" treatment for real photos + a soft blush/lavender/gold "Twilight" accent pulled from the crescent-moon logo mark.
+- Hero rebuilt as full-bleed video (locked to one curated, Jony-reviewed clip, slowed to 0.5x for a cinematic feel) with a transparent nav that becomes solid on scroll or on other pages.
+- Live masonry gallery pulling all of Monica's uploaded media directly from Supabase.
+- Removed a duplicate logo, strengthened the hero's text-legibility scrim.
+- Nav/Footer/every other page intentionally untouched until this direction is approved by Shawn.
+
+### Still Open
+- `redesign/gallery-twilight` needs Shawn's explicit go/no-go before merging to `main`. Preview: `blue-luna-events-3akoqkmn5-foundco.vercel.app`.
+- Whether the homepage `Packages` section should also lose its visible pricing — still flagged, not touched.
+- The real live $1 Stripe payment test — still Shawn's to run.
+
+### Shawn Test
+1. Visit `bluelunaevents.com/event-questionnaire` on your phone, submit a real-feeling inquiry.
+2. Confirm exactly ONE "New Lead" email arrives at `monica@bluelunaevents.com` (not two), plus a client confirmation signed "— Monica."
+3. Upload more than 6 inspiration photos, confirm they all arrive.
+4. Open the redesign preview link and give a thumbs up/down.
+
+---
+
 ## Session: July 27, 2026 — Inquiry Form Replaces Pricing Configurator
 **AI:** Claude Code
 **Worked on:** Monica wants to go back to a manual-quote model — she finds visible pricing scares off price-sensitive clients before she can explain the value. Team meeting (Steve, Jony) reopened the May 1 "configurator replaces manual form" decision; Shawn gave direct input on the design. Built the replacement, then found a real production bug while testing it.
