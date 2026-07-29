@@ -6,9 +6,17 @@
 
 ## BRAND COLOR (LOCKED)
 
-**Teal (`#5BBFBF`) is the only accent color sitewide, outside graduation pages.**
+**Teal (`#5BBFBF`) is the sole sitewide primary accent color, outside graduation pages.**
 Approved by: Jony Ive
-Why: The site must feel like a luxury brand, not a local balloon company. Teal reads calm and premium; blue reads generic-web and is banned. Gold (`#C9A96E` / `#E8CCA0`) is reserved for graduation pages only — it must never bleed into quinceañera, general event, or Studio contexts.
+Why: The site must feel like a luxury brand, not a local balloon company. Teal reads calm and premium; blue reads generic-web and is banned. It is also not an arbitrary pick — it's Monica's actual favorite color (Tiffany Blue), which is why the real logo mark (`public/images/logo-mark.png`, `logo-color.png`) is that color. Gold (`#C9A96E` / `#E8CCA0`) is reserved for graduation pages only — it must never bleed into quinceañera, general event, or Studio contexts.
+
+---
+
+## TWILIGHT ACCENT — SCOPED, NOT A REPLACEMENT (LOCKED — 2026-07-29)
+
+**A secondary "Twilight" accent (blush `#F6DDD3`, lavender `#E4D6EC`, gold `#E8CFA0`, plus a soft radial glow) exists for mood/atmosphere in photo-heavy, editorial moments ONLY — currently the homepage Hero and GalleryPreview. It does not replace teal anywhere else.**
+Approved by: Shawn + Jony Ive
+Why: Started as an exploration on branch `redesign/gallery-twilight`; the original commit describing it as "pulled directly from the crescent-moon logo mark" was imprecise — the real logo contains none of these colors, it's solid teal. Twilight is a dusk/moonlight *mood* accent, not a brand palette extraction. Shawn responded well to the white/bright layout shift in the preview, not to teal being displaced. WhyMonica, Packages, Reviews, CTA, Nav, Footer, and every page besides the homepage Hero/Gallery keep teal as-is.
 
 ---
 

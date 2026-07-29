@@ -41,9 +41,11 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Get Shawn's approve/reject on the `redesign/gallery-twilight` homepage preview**
-- Jony's "Gallery + Twilight" direction is built and preview-deployed (4 commits, last 10:52 PM 7/28) but not merged to `main`. Preview: `blue-luna-events-3akoqkmn5-foundco.vercel.app`. Needs an explicit go/no-go before merging — nothing else on the homepage should change until this is decided.
-- Owner: Shawn reviews.
+1. **Finish and merge the White/Twilight homepage redesign** — team meeting held 2026-07-29, scope now locked (see `DECISIONS.md` + `DESIGN_DECISIONS.md`)
+- Teal stays the sole primary accent everywhere; Twilight (blush/lavender/gold) is scoped to Hero + GalleryPreview only, as a mood accent, not a replacement.
+- Remaining work: bring WhyMonica, Packages, Reviews, CTA in line with the new direction (still on old dark/teal styling) — confirm with Jony whether they go white/bright too or the treatment stays Hero/Gallery-only.
+- Packages section: strip `price`/`priceNote` from display, keep every tier's name/tagline/features as-is, escalate visual richness per tier per Jony's call (see decision log) — FINAL, build now.
+- Owner: Claude Code builds, Shawn reviews before merging `redesign/gallery-twilight` → `main`.
 
 2. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
 - Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
@@ -139,6 +141,12 @@ Exit criteria for Phase 1:
 4. Next.js upgrade — currently on 14.2, needs upgrade to 16.x to fix 5 remaining npm audit
    vulnerabilities (DoS, XSS, cache poisoning). Deferred — low risk for this site type but
    must be done before any future launch hardening. Run as its own session, test build after.
+5. **"Grab & Go" — separate, budget-friendly, self-serve page** (added 2026-07-29, per Shawn/Monica)
+   Future work, not scheduled yet. Mirrors the dual self-serve + consultative model
+   `FRONTEND_REDESIGN_AUDIT.md` found Air With Flair Decor already running in this exact
+   industry — pairs with the now-final "no pricing on Packages" decision by giving
+   price-sensitive clients their own transparent, self-serve path instead of pricing
+   living on the main site.
 
 ---
 
