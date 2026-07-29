@@ -67,8 +67,17 @@ export default function Quinceaneras() {
               <Link href="/event-questionnaire" className="btn-ghost" style={{ color: '#0D0F0F', borderColor: '#E5E7EB' }}>Tell Us Your Vision</Link>
             </div>
           </div>
-          <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)', borderRadius: '20px', overflow: 'hidden' }}>
-            <Image src="/images/gal-2.jpg" alt="Quinceañera balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} />
+          <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)' }}>
+            <div style={{
+              position: 'absolute', inset: '6% 12%', borderRadius: '50%',
+              background: 'var(--twilight-glow)', filter: 'blur(16px)', pointerEvents: 'none',
+            }} />
+            <div style={{ position: 'absolute', top: '4%', left: '10%', width: '76%', height: '76%', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 16px 44px rgba(13,15,15,0.16)' }}>
+              <Image src="/images/gal-2.jpg" alt="Quinceañera balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} />
+            </div>
+            <div style={{ position: 'absolute', bottom: '2%', right: '0%', width: '38%', height: '38%', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 10px 32px rgba(13,15,15,0.16)' }}>
+              <Image src="/images/hero-sec.jpg" alt="Quinceañera balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} />
+            </div>
           </div>
         </div>
       </div>

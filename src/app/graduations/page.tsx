@@ -75,8 +75,18 @@ export default function Graduations() {
               <Link href="/event-questionnaire" className="btn-ghost" style={{ color: '#0D0F0F', borderColor: '#E5E7EB' }}>Tell Us Your Vision</Link>
             </div>
           </div>
-          <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)', borderRadius: '20px', overflow: 'hidden' }}>
-            <Image src="/images/gal-4.jpg" alt="Graduation party balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} />
+          <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)' }}>
+            <div style={{
+              position: 'absolute', inset: '6% 12%', borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(232,204,160,0.4) 0%, rgba(201,169,110,0.18) 50%, transparent 75%)',
+              filter: 'blur(16px)', pointerEvents: 'none',
+            }} />
+            <div style={{ position: 'absolute', top: '4%', left: '10%', width: '76%', height: '76%', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 16px 44px rgba(13,15,15,0.16)' }}>
+              <Image src="/images/gal-4.jpg" alt="Graduation party balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} />
+            </div>
+            <div style={{ position: 'absolute', bottom: '2%', right: '0%', width: '38%', height: '38%', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 10px 32px rgba(13,15,15,0.16)' }}>
+              <Image src="/images/hero-main.jpg" alt="Graduation party balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} />
+            </div>
           </div>
         </div>
       </div>

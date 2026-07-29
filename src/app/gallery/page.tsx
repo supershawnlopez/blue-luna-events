@@ -75,8 +75,13 @@ export default function Gallery() {
     <div style={{ minHeight: '100vh', background: '#FDFCFA' }}>
 
       {/* Hero */}
-      <div style={{ paddingTop: '140px', paddingBottom: '60px', padding: '140px 24px 60px', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+      <div style={{ paddingTop: '140px', paddingBottom: '60px', padding: '140px 24px 60px', maxWidth: '1200px', margin: '0 auto', position: 'relative' }}>
+        <div style={{
+          position: 'absolute', top: '20px', right: '8%', width: '220px', height: '220px',
+          borderRadius: '50%', background: 'var(--twilight-glow)', filter: 'blur(24px)',
+          pointerEvents: 'none', opacity: 0.7,
+        }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px', position: 'relative' }}>
           <div style={{ width: '24px', height: '1px', background: '#5BBFBF' }} />
           <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: '#5BBFBF', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Our Work</span>
         </div>
