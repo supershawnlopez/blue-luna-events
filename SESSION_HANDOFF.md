@@ -1,18 +1,31 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: July 27, 2026 — Claude Code*
+*Last updated: July 29, 2026 — Claude Code*
 
-## Latest Session (2026-07-27)
+## Latest Session (2026-07-28, reconstructed 2026-07-29 after a crash cut the session short before docs were updated)
 
-**What changed:** `/get-a-quote` no longer shows live pricing — it's now a simple inquiry form (`InquiryForm.tsx`) matching Monica's real Tally form, all-white background. Monica quotes manually afterward using the Studio estimate tool. Full reasoning in `DECISIONS.md`. Also found and fixed a real bug: lead submission was completely broken at the database level (an RLS policy issue meant every insert silently rolled back) — likely affecting the live site this whole time, not just this new form.
+**What changed and IS LIVE on `bluelunaevents.com` (all on `main`, last deploy confirmed `READY`/production on Vercel at 8:06 PM 7/28, commit `09da80fb`):**
+- The 2026-07-27 inquiry form + the lead-submission RLS bug fix (previously flagged "not yet deployed" below) — **that's now stale, it shipped.**
+- Renamed the page itself from "Get a Quote" to **"Event Questionnaire"** everywhere (Nav, Hero, CTA, urgency banner, quinceañera/graduation pages) — Shawn's real-device testing showed the old label implied pricing or instant booking, neither of which happens anymore.
+- Renamed the route `/get-a-quote` → **`/event-questionnaire`**, with a permanent redirect from the old path so existing links/bookmarks/search results still work.
+- Fixed a real bug found via live double-submission test: Monica got **zero emails** on a real inquiry — sends were unawaited "fire and forget" and failing silently. Now awaited via `Promise.all`.
+- Fixed a real bug: 3 of 4 uploaded inspiration photos never reached Monica (Vercel serverless body-size limit; client was silently marking failed uploads as "done"). Also raised the photo cap 6 → 15 and fixed the email's photo grid to wrap instead of overflowing.
+- Found and dropped a leftover Supabase trigger (`notify_new_lead`) that was firing a second, unwanted "View in Supabase" email on every lead — direct DB fix, not a code change.
+- Monica's lead email: renamed "New Event Inquiry" → "New Lead," split into acknowledge-first / quote-second, resized to match the client email's visual scale (Jony's review), serif headlines + clearer tables applied to both templates.
+- Client confirmation email now shows everything the client submitted (theme/colors, inspiration photos) for full parity with what Monica sees.
+- Fixed a Studio upload hang — `compressImage()` and both upload XHRs had no timeout, so certain HEIC photos or a stalled network request left Monica stuck mid-upload with zero feedback.
 
-**Not yet deployed** — both changes exist locally/on this branch only. Push to `main` to go live.
+**What changed and is PREVIEW ONLY — not live on the real site:**
+Work then moved to a new branch, `redesign/gallery-twilight` (4 commits, last one 10:52 PM 7/28) — Jony's "Gallery + Twilight" homepage direction: white/bright background, real photos treated like gallery pieces, a soft blush/lavender/gold accent pulled from the crescent-moon logo mark (not a dark theme). Includes a full-bleed hero video (transparent nav over it, one curated clip locked in and slowed to 0.5x for a cinematic feel) and a live masonry gallery pulling all of Monica's uploaded media. Nav/Footer/every other page intentionally untouched until this direction is approved. **Not merged to `main`.** Latest preview: `blue-luna-events-3akoqkmn5-foundco.vercel.app`.
+
+**About the crash:** the session ended mid-work without the usual doc update (this file, `TASKS.md`, `changelog.md` were all stale as a result — reconstructed from `git log` + Vercel deploy history 2026-07-29). No lost work found — working tree is clean, nothing in the stash, no dangling commits. Everything through the 10:52 PM commit is safely committed and pushed to GitHub.
 
 **Shawn, test this:**
-1. Ask Claude to push to `main` and confirm the Vercel deploy finished.
-2. Visit `bluelunaevents.com/get-a-quote` on your phone — fill it out with real-feeling info (skip the phone number's real value if you don't want a text) and submit.
-3. Confirm you get a "New Event Inquiry" email at `monica@bluelunaevents.com`, and check the email address you used for the inquiry — you should get a warm confirmation signed "— Monica."
-4. Still open: whether the homepage `Packages` section (which shows prices) should also lose its pricing — not touched this session, flagged for a future conversation.
+1. Visit `bluelunaevents.com/event-questionnaire` on your phone, fill it out for real, submit.
+2. Confirm you get exactly ONE "New Lead" email at `monica@bluelunaevents.com` (not two), and a confirmation signed "— Monica" at whatever address you used.
+3. Try uploading more than 6 inspiration photos — confirm they all actually arrive in the email.
+4. Open the redesign preview link above and give Jony's team a thumbs up/down before it gets merged to `main`.
+5. Still open: whether the homepage `Packages` section (which shows prices) should also lose its pricing — not touched, flagged for a future conversation.
 
 ---
 
@@ -33,7 +46,9 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest commit: `8e6c20df` — pushed to `main`, Vercel should auto-deploy. **Run `git status` and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time.
+- Latest `main` commit: `09da80fb` — pushed and confirmed live in production on Vercel (8:06 PM 7/28).
+- Latest work overall: `redesign/gallery-twilight` branch, commit `bba255bf` — pushed to GitHub, preview-deployed on Vercel, **not merged to `main`, not live**.
+- **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:
   - `PLATFORM_REBUILD_AUDIT.md` — the original full-scope audit (design, camera, calendar, leads, email, social, SEO)
   - `FRONTEND_REDESIGN_AUDIT.md` — public site redesign direction (SEO/AEO/GEO priority #1, then configurator shows real matching photos as customer builds, guided path as default)

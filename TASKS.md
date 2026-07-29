@@ -41,18 +41,31 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
+1. **Get Shawn's approve/reject on the `redesign/gallery-twilight` homepage preview**
+- Jony's "Gallery + Twilight" direction is built and preview-deployed (4 commits, last 10:52 PM 7/28) but not merged to `main`. Preview: `blue-luna-events-3akoqkmn5-foundco.vercel.app`. Needs an explicit go/no-go before merging — nothing else on the homepage should change until this is decided.
+- Owner: Shawn reviews.
+
+2. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
 - Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
 - Owner: Shawn runs the test.
 
-2. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
+3. **Watch the Supabase auto-pause fix over the next 1-2 weeks**
 - Status: MITIGATION SHIPPED 2026-07-08, monitor before considering fully closed
 - Root cause was inconclusive (the old keepalive cron was correctly configured, enabled, and worked when manually triggered — but the DB still paused, suggesting Vercel Hobby-plan cron reliability, not a code bug). Replaced the silent ping with a real weekly business summary email (`/api/cron/weekly-summary`) — same protection, but a failure is now visible as a missing email instead of a silently broken site.
 - If Shawn stops receiving the Monday/Thursday email, that's the signal Vercel's cron isn't firing — worth revisiting the free-external-pinger or Supabase Pro ($25/mo) options from that point.
 
-3. **Deploy + verify the lead-submission fix (URGENT)**
-- Found 2026-07-27 while building the inquiry form: lead capture was completely broken at the database level (RLS policy blocked the read-back after insert, so the whole insert rolled back). Fixed in code (`submitLead()` now uses the service-role client) but **not yet pushed to `main`** — the live site is still on the broken version until this deploys. See `DECISIONS.md` for full root cause.
-- Owner: Shawn approves the push, or asks Claude to push.
+---
+
+## DONE (2026-07-28)
+
+- ✅ **Lead-submission RLS fix deployed** — the 2026-07-27 fix (was stuck "not yet pushed" for a full day) is confirmed live in production as of 8:06 PM 7/28.
+- ✅ **`/get-a-quote` renamed to `/event-questionnaire`** (route + every visible label), with a permanent redirect from the old path. Real-device testing feedback: the old name implied pricing/instant booking, which no longer happens.
+- ✅ **Fixed silent zero-email bug** — lead emails were fire-and-forget and failing silently; now awaited.
+- ✅ **Fixed real photo-upload bug** — 3 of 4 photos were never reaching Monica (serverless body-size limit, failures silently marked "done"); upload cap raised 6 → 15; email photo grid now wraps.
+- ✅ **Dropped a leftover Supabase trigger** sending Monica a duplicate "View in Supabase" email on every lead.
+- ✅ **Lead email redesign per Jony's review** — Monica's email renamed "New Lead," split acknowledge-first/quote-second, resized to match the client email, serif headlines + clearer tables on both templates. Client confirmation now shows everything submitted (theme/colors/photos).
+- ✅ **Fixed Studio upload hang** — added timeouts to image compression and both upload XHRs so a stuck HEIC decode or stalled network request fails visibly instead of hanging forever.
+- 🟡 **`redesign/gallery-twilight` branch started** (Jony's "Gallery + Twilight" homepage direction) — 4 commits, preview-deployed, NOT merged to `main`. See NOW #1 above.
 
 ---
 
