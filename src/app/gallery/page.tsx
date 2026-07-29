@@ -72,7 +72,7 @@ export default function Gallery() {
   const activeLb = lightbox !== null ? filtered[lightbox] : null
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0D0F0F' }}>
+    <div style={{ minHeight: '100vh', background: '#FDFCFA' }}>
 
       {/* Hero */}
       <div style={{ paddingTop: '140px', paddingBottom: '60px', padding: '140px 24px 60px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -80,10 +80,10 @@ export default function Gallery() {
           <div style={{ width: '24px', height: '1px', background: '#5BBFBF' }} />
           <span style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', color: '#5BBFBF', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Our Work</span>
         </div>
-        <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(2.6rem,6vw,4.5rem)', fontWeight: 300, color: 'white', lineHeight: 1.1, margin: '0 0 20px' }}>
+        <h1 style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: 'clamp(2.6rem,6vw,4.5rem)', fontWeight: 300, color: '#0D0F0F', lineHeight: 1.1, margin: '0 0 20px' }}>
           Our <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Creations</em>
         </h1>
-        <p style={{ fontSize: '1rem', fontWeight: 300, color: 'rgba(255,255,255,0.5)', maxWidth: '480px', margin: 0, lineHeight: 1.6 }}>
+        <p style={{ fontSize: '1rem', fontWeight: 300, color: '#6B7280', maxWidth: '480px', margin: 0, lineHeight: 1.6 }}>
           Every setup is custom — your colors, your vision, your moment. Here&apos;s a look at what we&apos;ve built for Tucson families and businesses.
         </p>
       </div>
@@ -96,7 +96,7 @@ export default function Gallery() {
               const active = filter === type
               return (
                 <button key={type} onClick={() => setFilter(type)}
-                  style={{ padding: '8px 18px', borderRadius: '999px', border: `1.5px solid ${active ? '#5BBFBF' : 'rgba(255,255,255,0.12)'}`, background: active ? 'rgba(91,191,191,0.12)' : 'transparent', color: active ? '#5BBFBF' : 'rgba(255,255,255,0.45)', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.04em', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
+                  style={{ padding: '8px 18px', borderRadius: '999px', border: `1.5px solid ${active ? '#5BBFBF' : '#E5E7EB'}`, background: active ? 'rgba(91,191,191,0.12)' : 'transparent', color: active ? '#3A8F8F' : '#6B7280', fontSize: '0.78rem', fontWeight: 600, letterSpacing: '0.04em', cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap' }}>
                   {type === 'all' ? 'All Events' : toLabel(type)}
                 </button>
               )
@@ -110,14 +110,14 @@ export default function Gallery() {
         {loading ? (
           <div style={{ columns: 'auto 280px', columnGap: '16px' }}>
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} style={{ breakInside: 'avoid', marginBottom: '16px', height: `${240 + (i % 3) * 60}px`, borderRadius: '16px', background: 'rgba(255,255,255,0.04)' }} />
+              <div key={i} style={{ breakInside: 'avoid', marginBottom: '16px', height: `${240 + (i % 3) * 60}px`, borderRadius: '16px', background: '#F3F4F6' }} />
             ))}
           </div>
         ) : (
           <div style={{ columns: 'auto 280px', columnGap: '16px' }}>
             {filtered.map((m, i) => (
               <div key={m.id} className="gallery-card" onClick={() => openLightbox(i)}
-                style={{ breakInside: 'avoid', marginBottom: '16px', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', position: 'relative' }}>
+                style={{ breakInside: 'avoid', marginBottom: '16px', borderRadius: '16px', overflow: 'hidden', cursor: 'pointer', position: 'relative', boxShadow: '0 2px 16px rgba(13,15,15,0.06)' }}>
 
                 {m.type === 'video' ? (
                   <div style={{ position: 'relative', background: '#111', minHeight: '240px' }}>
@@ -160,10 +160,10 @@ export default function Gallery() {
 
         {/* CTA */}
         <div style={{ textAlign: 'center', marginTop: '80px' }}>
-          <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: '2rem', fontWeight: 300, color: 'white', marginBottom: '12px' }}>
+          <p style={{ fontFamily: 'Cormorant Garamond, Georgia, serif', fontSize: '2rem', fontWeight: 300, color: '#0D0F0F', marginBottom: '12px' }}>
             Ready to create your <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>moment?</em>
           </p>
-          <p style={{ fontSize: '0.95rem', fontWeight: 300, color: 'rgba(255,255,255,0.5)', marginBottom: '32px' }}>
+          <p style={{ fontSize: '0.95rem', fontWeight: 300, color: '#6B7280', marginBottom: '32px' }}>
             Let&apos;s build something beautiful for your event.
           </p>
           <Link href="/event-questionnaire"

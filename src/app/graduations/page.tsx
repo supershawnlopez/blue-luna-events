@@ -27,9 +27,9 @@ const PACKAGES: Package[] = PACKAGE_CATALOG.filter(
 )
 
 const FAQS = [
-  { q: 'How much does a graduation party balloon setup cost in Tucson?', a: 'Graduation setups start at $299 for the Celebrate package. Most families choose the Classic at $550. For a full party experience with photo booth, the Grand package is $950.' },
+  { q: 'How much does a graduation party balloon setup cost in Tucson?', a: 'It depends on your setup — garland length, backdrop, school-color palette, and extras like a photo booth all factor in. Tell us what you\'re picturing and Monica will personally put together a custom quote.' },
   { q: "Can you match my grad's school colors?", a: "Absolutely! We can match any school color palette. Just let us know the colors when you request your quote." },
-  { q: 'How quickly can you set up?', a: 'We typically need 2–4 hours for setup. Rush bookings under 48 hours have a $75 fee. We recommend booking at least 2 weeks in advance.' },
+  { q: 'How quickly can you set up?', a: 'We typically need 2–4 hours for setup. Rush bookings under 48 hours may carry an extra fee. We recommend booking at least 2 weeks in advance.' },
   { q: 'Do you do outdoor graduation parties?', a: 'Yes! We do both indoor and outdoor setups using weighted bases and wind-resistant techniques.' },
 ]
 
@@ -51,28 +51,28 @@ export default function Graduations() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
       />
       {/* Hero */}
-      <div style={{ background: '#0D0F0F', paddingTop: '72px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 40% 50%, rgba(201,169,110,0.1) 0%, transparent 60%)' }} />
+      <div style={{ background: '#FDFCFA', paddingTop: '72px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 40% 50%, rgba(201,169,110,0.12) 0%, transparent 60%)' }} />
         <div className="container" style={{ position: 'relative', zIndex: 2, padding: 'clamp(40px,6vw,80px) 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,440px),1fr))', gap: '48px', alignItems: 'center' }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(201,169,110,0.12)', border: '1px solid rgba(201,169,110,0.25)', borderRadius: '999px', padding: '6px 14px', marginBottom: '20px' }}>
-              <GraduationCap size={14} color="#E8CCA0" />
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: '#E8CCA0', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Class of 2026</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(201,169,110,0.12)', border: '1px solid rgba(201,169,110,0.3)', borderRadius: '999px', padding: '6px 14px', marginBottom: '20px' }}>
+              <GraduationCap size={14} color="#C9A96E" />
+              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 600, color: '#C9A96E', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Class of 2026</span>
             </div>
-            <h1 className="font-display" style={{ fontSize: 'clamp(2.5rem,5vw,4.5rem)', fontWeight: 300, lineHeight: 1.05, color: 'white', marginBottom: '16px' }}>
-              Graduation Party<br/><em style={{ fontStyle: 'italic', color: '#E8CCA0' }}>Balloon Décor</em>
+            <h1 className="font-display" style={{ fontSize: 'clamp(2.5rem,5vw,4.5rem)', fontWeight: 300, lineHeight: 1.05, color: '#0D0F0F', marginBottom: '16px' }}>
+              Graduation Party<br/><em style={{ fontStyle: 'italic', color: '#C9A96E' }}>Balloon Décor</em>
             </h1>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 300, lineHeight: 1.75, color: 'rgba(255,255,255,0.6)', maxWidth: '420px', marginBottom: '12px' }}>
-              They worked hard for this moment — celebrate it right. Packages from $299.
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 300, lineHeight: 1.75, color: '#6B7280', maxWidth: '420px', marginBottom: '12px' }}>
+              They worked hard for this moment — celebrate it right.
             </p>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 500, color: '#E8CCA0', marginBottom: '28px' }}>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 500, color: '#B8935A', marginBottom: '28px' }}>
               May &amp; June dates filling fast — book now to secure yours.
             </p>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <a href="#packages" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,#C9A96E,#E8CCA0)', color: '#0D0F0F', fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 700, padding: '14px 28px', borderRadius: '999px', textDecoration: 'none', boxShadow: '0 4px 20px rgba(201,169,110,0.4)' }}>
                 See Packages <ArrowRight size={15} />
               </a>
-              <Link href="/event-questionnaire" className="btn-ghost">Tell Us Your Vision</Link>
+              <Link href="/event-questionnaire" className="btn-ghost" style={{ color: '#0D0F0F', borderColor: '#E5E7EB' }}>Tell Us Your Vision</Link>
             </div>
           </div>
           <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)', borderRadius: '20px', overflow: 'hidden' }}>
@@ -160,7 +160,7 @@ export default function Graduations() {
             Celebrate the <em style={{ fontStyle: 'italic', color: '#E8CCA0' }}>Class of 2026</em>
           </h2>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: 'rgba(255,255,255,0.55)', marginBottom: '10px', maxWidth: '400px', margin: '0 auto 10px' }}>
-            Packages from $299. Dates are filling fast.
+            Tell us your vision and Monica will personally put together a custom quote. Dates are filling fast.
           </p>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', color: '#E8CCA0', marginBottom: '28px' }}>May &amp; June availability is limited</p>
           <Link href="/event-questionnaire" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,#C9A96E,#E8CCA0)', color: '#0D0F0F', fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 700, padding: '15px 32px', borderRadius: '999px', textDecoration: 'none', boxShadow: '0 4px 20px rgba(201,169,110,0.4)' }}>

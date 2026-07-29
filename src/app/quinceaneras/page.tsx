@@ -27,8 +27,8 @@ const PACKAGES: Package[] = PACKAGE_CATALOG.filter(
 )
 
 const FAQS = [
-  { q: 'How much does quinceañera balloon décor cost in Tucson?', a: 'Our quinceañera packages start at $450 for the Starter and go up to $2,800 for the Grand Experience with photo booth, audio, and MC. Most Tucson families choose the Classic ($950) or Signature ($1,600) package.' },
-  { q: 'How far in advance should I book?', a: 'We recommend 4–6 weeks in advance. Spring and summer book quickly. A 50% deposit secures your date.' },
+  { q: 'How much does quinceañera balloon décor cost in Tucson?', a: 'It depends entirely on your vision — garland length, backdrop style, columns, and extras like a photo booth or MC all factor in. Tell us what you\'re picturing and Monica will personally put together a custom quote for your quinceañera.' },
+  { q: 'How far in advance should I book?', a: 'We recommend 4–6 weeks in advance. Spring and summer book quickly. A deposit secures your date once your quote is finalized.' },
   { q: 'Do you serve Oro Valley, Sahuarita, and surrounding areas?', a: 'Yes! We serve all of Tucson and surrounding areas. Distance fees apply beyond 20 miles from Tucson.' },
   { q: 'Can you match my daughter\'s quinceañera colors exactly?', a: 'Absolutely. We work with any color palette. Just share your vision and we\'ll bring it to life.' },
 ]
@@ -51,20 +51,20 @@ export default function Quinceaneras() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_SCHEMA) }}
       />
       {/* Hero */}
-      <div style={{ background: '#0D0F0F', paddingTop: '72px', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 60% 50%, rgba(91,191,191,0.12) 0%, transparent 60%)' }} />
+      <div style={{ background: '#FDFCFA', paddingTop: '72px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 60% 50% at 60% 50%, rgba(91,191,191,0.1) 0%, transparent 60%)' }} />
         <div className="container" style={{ position: 'relative', zIndex: 2, padding: 'clamp(40px,6vw,80px) 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,440px),1fr))', gap: '48px', alignItems: 'center' }}>
           <div>
             <div className="eyebrow" style={{ marginBottom: '20px' }}><div className="eyebrow-line" /><span className="eyebrow-text">Tucson, AZ</span></div>
-            <h1 className="font-display" style={{ fontSize: 'clamp(2.5rem,5vw,4.5rem)', fontWeight: 300, lineHeight: 1.05, color: 'white', marginBottom: '20px' }}>
+            <h1 className="font-display" style={{ fontSize: 'clamp(2.5rem,5vw,4.5rem)', fontWeight: 300, lineHeight: 1.05, color: '#0D0F0F', marginBottom: '20px' }}>
               Quinceañera Balloon<br/><em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Décor in Tucson</em>
             </h1>
-            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 300, lineHeight: 1.75, color: 'rgba(255,255,255,0.6)', maxWidth: '420px', marginBottom: '32px' }}>
-              Your daughter&apos;s quinceañera deserves more than just balloons — it deserves a moment she&apos;ll never forget. Packages from $450.
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '1rem', fontWeight: 300, lineHeight: 1.75, color: '#6B7280', maxWidth: '420px', marginBottom: '32px' }}>
+              Your daughter&apos;s quinceañera deserves more than just balloons — it deserves a moment she&apos;ll never forget.
             </p>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
               <a href="#packages" className="btn-primary">See Packages <ArrowRight size={15} /></a>
-              <Link href="/event-questionnaire" className="btn-ghost">Tell Us Your Vision</Link>
+              <Link href="/event-questionnaire" className="btn-ghost" style={{ color: '#0D0F0F', borderColor: '#E5E7EB' }}>Tell Us Your Vision</Link>
             </div>
           </div>
           <div style={{ position: 'relative', height: 'clamp(260px,40vw,420px)', borderRadius: '20px', overflow: 'hidden' }}>
@@ -151,7 +151,7 @@ export default function Quinceaneras() {
             Let&apos;s Make Her Day <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Unforgettable</em>
           </h2>
           <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.95rem', fontWeight: 300, color: 'rgba(255,255,255,0.55)', marginBottom: '28px', maxWidth: '440px', margin: '0 auto 28px' }}>
-            Packages from $450. Custom estimates in 24 hours. 50% deposit holds your date.
+            Tell us your vision and Monica will personally put together a custom quote within 24 hours.
           </p>
           <Link href="/event-questionnaire" className="btn-primary">Get a Free Estimate <ArrowRight size={15} /></Link>
         </div>
