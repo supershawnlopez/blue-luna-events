@@ -11,7 +11,9 @@ export default function GalleryPreview() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/studio/media')
+    // Curated real work only — show_on_website is Monica's heart-toggle in Studio.
+    // (Previously fetched everything unfiltered, including behind-the-scenes candids.)
+    fetch('/api/studio/media?website=true')
       .then(r => (r.ok ? r.json() : []))
       .then((d: MediaItem[]) => {
         setMedia(Array.isArray(d) ? d.slice(0, 9) : [])

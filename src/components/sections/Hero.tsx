@@ -38,25 +38,58 @@ export default function Hero() {
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(232,207,160,0.06)', mixBlendMode: 'overlay' }} />
       </div>
 
+      {/* Orbital cluster — real work, cropped as circles and staggered like balloons
+          gathering, echoing the crescent-moon/balloon logo mark itself. This is the
+          one motif no templated competitor site is built to copy: everything else on
+          this page could be swapped for stock photography, this can't. */}
+      <div style={{ position: 'absolute', right: 'clamp(-40px,2vw,80px)', top: '50%', transform: 'translateY(-50%)', width: 'clamp(280px,34vw,460px)', height: 'clamp(280px,34vw,460px)', zIndex: 1, pointerEvents: 'none' }} className="hero-orbit">
+        <div style={{
+          position: 'absolute', inset: '-30%', borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(246,221,211,0.28) 0%, rgba(228,214,236,0.16) 45%, transparent 75%)',
+          filter: 'blur(20px)',
+        }} />
+        <div className="orbit-float-a" style={{
+          position: 'absolute', top: '4%', right: '8%', width: '46%', height: '46%',
+          borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.85)',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
+        }}>
+          <Image src="/images/gal-2.jpg" alt="Blue Luna Events balloon installation" fill style={{ objectFit: 'cover' }} />
+        </div>
+        <div className="orbit-float-b" style={{
+          position: 'absolute', bottom: '10%', left: '2%', width: '38%', height: '38%',
+          borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.85)',
+          boxShadow: '0 12px 36px rgba(0,0,0,0.35)',
+        }}>
+          <Image src="/images/gal-4.jpg" alt="Blue Luna Events balloon installation" fill style={{ objectFit: 'cover' }} />
+        </div>
+        <div className="orbit-float-c" style={{
+          position: 'absolute', bottom: '0%', right: '0%', width: '26%', height: '26%',
+          borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.85)',
+          boxShadow: '0 8px 28px rgba(0,0,0,0.3)',
+        }}>
+          <Image src="/images/hero-sec.jpg" alt="Blue Luna Events balloon installation" fill style={{ objectFit: 'cover' }} />
+        </div>
+      </div>
+
       <div className="container" style={{ position: 'relative', zIndex: 2, paddingTop: '120px', paddingBottom: '100px' }}>
-        <div style={{ maxWidth: '620px' }}>
+        <div style={{ maxWidth: '600px' }} className="hero-copy">
           <div className="eyebrow" style={{ marginBottom: '24px', animation: 'fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) 0.1s both' }}>
             <div className="eyebrow-line" style={{ background: 'var(--twilight-gold)' }} />
             <span className="eyebrow-text" style={{ color: 'var(--twilight-gold)' }}>Tucson, AZ · Southern Arizona</span>
           </div>
 
           <h1 className="font-display" style={{
-            fontSize: 'clamp(2.8rem, 5.5vw, 4.8rem)', fontWeight: 300, lineHeight: 1.03, color: 'white',
-            marginBottom: '22px', letterSpacing: '-0.01em', animation: 'fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.18s both',
+            fontSize: 'clamp(3rem, 6.2vw, 5.6rem)', fontWeight: 300, lineHeight: 0.98, color: 'white',
+            marginBottom: '22px', letterSpacing: '-0.02em', animation: 'fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.18s both',
             textShadow: '0 2px 24px rgba(0,0,0,0.35), 0 1px 4px rgba(0,0,0,0.3)',
           }}>
-            Your Event Deserves<br />
-            <em style={{ fontStyle: 'italic', color: 'var(--teal-l)' }}>Something Extraordinary.</em>
+            Your Event<br />Deserves<br />
+            <em style={{ fontStyle: 'italic', color: 'var(--teal-l)' }}>Extraordinary.</em>
           </h1>
 
           <p style={{
             fontFamily: 'Inter, sans-serif', fontSize: 'clamp(0.95rem, 1.4vw, 1.05rem)', fontWeight: 400,
-            lineHeight: 1.8, color: 'rgba(255,255,255,0.9)', maxWidth: '440px', marginBottom: '36px',
+            lineHeight: 1.8, color: 'rgba(255,255,255,0.9)', maxWidth: '420px', marginBottom: '36px',
             animation: 'fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.28s both',
             textShadow: '0 1px 12px rgba(0,0,0,0.4)',
           }}>
@@ -83,6 +116,18 @@ export default function Hero() {
           </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes orbitFloatA { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-16px) } }
+        @keyframes orbitFloatB { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(14px) } }
+        @keyframes orbitFloatC { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-10px) } }
+        .orbit-float-a { animation: orbitFloatA 7s ease-in-out infinite; }
+        .orbit-float-b { animation: orbitFloatB 8.5s ease-in-out infinite 0.4s; }
+        .orbit-float-c { animation: orbitFloatC 6s ease-in-out infinite 0.8s; }
+        @media (max-width: 900px) {
+          .hero-orbit { display: none; }
+        }
+      `}</style>
     </section>
   )
 }

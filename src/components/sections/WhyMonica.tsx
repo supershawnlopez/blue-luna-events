@@ -31,6 +31,13 @@ export default function WhyMonica() {
           {/* Photo */}
           <div className="reveal" style={{ position: 'relative' }}>
             <div style={{
+              position: 'absolute', top: '-15%', left: '-15%', width: '55%', height: '55%',
+              borderRadius: '50%',
+              background: 'var(--twilight-glow)',
+              filter: 'blur(10px)',
+              pointerEvents: 'none',
+            }} />
+            <div style={{
               position: 'relative',
               borderRadius: '24px',
               overflow: 'hidden',
@@ -46,6 +53,14 @@ export default function WhyMonica() {
                 position: 'absolute', inset: 0,
                 background: 'linear-gradient(to top, rgba(13,15,15,0.6) 0%, transparent 50%)',
               }} />
+            </div>
+            {/* Orbital accent — a real detail shot, echoing the hero cluster */}
+            <div style={{
+              position: 'absolute', top: '-8%', right: '-10%', width: '34%', aspectRatio: '1/1',
+              borderRadius: '50%', overflow: 'hidden',
+              border: '4px solid white', boxShadow: '0 10px 32px rgba(13,15,15,0.18)',
+            }}>
+              <Image src="/images/gal-3.jpg" alt="Blue Luna Events detail" fill style={{ objectFit: 'cover' }} />
             </div>
             {/* Floating badge */}
             <div style={{
