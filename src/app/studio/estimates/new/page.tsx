@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useReducer } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useReducer, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ArrowRight, Check, Copy, ExternalLink } from 'lucide-react'
 import { PACKAGE_CATALOG, ADD_ONS, CONFIGURATOR_EVENT_TYPES, getPackagesForEvent, type EventTypeId } from '@/lib/config'
@@ -59,11 +59,37 @@ const INITIAL: State = {
 }
 
 export default function NewEstimate() {
+  return (
+    <Suspense fallback={null}>
+      <NewEstimateInner />
+    </Suspense>
+  )
+}
+
+function NewEstimateInner() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [state, dispatch] = useReducer(reducer, INITIAL)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState<{ id: string; shareToken: string } | null>(null)
   const [copied, setCopied] = useState(false)
+
+  // Pre-fill from a lead-email deep link (?name=&email=&phone=&event_date=&venue=)
+  useEffect(() => {
+    const prefill: Partial<ClientInfo> = {}
+    const name = searchParams.get('name')
+    const email = searchParams.get('email')
+    const phone = searchParams.get('phone')
+    const event_date = searchParams.get('event_date')
+    const venue = searchParams.get('venue')
+    if (name) prefill.name = name
+    if (email) prefill.email = email
+    if (phone) prefill.phone = phone
+    if (event_date) prefill.event_date = event_date
+    if (venue) prefill.venue = venue
+    if (Object.keys(prefill).length > 0) dispatch({ type: 'SET_CLIENT', client: prefill })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const pkg = state.packageId ? PACKAGE_CATALOG.find(p => p.id === state.packageId) : null
   const pricing = pkg ? computeTotal(state.packageId!, state.addOnIds) : null

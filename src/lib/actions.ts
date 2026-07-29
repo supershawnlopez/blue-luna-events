@@ -452,6 +452,13 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
   const lookingFor = data.looking_for ?? []
   const photos = data.inspo_photos ?? []
   const subject = `🎈 New Lead — ${data.name} · ${data.event_type}`
+  const estimateBuilderUrl = `https://bluelunaevents.com/studio/estimates/new?${new URLSearchParams({
+    name: data.name,
+    email: data.email,
+    phone: data.phone,
+    ...(data.event_date ? { event_date: data.event_date } : {}),
+    ...(data.venue ? { venue: data.venue } : {}),
+  }).toString()}`
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -550,11 +557,11 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
     </table>
   </td></tr>` : ''}
 
-  <!-- Action -->
-  <tr><td style="background:#FFFFFF;padding:24px 32px 28px">
+  <!-- Action: acknowledge -->
+  <tr><td style="background:#FFFFFF;padding:24px 32px 0">
     <div style="background:rgba(91,191,191,0.08);border:1px solid rgba(91,191,191,0.25);border-radius:12px;padding:22px 20px">
-      <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0D0F0F">Reply with a personal quote</p>
-      <p style="margin:0 0 18px;font-size:14px;color:#6B7280">${first} is waiting to hear from you.</p>
+      <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0D0F0F">Let ${first} know you got it</p>
+      <p style="margin:0 0 18px;font-size:14px;color:#6B7280">A quick call or text so they know you're on it — the quote can come after.</p>
       <table cellpadding="0" cellspacing="0" border="0" align="center">
         <tr>
           <td style="padding-right:8px">
@@ -569,6 +576,17 @@ async function sendMonicaInquiryNotification(data: Lead, vision: string) {
           </td>
         </tr>
       </table>
+    </div>
+  </td></tr>
+
+  <!-- Action: build the quote -->
+  <tr><td style="background:#FFFFFF;padding:16px 32px 28px">
+    <div style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:12px;padding:22px 20px;text-align:center">
+      <p style="margin:0 0 6px;font-size:16px;font-weight:700;color:#0D0F0F">Build their quote</p>
+      <p style="margin:0 0 18px;font-size:14px;color:#6B7280">When you're ready, put together their estimate in Studio.</p>
+      <a href="${estimateBuilderUrl}" style="display:inline-block;background:#5BBFBF;color:#0D0F0F;font-size:14px;font-weight:700;padding:13px 28px;border-radius:999px;text-decoration:none;white-space:nowrap">
+        📋 Open Estimate Builder
+      </a>
     </div>
   </td></tr>
 
