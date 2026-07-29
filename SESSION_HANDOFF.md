@@ -2,7 +2,24 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: July 29, 2026 — Claude Code*
 
-## Latest Session (2026-07-28, reconstructed 2026-07-29 after a crash cut the session short before docs were updated)
+## Latest Session (2026-07-29)
+
+**White/Twilight homepage v1 is LIVE on `bluelunaevents.com`.** Team meeting resolved the two open questions from the 7/28 branch, then it was built out and merged to `main` same day:
+- Twilight (blush/lavender/gold) is scoped to Hero + GalleryPreview only, as a mood accent — NOT a sitewide palette change. Teal remains the one primary accent everywhere else (Nav, WhyMonica, Packages, Reviews, CTA, Footer, every other page). Reason: teal is Monica's actual favorite color (Tiffany Blue) — same color as the real logo — not an arbitrary pick, and the original branch commit's claim that Twilight was "pulled from the logo" was corrected; the real logo has none of those colors.
+- WhyMonica converted from dark (`#0D0F0F`) to the same white background as Packages/Reviews, so the whole page reads as one coherent story. CTA stays dark intentionally as the one closing contrast band.
+- Packages section (homepage + quinceañeras + graduations) dropped all pricing — final, per Monica's direct request to feel consultive, not transactional. Tier names/taglines/features kept as-is; card images now escalate in size per tier so "more" reads visually.
+- Added a future "Grab & Go" budget-friendly self-serve page to `TASKS.md` BACKLOG — not built, not scheduled.
+
+**Shawn's read after seeing it live:** real improvement, but still mostly a palette/photo-source reskin of the existing layout — Nav, Footer, section order/structure, and every other page are untouched. He wants to continue today into deeper structural work — **not yet scoped**. Candidate: the configurator-with-real-photos idea from `FRONTEND_REDESIGN_AUDIT.md` (still the highest-leverage idea from the July 8 audit, never started) — needs a fresh team scoping conversation before building, don't assume this is automatically next without re-confirming with Shawn.
+
+**Shawn, test this:**
+1. Visit `bluelunaevents.com` — confirm the homepage loads with the new video hero and white sections, and that it looks right on your phone.
+2. Check Packages, and the quinceañera/graduation pages — confirm no dollar amounts show anywhere.
+3. Confirm the site still feels like Blue Luna (teal, not a different brand) outside the hero/gallery area.
+
+---
+
+## Prior Session (2026-07-28, reconstructed 2026-07-29 after a crash cut the session short before docs were updated)
 
 **What changed and IS LIVE on `bluelunaevents.com` (all on `main`, last deploy confirmed `READY`/production on Vercel at 8:06 PM 7/28, commit `09da80fb`):**
 - The 2026-07-27 inquiry form + the lead-submission RLS bug fix (previously flagged "not yet deployed" below) — **that's now stale, it shipped.**
@@ -46,8 +63,8 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `09da80fb` — pushed and confirmed live in production on Vercel (8:06 PM 7/28).
-- Latest work overall: `redesign/gallery-twilight` branch, commit `bba255bf` — pushed to GitHub, preview-deployed on Vercel, **not merged to `main`, not live**.
+- Latest `main` commit: `7bcecc7d` — merge of `redesign/gallery-twilight` into `main`, confirmed live in production on Vercel 2026-07-29. White/Twilight homepage v1 is the current live site.
+- `redesign/gallery-twilight` branch still exists (now fully merged, safe to keep or delete) — further redesign work in progress today should branch fresh or continue directly on `main`, confirm which with Shawn before starting.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:
   - `PLATFORM_REBUILD_AUDIT.md` — the original full-scope audit (design, camera, calendar, leads, email, social, SEO)

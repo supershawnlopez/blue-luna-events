@@ -13,6 +13,28 @@
 
 ---
 
+## Session: July 29, 2026 — White/Twilight Homepage v1 Shipped
+**AI:** Claude Code
+**Worked on:** Reconstructed the July 28 session (crash cut it short before docs updated), then held a team meeting with Shawn to resolve two open questions from the `redesign/gallery-twilight` branch: how far the new Twilight palette should spread, and whether Packages should drop pricing. Built both, merged to `main`, live same day.
+
+### Completed This Session
+- Reconstructed `SESSION_HANDOFF.md`/`TASKS.md`/`changelog.md`/`DECISIONS.md` from `git log` + Vercel deploy history after the crash.
+- Team decision: Twilight (blush/lavender/gold) scoped to Hero + GalleryPreview only, as a mood accent — teal stays the sole sitewide primary accent (it's Monica's real favorite color/Tiffany Blue, matching the actual logo; corrected the branch's inaccurate claim that Twilight came from the logo itself).
+- Team decision: Packages drops all pricing sitewide (homepage, quinceañeras, graduations) — final, per Monica's direct request to feel consultive not transactional. Tier names/taglines/features kept as-is; card images escalate per tier instead.
+- Added future "Grab & Go" budget page to `TASKS.md` BACKLOG.
+- Built and shipped: WhyMonica converted to white (matching Packages/Reviews); pricing stripped from all three Packages blocks with build verified clean each step.
+- Merged `redesign/gallery-twilight` → `main`, pushed, confirmed live in production on Vercel.
+
+### Still Open
+- Shawn's reaction after seeing it live: real improvement, but still a reskin of the existing layout — Nav, Footer, section structure, and every other page untouched. He wants to continue same-day into deeper structural work. **Not yet scoped** — needs a fresh team conversation before building; candidate is the configurator-with-real-photos idea from `FRONTEND_REDESIGN_AUDIT.md`, still never started.
+
+### Shawn Test
+1. Visit `bluelunaevents.com` — confirm the new video hero and white sections load correctly on your phone.
+2. Check Packages and the quinceañera/graduation pages — confirm no dollar amounts appear anywhere.
+3. Confirm the site still reads as Blue Luna (teal) outside the hero/gallery area.
+
+---
+
 ## Session: July 28, 2026 — Real-Device Testing Fixes + Gallery/Twilight Redesign Started
 **AI:** Claude Code
 **Worked on:** Shawn phone-tested the inquiry form live and found several real bugs; fixed them same-day and deployed to production. Then started a from-scratch homepage redesign on a separate branch (Jony's "Gallery + Twilight" direction). Session ended when the computer crashed before end-of-session docs were updated — this entry was reconstructed 2026-07-29 from `git log` and Vercel deploy history.

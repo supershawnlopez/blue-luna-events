@@ -41,11 +41,10 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Finish and merge the White/Twilight homepage redesign** — team meeting held 2026-07-29, scope now locked (see `DECISIONS.md` + `DESIGN_DECISIONS.md`)
-- Teal stays the sole primary accent everywhere; Twilight (blush/lavender/gold) is scoped to Hero + GalleryPreview only, as a mood accent, not a replacement.
-- Remaining work: bring WhyMonica, Packages, Reviews, CTA in line with the new direction (still on old dark/teal styling) — confirm with Jony whether they go white/bright too or the treatment stays Hero/Gallery-only.
-- Packages section: strip `price`/`priceNote` from display, keep every tier's name/tagline/features as-is, escalate visual richness per tier per Jony's call (see decision log) — FINAL, build now.
-- Owner: Claude Code builds, Shawn reviews before merging `redesign/gallery-twilight` → `main`.
+1. **Deeper structural homepage/site work — Phase 2 of the redesign, starting now (2026-07-29)**
+- Phase 1 (White/Twilight homepage v1) shipped to production today — see DONE below. Shawn's read after seeing it live: it's a real improvement but still mostly a palette/photo-source reskin of the existing layout, not new structure — Nav, Footer, section order, actual layout/content, and every other page are untouched.
+- Shawn wants to continue today into the deeper work. Candidate scope (not yet re-confirmed with the team this round): the actual configurator-with-real-photos idea from `FRONTEND_REDESIGN_AUDIT.md` (still the highest-leverage, most-differentiated idea from the July 8 audit and hasn't been started), further homepage structural/content changes, Nav/Footer treatment.
+- Owner: Claude Code, next conversation turn — needs a fresh scoping pass with Shawn before building.
 
 2. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
 - Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
@@ -68,6 +67,14 @@ Exit criteria for Phase 1:
 - ✅ **Lead email redesign per Jony's review** — Monica's email renamed "New Lead," split acknowledge-first/quote-second, resized to match the client email, serif headlines + clearer tables on both templates. Client confirmation now shows everything submitted (theme/colors/photos).
 - ✅ **Fixed Studio upload hang** — added timeouts to image compression and both upload XHRs so a stuck HEIC decode or stalled network request fails visibly instead of hanging forever.
 - 🟡 **`redesign/gallery-twilight` branch started** (Jony's "Gallery + Twilight" homepage direction) — 4 commits, preview-deployed, NOT merged to `main`. See NOW #1 above.
+
+---
+
+## DONE (2026-07-29)
+
+- ✅ **White/Twilight homepage v1 merged to `main` and LIVE in production.** Team meeting resolved the open questions from the 7/28 branch: Twilight (blush/lavender/gold) scoped to Hero + GalleryPreview only, teal stays sole primary accent sitewide (it's Monica's real favorite color/Tiffany Blue, same as the logo — corrected the branch's inaccurate "pulled from the logo" claim). WhyMonica converted to match Packages/Reviews' white background; CTA stays dark intentionally as the closing contrast band.
+- ✅ **Pricing removed from Packages sitewide** (homepage, quinceañeras, graduations) — final, per Monica's direct ask to feel consultive not transactional. Tier names/taglines/features untouched; card images escalate per tier instead.
+- ✅ Added future "Grab & Go" budget-friendly self-serve page to BACKLOG.
 
 ---
 
