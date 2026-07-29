@@ -82,10 +82,10 @@ export default function Graduations() {
               filter: 'blur(16px)', pointerEvents: 'none',
             }} />
             <div style={{ position: 'absolute', top: '4%', left: '10%', width: '76%', height: '76%', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 16px 44px rgba(13,15,15,0.16)' }}>
-              <Image src="/images/gal-4.jpg" alt="Graduation party balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} />
+              <Image src="/images/gal-4.jpg" alt="Graduation party balloon décor Tucson AZ" fill sizes="(max-width: 900px) 90vw, 45vw" priority style={{ objectFit: 'cover' }} />
             </div>
             <div style={{ position: 'absolute', bottom: '2%', right: '0%', width: '38%', height: '38%', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 10px 32px rgba(13,15,15,0.16)' }}>
-              <Image src="/images/hero-main.jpg" alt="Graduation party balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} />
+              <Image src="/images/hero-main.jpg" alt="Graduation party balloon décor Tucson AZ" fill sizes="(max-width: 900px) 45vw, 20vw" priority style={{ objectFit: 'cover' }} />
             </div>
           </div>
         </div>

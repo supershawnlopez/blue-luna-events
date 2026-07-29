@@ -53,21 +53,21 @@ export default function Hero() {
           borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.85)',
           boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
         }}>
-          <Image src="/images/gal-2.jpg" alt="Blue Luna Events balloon installation" fill style={{ objectFit: 'cover' }} />
+          <Image src="/images/gal-2.jpg" alt="Blue Luna Events balloon installation" fill sizes="(max-width: 900px) 0px, 20vw" priority style={{ objectFit: 'cover' }} />
         </div>
         <div className="orbit-float-b" style={{
           position: 'absolute', bottom: '10%', left: '2%', width: '38%', height: '38%',
           borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.85)',
           boxShadow: '0 12px 36px rgba(0,0,0,0.35)',
         }}>
-          <Image src="/images/gal-4.jpg" alt="Blue Luna Events balloon installation" fill style={{ objectFit: 'cover' }} />
+          <Image src="/images/gal-4.jpg" alt="Blue Luna Events balloon installation" fill sizes="(max-width: 900px) 0px, 16vw" priority style={{ objectFit: 'cover' }} />
         </div>
         <div className="orbit-float-c" style={{
           position: 'absolute', bottom: '0%', right: '0%', width: '26%', height: '26%',
           borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.85)',
           boxShadow: '0 8px 28px rgba(0,0,0,0.3)',
         }}>
-          <Image src="/images/hero-sec.jpg" alt="Blue Luna Events balloon installation" fill style={{ objectFit: 'cover' }} />
+          <Image src="/images/hero-sec.jpg" alt="Blue Luna Events balloon installation" fill sizes="(max-width: 900px) 0px, 12vw" priority style={{ objectFit: 'cover' }} />
         </div>
       </div>
 
