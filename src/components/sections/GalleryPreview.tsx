@@ -111,15 +111,22 @@ export default function GalleryPreview() {
         ) : videos.length === 0 ? null : (
           <div className="gp-bento reveal reveal-delay-1" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(6, 1fr)',
+            gridTemplateColumns: 'repeat(4, 1fr)',
             gridAutoRows: '190px',
             gap: '18px',
           }}>
-            {videos.map((v, i) => (
-              <div key={v.id} style={{ gridColumn: i === 0 ? 'span 3' : 'span 2', gridRow: i === 0 ? 'span 2' : 'span 1' }} className="gp-bento-item">
-                <VideoTile item={v} big={i === 0} />
-              </div>
-            ))}
+            {/* Spans are chosen to sum exactly to 4 columns per row (2+2 on row 1, 2+1+1 on row 2) —
+                mismatched spans previously left the browser to improvise gaps and orphan tiles. */}
+            {videos.map((v, i) => {
+              const span = i === 0 ? { gridColumn: 'span 2', gridRow: 'span 2' }
+                : i === 1 ? { gridColumn: 'span 2', gridRow: 'span 1' }
+                : { gridColumn: 'span 1', gridRow: 'span 1' }
+              return (
+                <div key={v.id} style={span} className="gp-bento-item">
+                  <VideoTile item={v} big={i === 0} />
+                </div>
+              )
+            })}
           </div>
         )}
 
