@@ -14,19 +14,29 @@ import { ArrowRight } from 'lucide-react'
 // the hero video is always muted) and re-uploaded so it actually plays.
 const HERO_VIDEO_URL = 'https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/media/hero-quinceanera-optimized.mp4'
 const HERO_SLOWDOWN = 0.5 // half speed — makes a short clip read as cinematic B-roll instead of jumpy
+// A real captured frame from THIS video (Studio's auto-thumbnail), not an unrelated
+// photo — so the very first paint already matches the video and the crossfade reads
+// as "it comes alive," not "the picture got replaced." Fixes a real visible glitch:
+// Shawn caught a mismatched photo (different balloon colors, different room) flashing
+// for a split second before the video took over.
+const HERO_POSTER_URL = 'https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/thumbnails/1783486336868-x4e3jf3wut.webp'
 
 export default function Hero() {
   return (
     <section style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden', background: 'var(--ink)' }}>
-      {/* Real work, full-bleed — photo is the reliable base layer; video is a progressive
-          enhancement that fades in only once it's actually confirmed playing. Raw phone
-          video often can't start fast (metadata isn't at the front of the file the way a
-          web-optimized export would be — same root cause documented elsewhere in this repo
-          for video thumbnails), so this must never depend on the video to show anything. */}
+      {/* Real work, full-bleed — the poster frame (a real still from this exact video) is
+          the reliable base layer; the video is a progressive enhancement that fades in
+          once it's actually confirmed playing. Raw phone video often can't start fast
+          (metadata isn't at the front of the file the way a web-optimized export would
+          be — same root cause documented elsewhere in this repo for video thumbnails),
+          so this must never depend on the video to show something — but what it shows
+          while waiting has to be the same scene, not a different photo entirely. */}
       <div style={{ position: 'absolute', inset: 0 }}>
-        <Image src="/images/hero-main.jpg" alt="Blue Luna Events — balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} priority />
+        <Image src={HERO_POSTER_URL} alt="Blue Luna Events — balloon décor Tucson AZ" fill style={{ objectFit: 'cover' }} priority />
         <video
           src={HERO_VIDEO_URL}
+          poster={HERO_POSTER_URL}
+          preload="auto"
           autoPlay muted loop playsInline
           onPlaying={e => { e.currentTarget.playbackRate = HERO_SLOWDOWN; e.currentTarget.style.opacity = '1' }}
           style={{
