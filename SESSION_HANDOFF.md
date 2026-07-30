@@ -1,8 +1,34 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: July 29, 2026 — Claude Code*
+*Last updated: July 30, 2026 — Claude Code (reconstructed after a second crash cut off doc updates — see note below)*
 
-## Round 5, same day: Content strategy meeting + real video showcase — LIVE
+## 2026-07-30 — reconstructed from git log + Vercel after a crash
+
+**About this reconstruction:** Shawn's computer crashed again (same failure pattern as 2026-07-28). This file was stuck showing last night's video-showcase work as the latest thing, but `git log` showed 7 more real commits after that, running up through this morning. Checked carefully: **nothing was lost.** Every commit through `c4e2db3f` is committed, pushed to `origin/main`, and confirmed `READY`/production on Vercel (deployment `dpl_A74uS784...`, promoted). `TASKS.md` and `DECISIONS.md` had actually already been kept current through today — only this file and `changelog.md` were behind. Below is everything that shipped since last night's handoff that hadn't been recorded here yet.
+
+**Shipped and LIVE, in order:**
+1. **Hero video fix** — the quinceañera hero video (swapped in per Jony's review, replacing an outdoor clip with a chain-link fence in frame) didn't actually play at first: raw iPhone `.mov` metadata placement issue, same known bug class as the video-thumbnail system. Fixed by re-encoding to faststart `.mp4` via `ffmpeg-static` and re-uploading to Supabase Storage. Confirmed playing correctly on Shawn's real device.
+2. **Hero flash fixed** — a mismatched fallback photo (different balloons, different room) was flashing for a split second before the video loaded. Fixed by using the video's own auto-captured thumbnail as both the fallback image and the video poster, so it reads as "the photo comes alive" instead of a jarring swap.
+3. **Business-wide audit completed** (real web research, not guesses): no Google Business Profile exists yet (Shawn creating one today); a real Yelp listing exists that Monica may need to claim; two Instagram accounts exist but the second is dormant/no real conflict; 4 old pages still indexed dead in Google.
+4. **Fake "5.0 on Google" claims removed sitewide** — Shawn confirmed these were fabricated (no real GBP exists yet). Removed from homepage hero stats, WhyMonica stats, and the Reviews section header. **Open, needs Shawn/Monica:** whether the actual written testimonial quotes (Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) are real or also placeholder — Shawn's explicit call was to leave them alone for now, not confirmed either way.
+5. **SEO/AEO/GEO technical fixes shipped**: `/gallery` now has real per-page metadata (was a `'use client'` component blocking it, same bug class as an earlier quince/grad fix); real alt text added to every gallery photo; social-share preview image updated off the old pre-redesign photo; 4 dead indexed pages (`/services`, `/about`, `/contact`, `/event-form`) now 301-redirect instead of 404ing; stale `$450`/`$299` pricing removed from page metadata.
+
+**Full detail for all of the above is already written in `TASKS.md` (DONE 2026-07-30 section) and `DECISIONS.md` (BUSINESS-WIDE AUDIT section)** — this entry just brings this file back in sync with those.
+
+**Still open:**
+- Whether the Reviews testimonials are real (see #4 above).
+- Dedicated landing pages for weddings/birthdays/baby showers/corporate events — biggest remaining SEO gap, needs a scoping conversation, not a quick fix.
+- The real live $1 Stripe payment test — still Shawn's to run whenever ready.
+
+**Shawn, test this:**
+1. Visit `bluelunaevents.com` — the hero video should play smoothly with no mismatched flash beforehand.
+2. Check the homepage and Reviews section — the "5.0 on Google" claims should be gone. Testimonial names/quotes are untouched for now.
+3. Try `bluelunaevents.com/services`, `/about`, `/contact` — should redirect to real pages instead of 404ing.
+4. Nothing else needs testing from this reconstruction — it's the same site you already saw last night, plus these fixes on top.
+
+---
+
+## Prior: Round 5, same day (2026-07-29): Content strategy meeting + real video showcase — LIVE
 
 Shawn liked the Orbital redesign, then flagged a real content problem: the homepage's photo grid and `/gallery` were doing the same job. Team meeting (Jony leading) proposed replacing it with real video content instead of more photos — Shawn confirmed and added his own brief: "make it feel like magic," tying to `@BlueLunaMagic`.
 
@@ -110,7 +136,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `d09f1bff` — homepage `GalleryPreview` replaced with a real video showcase, confirmed live in production on Vercel 2026-07-29. This plus the Orbital design language (previous commit) are the current, final direction for the day.
+- Latest `main` commit: `c4e2db3f` — SEO/AEO/GEO audit fixes documented and closed out, confirmed `READY`/production on Vercel 2026-07-30. See the reconstructed entry at the top of this file for everything shipped between `d09f1bff` (2026-07-29 video showcase) and here.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:

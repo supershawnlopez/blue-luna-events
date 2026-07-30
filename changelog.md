@@ -13,6 +13,29 @@
 
 ---
 
+## Session: July 30, 2026 — Hero Video Fix, Business-Wide Audit, SEO Fixes (reconstructed after a second crash)
+**AI:** Claude Code
+**Worked on:** A second crash (same pattern as 2026-07-28) cut off `SESSION_HANDOFF.md`/`changelog.md` updates, though `TASKS.md` and `DECISIONS.md` had already been kept current through the session. Reconstructed from `git log` + Vercel deploy history; confirmed nothing was lost — all work through `c4e2db3f` is committed, pushed, and live in production.
+
+### Completed This Session
+- Fixed the new quinceañera hero video not playing (raw `.mov` moov-atom issue, re-encoded to faststart `.mp4` via `ffmpeg-static`, re-uploaded to Supabase Storage). Confirmed playing on Shawn's real device.
+- Fixed the hero flash/mismatch glitch — fallback image and video poster now both use the video's own auto-captured thumbnail.
+- Ran a real business-wide audit (web research, not assumptions): no Google Business Profile exists yet (Shawn creating one today), a real unclaimed-status-unknown Yelp listing exists, a dormant second Instagram account, 4 dead-but-indexed pages.
+- Removed fake "5.0 on Google" claims sitewide (3 locations) — confirmed fabricated by Shawn, no real GBP exists yet.
+- Shipped SEO/AEO/GEO technical fixes: `/gallery` real per-page metadata (split into server `page.tsx` + client component), real alt text on all gallery photos, updated social-share preview image, 301 redirects for 4 dead indexed pages, removed stale pricing from quince/grad page metadata.
+
+### Still Open
+- Whether the Reviews.tsx testimonial quotes are real or also fabricated — Shawn's explicit call was to leave them alone for now.
+- Dedicated landing pages for weddings/birthdays/baby showers/corporate events — needs a scoping conversation with Shawn, biggest remaining SEO gap.
+- The real live $1 Stripe payment test — still Shawn's to run.
+
+### Shawn Test
+1. Visit `bluelunaevents.com` — hero video should play smoothly, no mismatched flash first.
+2. Homepage/Reviews — "5.0 on Google" claims should be gone; testimonial names untouched.
+3. Try `/services`, `/about`, `/contact` — should redirect instead of 404.
+
+---
+
 ## Session: July 29, 2026 — White/Twilight Homepage v1 Shipped
 **AI:** Claude Code
 **Worked on:** Reconstructed the July 28 session (crash cut it short before docs updated), then held a team meeting with Shawn to resolve two open questions from the `redesign/gallery-twilight` branch: how far the new Twilight palette should spread, and whether Packages should drop pricing. Built both, merged to `main`, live same day.
