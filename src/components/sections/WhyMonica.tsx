@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { Star, Heart, MapPin } from 'lucide-react'
+import { Heart, MapPin } from 'lucide-react'
 
 const TRUST_ITEMS = [
   { n: '200+', label: 'Events Styled' },
@@ -155,29 +155,6 @@ export default function WhyMonica() {
                   }}>{t.label}</p>
                 </div>
               ))}
-            </div>
-
-            {/* Review quote */}
-            <div style={{
-              borderLeft: '2px solid #5BBFBF',
-              paddingLeft: '20px',
-            }}>
-              <div style={{ display: 'flex', gap: '2px', marginBottom: '10px' }}>
-                {[...Array(5)].map((_, i) => <Star key={i} size={12} color="#C9A96E" fill="#C9A96E" />)}
-              </div>
-              <p className="font-display" style={{
-                fontSize: '1.05rem',
-                fontWeight: 400,
-                fontStyle: 'italic',
-                color: '#374151',
-                lineHeight: 1.7,
-                marginBottom: '10px',
-              }}>
-                &ldquo;I walked into my daughter&apos;s quinceañera and started crying. I had no idea balloons could look like that.&rdquo;
-              </p>
-              <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.75rem', color: '#9CA3AF', fontWeight: 500 }}>
-                — Gabriela Morales, Tucson AZ
-              </p>
             </div>
           </div>
         </div>
