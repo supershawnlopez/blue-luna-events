@@ -11,33 +11,35 @@ function toLabel(raw?: string | null) {
   return raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
-function VideoTile({ item, big }: { item: MediaItem; big?: boolean }) {
+function VideoTile({ item }: { item: MediaItem }) {
   const ref = useRef<HTMLVideoElement>(null)
   return (
-    <div className="gp-video-tile" style={{
-      position: 'relative', borderRadius: '22px', overflow: 'hidden',
-      height: '100%', minHeight: big ? '360px' : '220px',
-      boxShadow: '0 12px 40px rgba(13,15,15,0.14)',
-    }}>
-      <video
-        ref={ref}
-        src={item.url}
-        poster={item.thumbnail_url || undefined}
-        autoPlay muted loop playsInline
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-      />
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,15,15,0.55) 0%, transparent 45%)', pointerEvents: 'none' }} />
-      {/* Shimmer sweep — the "magic" touch */}
-      <div className="gp-shimmer" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
-      {item.event_type && (
-        <p style={{
-          position: 'absolute', bottom: '16px', left: '18px',
-          fontFamily: 'DM Mono, monospace', fontSize: '10px', color: 'white',
-          letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0,
-        }}>
-          {toLabel(item.event_type)}
-        </p>
-      )}
+    // Outer white "mat" frame — makes each tile read as a distinct card even when
+    // two adjacent videos share similar balloon colors and would otherwise bleed together.
+    <div style={{ height: '100%', padding: '6px', background: 'white', borderRadius: '26px', boxShadow: '0 12px 40px rgba(13,15,15,0.14)' }}>
+      <div className="gp-video-tile" style={{
+        position: 'relative', borderRadius: '20px', overflow: 'hidden', height: '100%',
+      }}>
+        <video
+          ref={ref}
+          src={item.url}
+          poster={item.thumbnail_url || undefined}
+          autoPlay muted loop playsInline
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,15,15,0.55) 0%, transparent 45%)', pointerEvents: 'none' }} />
+        {/* Shimmer sweep — the "magic" touch */}
+        <div className="gp-shimmer" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+        {item.event_type && (
+          <p style={{
+            position: 'absolute', bottom: '16px', left: '18px',
+            fontFamily: 'DM Mono, monospace', fontSize: '10px', color: 'white',
+            letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0,
+          }}>
+            {toLabel(item.event_type)}
+          </p>
+        )}
+      </div>
     </div>
   )
 }
@@ -113,7 +115,7 @@ export default function GalleryPreview() {
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
             gridAutoRows: '190px',
-            gap: '18px',
+            gap: '24px',
           }}>
             {/* Spans are chosen to sum exactly to 4 columns per row (2+2 on row 1, 2+1+1 on row 2) —
                 mismatched spans previously left the browser to improvise gaps and orphan tiles. */}
@@ -123,7 +125,7 @@ export default function GalleryPreview() {
                 : { gridColumn: 'span 1', gridRow: 'span 1' }
               return (
                 <div key={v.id} style={span} className="gp-bento-item">
-                  <VideoTile item={v} big={i === 0} />
+                  <VideoTile item={v} />
                 </div>
               )
             })}
