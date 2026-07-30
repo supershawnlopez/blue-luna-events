@@ -41,14 +41,13 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Get Shawn's real-phone reaction to the Orbital redesign, now live** — see DONE below for full scope
-- Circular/orbital design language shipped sitewide 2026-07-29 (Hero, WhyMonica, Packages, Reviews, CTA, Gallery, Quinceañeras, Graduations). This was a genuine full pass, not incremental patching — confirm with Shawn it lands as "modern, fresh, out of the ordinary" as directed, not just another variation.
-- Owner: Shawn reviews live.
+1. **Real number for "200+ Events Styled" hero stat — needs Shawn/Monica, not derivable from Studio**
+- Flagged by Priya during the content-strategy meeting 2026-07-29: nobody has verified this number is real, and Studio's own record count isn't a valid substitute (Studio just launched, Monica's barely used it — her real history is 2018 to now, not what's logged in the app). Needs Shawn or Monica to confirm the real figure, or the stat gets softened/dropped.
+- Owner: Shawn/Monica confirm.
 
-2. **Configurator-with-real-photos — the next real redesign lever, not yet started**
-- The team's July 8 audit called the Event Questionnaire showing real matching photos as someone fills it out the single highest-leverage, most-differentiated idea versus every competitor in Tucson. Needs gallery photos tagged by component/color (not just event type) as a prerequisite — the vocabulary already exists in `LOOKING_FOR_CATEGORIES` in `config.ts`.
-- **False start 2026-07-29:** began building this same-day (added a `components` column to `gallery_media`) before confirming scope with Shawn — he stopped it twice, clarified this was NOT what "next steps" meant either time. Column was reverted. Do not resume this without Shawn explicitly re-opening it by name — general "keep going" / "move forward" language does NOT authorize starting this specific project.
-- Owner: needs a fresh, explicit team conversation with Shawn before building.
+2. **Instagram live-feed integration — real technical project, scoped separately from today's visual work**
+- Shawn wants an eventual live connection to Monica's real Instagram/Facebook content, but confirmed it should route through Studio's existing hearts (show_on_website) / stars (social_export) system, not a disconnected API pull. Needs Meta Graph API access to Monica's Instagram Business account, developer setup, possible app review. Not a same-session build.
+- Owner: needs its own scoping session when Shawn's ready.
 
 3. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
 - Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
@@ -82,6 +81,10 @@ Exit criteria for Phase 1:
 - ✅ **Orbital/circular design language — full redesign pass, LIVE.** Real photos cropped as circles and staggered like balloons clustering, echoing Blue Luna's own crescent-moon/balloon logo — the sitewide signature motif per Shawn's direct brief ("modern, fresh, out of the ordinary, not your usual"). Shipped across Hero (floating circular photo cluster with float animation), WhyMonica (circular accent photo), Packages (numbered circular tier markers), Reviews (twilight glow accent), CTA (orbital ring accents), and circular hero-image crops on Quinceañeras/Graduations/Gallery. See `DESIGN_DECISIONS.md` "ORBITAL / CIRCULAR DESIGN LANGUAGE" for the full locked spec.
 - ✅ **Real bug found and fixed: homepage GalleryPreview was unfiltered.** Was fetching every photo Monica's ever uploaded, including non-decor candids, instead of her curated `show_on_website` set — same bug class as the silent-failure pattern found repeatedly this week. Fixed to match the real `/gallery` page's existing filter.
 - ✅ **Real bug found and fixed: circular hero images not loading.** Next.js `Image fill` without `priority` never fired for these above-the-fold circular crops (confirmed via devtools — the image request never fired, not a timing delay). Added `priority` + `sizes` sitewide to every above-the-fold circular image.
+- ✅ **Homepage photo grid replaced with a real video showcase — LIVE.** Shawn flagged genuine redundancy: the homepage gallery preview and `/gallery` page were the same masonry grid at different sizes. Replaced with a bento layout of real event videos (autoplay muted loop, shimmer sweep on hover), pulling from the 23 real videos already in Studio. `/gallery` stays the deep-browse page; the homepage section is now proof-in-motion, not a smaller copy.
+- ✅ **All 48 existing Studio uploads defaulted to `show_on_website=true`** — Shawn's explicit executive call. Studio is brand new and Monica hasn't started real curation yet; she only uploaded things she already liked, so defaulting everything live unblocks today's content work. Revisit with real curation once she's actively using Studio.
+- 🟡 **Open, needs Shawn/Monica:** the "200+ Events Styled" hero stat has never been verified as real — see NOW above.
+- 🟡 **Open, scoped as its own project:** live Instagram/Facebook feed integration, routed through Studio's existing hearts/stars system rather than a disconnected API pull — see NOW above.
 
 ---
 
@@ -127,10 +130,11 @@ Exit criteria for Phase 1:
 ## NEXT (in order)
 
 1. **Configurator redesign — the core of the frontend rebuild** (APPROVED 2026-07-08, see DECISIONS.md + DESIGN_DECISIONS.md + FRONTEND_REDESIGN_AUDIT.md)
-   - Tag gallery photos by component/color (garland tier, backdrop type, palette), not just `event_type` as today — prerequisite data work, owned by Craig/Priya
+   - Tag gallery photos by component/color (garland tier, backdrop type, palette), not just `event_type` as today — prerequisite data work, owned by Craig/Priya. Vocabulary already exists in `LOOKING_FOR_CATEGORIES` in `config.ts` — nothing to invent.
    - Configurator shows real matching gallery photos as the customer builds, not just a running price total (Jony's core idea)
    - Step 2 restructured so the guided package path is the clear default; "Build My Own" becomes a quieter secondary option, not a co-equal button (Angela's fix)
    - Surface the real deposit/cancellation policy (`PRICING_RULES.depositNonRefundableAfter`) next to the payment CTA — currently exists in code but is never shown to the client
+   - **⚠️ Two false starts on this exact item, 2026-07-29** — general "keep going" / "move forward" language was twice misread as approval to start this. Do NOT resume without Shawn explicitly naming this project by name.
 2. **Phase 2 — Remaining visual rebuild (Jony-led)**: everything outside the configurator — homepage, Studio, remaining sections — one unified design language across public site + Studio.
 3. **Phase 3 — Camera & Photos**: port Found's in-app `CameraSheet` pattern (zoom, torch, aspect ratio, album-at-capture picker), replacing the native file-input "Shoot" button. Keep existing heart/star model + locked video-thumbnail solution.
 4. **Phase 4 — Calendar/Booking**: port Found's `availability`/`availability_blocks`/`bookings` tables + slot algorithm, single-tenant scoped, schema built for future iCloud CalDAV sync. Build Monica's Schedule tab and surface real availability in the public configurator. Follow-on: iCloud two-way sync — requires Monica to generate an Apple ID app-specific password.

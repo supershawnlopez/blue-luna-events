@@ -2,7 +2,23 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: July 29, 2026 — Claude Code*
 
-## Latest Session (2026-07-29)
+## Round 5, same day: Content strategy meeting + real video showcase — LIVE
+
+Shawn liked the Orbital redesign, then flagged a real content problem: the homepage's photo grid and `/gallery` were doing the same job. Team meeting (Jony leading) proposed replacing it with real video content instead of more photos — Shawn confirmed and added his own brief: "make it feel like magic," tying to `@BlueLunaMagic`.
+
+**Shipped:** Homepage `GalleryPreview` rebuilt as a bento layout of real event videos (autoplay muted loop, subtle shimmer sweep on hover), pulling from the 23 real videos already sitting in Studio. `/gallery` stays the deep-browse page — the homepage section is now genuinely different content (motion, not more stills), not a smaller copy.
+
+**Also decided/done:**
+- All 48 existing Studio uploads defaulted to `show_on_website=true` — Shawn's explicit executive call, since Studio just launched and Monica hasn't started real curation, she only uploaded things she already liked.
+- **Open, needs Shawn/Monica directly:** the "200+ Events Styled" hero stat has never been verified as real — Studio's own record count isn't a valid stand-in (it just launched). Don't touch this number without their input.
+- **Open, scoped as its own future project, not built today:** a live Instagram/Facebook feed. Shawn was clear it should route through Studio's existing hearts (show_on_website)/stars (social_export) system, not a disconnected API pull — real Meta Graph API work, needs Monica's Instagram Business account connected.
+- **Third false start on the configurator-with-real-photos project, same pattern as twice before** — deferred to `TASKS.md` NEXT, needs Shawn to name it explicitly before it's touched again.
+
+**Shawn, test this:** visit the homepage — the section right under the hero should now show real event videos playing quietly on loop in a few different sizes, with a soft shimmer when you hover, not a grid of static photos.
+
+---
+
+## Prior: 2026-07-29 (Rounds 1-4)
 
 **White/Twilight homepage v1 is LIVE on `bluelunaevents.com`.** Team meeting resolved the two open questions from the 7/28 branch, then it was built out and merged to `main` same day:
 - Twilight (blush/lavender/gold) is scoped to Hero + GalleryPreview only, as a mood accent — NOT a sitewide palette change. Teal remains the one primary accent everywhere else (Nav, WhyMonica, Packages, Reviews, CTA, Footer, every other page). Reason: teal is Monica's actual favorite color (Tiffany Blue) — same color as the real logo — not an arbitrary pick, and the original branch commit's claim that Twilight was "pulled from the logo" was corrected; the real logo has none of those colors.
@@ -94,7 +110,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `d35f0d8b` — Orbital/circular design language extended to Quinceañeras/Graduations/Gallery + the priority-loading fix, confirmed live in production on Vercel 2026-07-29. This is the real, final design direction for the day — supersedes the earlier "White/Twilight" rounds' visual treatment (see Round 4 above), though the underlying light-theme/no-pricing decisions from those rounds still stand.
+- Latest `main` commit: `d09f1bff` — homepage `GalleryPreview` replaced with a real video showcase, confirmed live in production on Vercel 2026-07-29. This plus the Orbital design language (previous commit) are the current, final direction for the day.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:

@@ -216,3 +216,19 @@ Why: After Nav/Footer/Gallery/Quince/Grad were also converted to light theme (st
 - Result: the circular/orbital design language, built same session, shipped to production. See `DESIGN_DECISIONS.md` for the full spec.
 - Real bug found and fixed during the rebuild: homepage `GalleryPreview` was fetching ALL of Monica's uploads unfiltered (including non-decor candid photos) instead of her curated `show_on_website` set — same bug class as the March/July email and key issues, a silently-wrong default nobody had visually audited. Fixed.
 - Real bug found and fixed: circular hero images using Next.js `Image fill` without `priority` failed to load at all (not a timing delay — confirmed via devtools the image request never fired) since these are above-the-fold. Fixed sitewide.
+
+**[2026-07-29] — Homepage photo grid replaced with a real video showcase. `/gallery` remains the deep-browse page. SHIPPED.**
+Approved by: Shawn + Jony Ive
+Why: Shawn's own observation — the homepage `GalleryPreview` and `/gallery` were the same masonry grid at different sizes, pure redundancy. Team direction: the homepage's job is trust-fast/proof, not browsing, so it shouldn't look like a smaller `/gallery`. Shawn's brief: "make it feel like magic," tying directly to the `@BlueLunaMagic` Instagram handle — video was the answer since Monica has no before/after photo pairs, only final-result photos and videos (23 real videos already in Studio). Built as a bento-style layout of real event videos, autoplay muted loop, subtle shimmer sweep on hover.
+
+**[2026-07-29] — All 48 existing Studio uploads set `show_on_website=true`. Executive decision, not a default policy going forward.**
+Approved by: Shawn
+Why: Studio just launched; Monica hasn't started real content curation and only uploaded things she already liked, so there wasn't a meaningful curation signal to filter on yet. This unblocks today's content work but is not a standing rule — once Monica is actively using Studio's heart toggle, that becomes the real curation signal again, same as designed.
+
+**[2026-07-29] — Instagram/Facebook integration must route through Studio's existing hearts/stars system, not a disconnected live feed pull. Scoped as a separate future project, NOT built today.**
+Approved by: Shawn
+Why: Studio's star toggle already drives `social_export` — the system built specifically so Monica controls what's curated from within Studio. A live-pulled Instagram feed would bypass that and become a second, competing source of truth. A real live feed (pulling FROM Instagram) is also a nontrivial technical project — Meta Graph API access to Monica's Instagram Business account, developer setup, possible app review — not a same-session build. Real reels/videos already exist on Instagram/Facebook; getting the good ones into Studio (so they feed the new video showcase and the existing Social Export tool) is the near-term path, not a live API integration.
+
+**[2026-07-29] — OPEN QUESTION, not decided: is "200+ Events Styled" a real number?**
+Flagged by: Priya Nair, during the content-strategy meeting
+Why it matters: nobody has verified this stat against anything real. Studio's own record count is NOT a valid substitute — Studio only just launched and doesn't reflect Monica's real business history since 2018. Needs Shawn or Monica to confirm the real figure directly; do not touch this number without their input, and do not infer it from Studio data.
