@@ -4,10 +4,11 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
-// Jony's pick — the "2026" marquee installation: level, well-lit, on-brand
-// warm/gold tones, and no faces in frame (keeps us out of the privacy
-// question flagged earlier while curation isn't happening yet in Studio).
-const HERO_VIDEO_URL = 'https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/media/1781997557666-jqsfj1nmpc.mp4'
+// Jony's pick, revised 2026-07-29 — the quinceañera balloon garland arch:
+// indoor, controlled lighting, lit floral-projection backdrop, no faces in
+// frame. Replaced the outdoor "2026" marquee clip, which showed a chain-link
+// fence and cracked concrete in frame and read as less premium.
+const HERO_VIDEO_URL = 'https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/media/1782013473154-1um8vdby465.mov'
 const HERO_SLOWDOWN = 0.5 // half speed — makes a short clip read as cinematic B-roll instead of jumpy
 
 export default function Hero() {
