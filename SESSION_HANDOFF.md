@@ -15,16 +15,16 @@
 
 **Full detail for all of the above is already written in `TASKS.md` (DONE 2026-07-30 section) and `DECISIONS.md` (BUSINESS-WIDE AUDIT section)** — this entry just brings this file back in sync with those.
 
+**Shawn confirmed same day:** the hero video plays perfectly, the "5.0 on Google" claim is gone, and **the testimonials ARE fabricated** — not real. Also asked about `/services`/`/about` since they're not on his menu: clarified those are old indexed URLs now redirecting, not missing nav items, nothing to add.
+
+**Shipped in response:** Reviews section (fake names/quotes: Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) removed from the homepage, plus the matching fake pull-quote in `WhyMonica.tsx`. Component left in the repo, just unused — rebuild it with real reviews once Shawn's Google Business Profile (being set up today) has some.
+
 **Still open:**
-- Whether the Reviews testimonials are real (see #4 above).
+- Rebuild Reviews section once real Google reviews exist — see `TASKS.md` NOW #1.
 - Dedicated landing pages for weddings/birthdays/baby showers/corporate events — biggest remaining SEO gap, needs a scoping conversation, not a quick fix.
 - The real live $1 Stripe payment test — still Shawn's to run whenever ready.
 
-**Shawn, test this:**
-1. Visit `bluelunaevents.com` — the hero video should play smoothly with no mismatched flash beforehand.
-2. Check the homepage and Reviews section — the "5.0 on Google" claims should be gone. Testimonial names/quotes are untouched for now.
-3. Try `bluelunaevents.com/services`, `/about`, `/contact` — should redirect to real pages instead of 404ing.
-4. Nothing else needs testing from this reconstruction — it's the same site you already saw last night, plus these fixes on top.
+**Shawn, test this:** visit `bluelunaevents.com` — the "What Families Say" section should no longer appear on the homepage at all (removed, not just edited). Everything else is unchanged from what you already confirmed working.
 
 ---
 

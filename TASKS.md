@@ -41,9 +41,9 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Are the written testimonials (Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) real, or also fabricated?**
-- Site-wide audit 2026-07-30 confirmed the "5.0 on Google" / "Google Rating" claims were fake and they've been removed (see DECISIONS.md + DONE below) — but Shawn hasn't yet confirmed whether the actual testimonial quotes/names in `Reviews.tsx` are real client reviews or also placeholder content. If fake, they need to come down too, same rule as the Google claims.
-- Owner: Shawn/Monica confirm.
+1. **Rebuild homepage Reviews section once real Google reviews exist**
+- Shawn confirmed the testimonials were fabricated — removed 2026-07-30 (see DONE below + DECISIONS.md). Shawn is setting up a real Google Business Profile the same day. Once real reviews come in, rebuild `Reviews.tsx` with real content and re-add it to `page.tsx`.
+- Owner: Shawn sets up GBP; ping Claude to rebuild once real reviews exist.
 
 2. **Dedicated landing pages for weddings, birthdays, baby showers, corporate events — real content gap, needs scoping**
 - Flagged in the July 8 audit, resurfaced in the 2026-07-30 business audit, still unaddressed. All four are named in the nav, footer, and the site's own SEO keyword targets, but route to a homepage anchor instead of a real page. Single biggest remaining SEO/AEO/GEO gap — needs Shawn's input on content/priority before building, not a same-session technical fix like the others.
@@ -69,6 +69,10 @@ Exit criteria for Phase 1:
 - 🟡 **`redesign/gallery-twilight` branch started** (Jony's "Gallery + Twilight" homepage direction) — 4 commits, preview-deployed, NOT merged to `main`. See NOW #1 above.
 
 ---
+
+## DONE (2026-07-30, later same day)
+
+- ✅ **Fabricated testimonials removed sitewide.** Shawn confirmed directly: Reviews.tsx names/quotes (Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) and the matching pull-quote in WhyMonica were fake. Same rule as the Google rating claims — removed. Reviews section pulled off the homepage (component kept, just unused) until real Google reviews exist to rebuild it with. Also clarified for Shawn: `/services`/`/about`/`/contact`/`/event-form` are old indexed URLs now redirecting, not missing nav items — nothing for him to add.
 
 ## DONE (2026-07-30)
 

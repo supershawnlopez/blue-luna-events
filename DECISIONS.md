@@ -263,8 +263,7 @@ Shawn asked for two things at once: a cleanup pass on the site itself, and a rea
 **[2026-07-30] — "5.0 on Google" / "Google Rating" claims removed sitewide. CONFIRMED FAKE by Shawn.**
 Approved by: Shawn
 Why: Directly asked during the business audit above — Shawn confirmed there is no real Google Business Profile yet (being created today), so the "5.0 on Google" claim shown in three places (homepage hero stats, WhyMonica stats, Reviews section header) was fabricated. The July 8 fix only removed the machine-readable `aggregateRating` from JSON-LD at the time; this human-visible copy was never corrected in that pass. All three removed. Re-add only once the real GBP exists with genuine reviews to cite.
-- **Still open, not yet answered:** whether the actual written testimonial quotes/names in `Reviews.tsx` (Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) are real client reviews or also fabricated placeholder content. If fake, same rule applies — they come down. See `TASKS.md` NOW #1.
-- **[2026-07-30] — Shawn's explicit direction on the quotes:** leave them alone for now — not confirmed real or fake, just not being touched this round.
+- **[2026-07-30, later same day] — Shawn confirmed directly: the testimonial quotes/names ARE fabricated.** Removed the homepage Reviews section (`Reviews.tsx` no longer imported in `page.tsx`, component left in place unused) and the matching fake pull-quote in `WhyMonica.tsx` ("Gabriela Morales, Tucson AZ"). Shawn is setting up a real Google Business Profile the same day — bring the Reviews section back once real reviews exist to populate it with, rather than rebuilding it with more placeholder content.
 
 **[2026-07-30] — SHIPPED: SEO/AEO/GEO technical audit fixes, team-approved.**
 Approved by: Shawn ("approved follow team explicitly")
