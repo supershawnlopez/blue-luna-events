@@ -85,6 +85,7 @@ Exit criteria for Phase 1:
 - ✅ **All 48 existing Studio uploads defaulted to `show_on_website=true`** — Shawn's explicit executive call. Studio is brand new and Monica hasn't started real curation yet; she only uploaded things she already liked, so defaulting everything live unblocks today's content work. Revisit with real curation once she's actively using Studio.
 - 🟡 **Open, needs Shawn/Monica:** the "200+ Events Styled" hero stat has never been verified as real — see NOW above.
 - 🟡 **Open, scoped as its own project:** live Instagram/Facebook feed integration, routed through Studio's existing hearts/stars system rather than a disconnected API pull — see NOW above.
+- ✅ **Real bug found and fixed: video showcase grid had mismatched spans, causing gaps and an orphaned tile.** Shawn caught this via screenshots (desktop, reported same on phone). The bento grid's tile widths summed to 9 across a 6-column track — didn't divide evenly, so the browser's auto-placement improvised, leaving a dead gap and pushing the 4th video down with empty space above it. Fixed to a 4-column track with spans that sum exactly per row. Visually verified before merging.
 
 ---
 
