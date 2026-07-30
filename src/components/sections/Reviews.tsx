@@ -55,12 +55,6 @@ export default function Reviews() {
               They Were Nervous.<br />
               <em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Then They Saw the Room.</em>
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{ display: 'flex', gap: '2px' }}>
-                {[...Array(5)].map((_, i) => <Star key={i} size={14} color="#C9A96E" fill="#C9A96E" />)}
-              </div>
-              <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', fontWeight: 500, color: '#6B7280' }}>5.0 on Google</span>
-            </div>
           </div>
         </div>
 

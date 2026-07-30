@@ -120,7 +120,6 @@ export default function Hero() {
           <div style={{ display: 'flex', gap: 'clamp(24px,4vw,40px)', marginTop: '52px', flexWrap: 'wrap', animation: 'fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.44s both' }}>
             {[
               { n: '200+', l: 'Events Styled' },
-              { n: '5.0★', l: 'Google Rating' },
               { n: 'Full Service', l: 'Balloons · Booth · Audio · MC' },
             ].map((s, i) => (
               <div key={i}>

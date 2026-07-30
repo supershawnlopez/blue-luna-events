@@ -5,7 +5,6 @@ import { Star, Heart, MapPin } from 'lucide-react'
 
 const TRUST_ITEMS = [
   { n: '200+', label: 'Events Styled' },
-  { n: '5.0★', label: 'Google Rating' },
   { n: '2018', label: 'Serving Tucson' },
 ]
 
@@ -125,7 +124,7 @@ export default function WhyMonica() {
             {/* Stats row */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3,1fr)',
+              gridTemplateColumns: 'repeat(2,1fr)',
               gap: '1px',
               background: '#E5E7EB',
               borderRadius: '16px',
