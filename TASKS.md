@@ -41,19 +41,19 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Real number for "200+ Events Styled" hero stat — needs Shawn/Monica, not derivable from Studio**
-- Flagged by Priya during the content-strategy meeting 2026-07-29: nobody has verified this number is real, and Studio's own record count isn't a valid substitute (Studio just launched, Monica's barely used it — her real history is 2018 to now, not what's logged in the app). Needs Shawn or Monica to confirm the real figure, or the stat gets softened/dropped.
+1. **Are the written testimonials (Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) real, or also fabricated?**
+- Site-wide audit 2026-07-30 confirmed the "5.0 on Google" / "Google Rating" claims were fake and they've been removed (see DECISIONS.md + DONE below) — but Shawn hasn't yet confirmed whether the actual testimonial quotes/names in `Reviews.tsx` are real client reviews or also placeholder content. If fake, they need to come down too, same rule as the Google claims.
 - Owner: Shawn/Monica confirm.
 
-2. **Instagram live-feed integration — real technical project, scoped separately from today's visual work**
-- Shawn wants an eventual live connection to Monica's real Instagram/Facebook content, but confirmed it should route through Studio's existing hearts (show_on_website) / stars (social_export) system, not a disconnected API pull. Needs Meta Graph API access to Monica's Instagram Business account, developer setup, possible app review. Not a same-session build.
-- Owner: needs its own scoping session when Shawn's ready.
+2. **Clean up 4 dead pages indexed in Google that 404**: `/services`, `/about`, `/contact`, `/event-form`
+- Found during the business-wide audit 2026-07-30 — leftover from an older version of the site, still indexed, still clickable from real Google search results, straight to a broken page. Also: stale `$450`/`$299` pricing still sits in the quinceañera/graduation page metadata (not visible on-page, but shown in Google search results) — flagged 2026-07-29, never resolved.
+- Owner: Claude Code, next session — needs Shawn's call on redirect vs. rebuild for each dead page.
 
 3. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
 - Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
 - Owner: Shawn runs the test.
 
-*(Supabase auto-pause watch, mitigation shipped 2026-07-08, moved off NOW to make room — still passively monitored via the weekly summary email; revisit only if that email stops arriving.)*
+*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch.)*
 
 ---
 
@@ -67,6 +67,15 @@ Exit criteria for Phase 1:
 - ✅ **Lead email redesign per Jony's review** — Monica's email renamed "New Lead," split acknowledge-first/quote-second, resized to match the client email, serif headlines + clearer tables on both templates. Client confirmation now shows everything submitted (theme/colors/photos).
 - ✅ **Fixed Studio upload hang** — added timeouts to image compression and both upload XHRs so a stuck HEIC decode or stalled network request fails visibly instead of hanging forever.
 - 🟡 **`redesign/gallery-twilight` branch started** (Jony's "Gallery + Twilight" homepage direction) — 4 commits, preview-deployed, NOT merged to `main`. See NOW #1 above.
+
+---
+
+## DONE (2026-07-30)
+
+- ✅ **Hero video flash fixed — LIVE.** Shawn caught a real glitch: the static fallback shown before the video loads was a completely different, unrelated photo, flashing for a split second on every load. Fixed by using Studio's real auto-captured thumbnail of the actual hero video as both the base image and the `<video poster>` — same frame either way, so it now reads as "the photo comes alive" instead of "the picture got replaced." Also added `preload="auto"`. Confirmed working on Shawn's real device.
+- ✅ **Team + business-wide audit completed, real research not guesses.** Checked what actually exists online for Blue Luna Events (not just the site): a real Yelp listing exists (Monica may have started it by accident — needs her to check), no Google Business Profile could be found anywhere (Shawn is setting one up today), a second dormant Instagram account (`@bluelunaevents`, 4 followers, no real conflict) exists alongside the real active one (`@bluelunamagic`). Full findings in `DECISIONS.md`.
+- ✅ **Removed fake "5.0 on Google" / "Google Rating" claims sitewide — confirmed fabricated by Shawn.** Appeared in three places (homepage hero stats, WhyMonica stats, Reviews section header). The July 8 fix only cleaned up the machine-readable JSON-LD; this human-visible copy was never corrected. Removed until a real Google Business Profile exists with genuine reviews to back it. **Still open: whether the actual written testimonial quotes are real or also fabricated** — see TASKS.md NOW #1.
+- 🟡 **Found, not yet fixed: 4 dead pages indexed in Google that 404** (`/services`, `/about`, `/contact`, `/event-form`) — leftover from an older site version. See NOW #2.
 
 ---
 

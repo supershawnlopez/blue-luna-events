@@ -242,3 +242,25 @@ Why: Same root problem already documented for the video-thumbnail system — iPh
 **[2026-07-29] — Fixed a real, visible glitch: the fallback photo shown before the hero video loads was a different, unrelated photo. SHIPPED.**
 Approved by: Shawn + Jony Ive
 Why: Shawn caught it directly — for a split second on every refresh, an unrelated photo (blue/white balloons, a different room) flashed before the quinceañera video crossfaded in, reading as broken rather than intentional. Root cause: the fallback `<Image>` used a generic `/images/hero-main.jpg` with no relationship to whichever video happens to be playing. Fixed by using Studio's real auto-captured thumbnail of the actual hero video as both the base `<Image>` and the `<video poster>` — same frame either way, so the transition reads as the photo coming alive, not being replaced. Also added `preload="auto"` to shrink the gap before playback starts. Pattern to follow for any future hero video swap: the poster/fallback image must always be a real frame from that same video, never a generic photo.
+
+---
+
+## BUSINESS-WIDE AUDIT (2026-07-30)
+
+Shawn asked for two things at once: a cleanup pass on the site itself, and a real audit of Blue Luna Events' actual footprint across the internet — not just the site. Real web research was done (not assumptions), findings below.
+
+**Site technical findings:**
+1. **4 dead pages indexed in Google, all 404**: `/services`, `/about`, `/contact`, `/event-form` — leftover from an older version of the site. A real visitor clicking through from a Google search result hits a broken page. Needs a decision per page: redirect to the closest live equivalent, or rebuild with real content. Not yet fixed.
+2. **Stale pricing still in page metadata** (not visible on-page, but shown in Google search results/social previews) on quinceañera (`$450`) and graduation (`$299`) pages — flagged 2026-07-29 as out of scope at the time, still unresolved.
+3. Studio still doesn't match the new light/orbital design — expected, not a bug (always scoped as later Phase 2 work).
+
+**Business footprint findings (real web research 2026-07-30):**
+1. **No Google Business Profile could be found anywhere**, across multiple search attempts. Shawn confirmed: none exists yet, he's setting one up today (2026-07-30). This matters more than anything on the site — local searches ("balloon decorator near me") are won on Google Maps/GBP before a visitor ever reaches the website.
+2. **A real Yelp listing exists** (`yelp.com/biz/blue-luna-events-tucson`) — Yelp blocks automated access so rating/review count/claimed-status couldn't be verified directly. Shawn: Monica may have started this by accident: **needs her to check and confirm/claim it.**
+3. **Two Instagram accounts exist**: `@bluelunamagic` (the real, active one used everywhere on the site) and `@bluelunaevents` (4 followers, no content, dormant) — not a real brand-confusion risk, just noise, low priority.
+4. Competitor landscape unchanged from the July 8 audit (Balloons by DRE, Sonoran Balloon Creations, Balloon Decor Service Tucson, etc.) — still active in search results.
+
+**[2026-07-30] — "5.0 on Google" / "Google Rating" claims removed sitewide. CONFIRMED FAKE by Shawn.**
+Approved by: Shawn
+Why: Directly asked during the business audit above — Shawn confirmed there is no real Google Business Profile yet (being created today), so the "5.0 on Google" claim shown in three places (homepage hero stats, WhyMonica stats, Reviews section header) was fabricated. The July 8 fix only removed the machine-readable `aggregateRating` from JSON-LD at the time; this human-visible copy was never corrected in that pass. All three removed. Re-add only once the real GBP exists with genuine reviews to cite.
+- **Still open, not yet answered:** whether the actual written testimonial quotes/names in `Reviews.tsx` (Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) are real client reviews or also fabricated placeholder content. If fake, same rule applies — they come down. See `TASKS.md` NOW #1.
