@@ -1,40 +1,96 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ArrowRight, Play } from 'lucide-react'
+import { ArrowRight, Instagram } from 'lucide-react'
 
 type MediaItem = { id: string; url: string; thumbnail_url?: string | null; type: string; event_type?: string | null }
 
+function toLabel(raw?: string | null) {
+  if (!raw) return ''
+  return raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
+function VideoTile({ item, big }: { item: MediaItem; big?: boolean }) {
+  const ref = useRef<HTMLVideoElement>(null)
+  return (
+    <div className="gp-video-tile" style={{
+      position: 'relative', borderRadius: '22px', overflow: 'hidden',
+      height: '100%', minHeight: big ? '360px' : '220px',
+      boxShadow: '0 12px 40px rgba(13,15,15,0.14)',
+    }}>
+      <video
+        ref={ref}
+        src={item.url}
+        poster={item.thumbnail_url || undefined}
+        autoPlay muted loop playsInline
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+      />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(13,15,15,0.55) 0%, transparent 45%)', pointerEvents: 'none' }} />
+      {/* Shimmer sweep — the "magic" touch */}
+      <div className="gp-shimmer" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+      {item.event_type && (
+        <p style={{
+          position: 'absolute', bottom: '16px', left: '18px',
+          fontFamily: 'DM Mono, monospace', fontSize: '10px', color: 'white',
+          letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0,
+        }}>
+          {toLabel(item.event_type)}
+        </p>
+      )}
+    </div>
+  )
+}
+
 export default function GalleryPreview() {
-  const [media, setMedia] = useState<MediaItem[]>([])
+  const [videos, setVideos] = useState<MediaItem[]>([])
+  const [accentPhoto, setAccentPhoto] = useState<MediaItem | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Curated real work only — show_on_website is Monica's heart-toggle in Studio.
-    // (Previously fetched everything unfiltered, including behind-the-scenes candids.)
     fetch('/api/studio/media?website=true')
       .then(r => (r.ok ? r.json() : []))
       .then((d: MediaItem[]) => {
-        setMedia(Array.isArray(d) ? d.slice(0, 9) : [])
+        if (!Array.isArray(d)) { setLoading(false); return }
+        setVideos(d.filter(m => m.type === 'video').slice(0, 4))
+        setAccentPhoto(d.find(m => m.type !== 'video') || null)
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
 
   return (
-    <section id="gallery-preview" style={{ padding: 'clamp(64px,9vw,110px) 0', background: 'var(--warm)', position: 'relative' }}>
-      <div className="container">
+    <section id="gallery-preview" style={{ padding: 'clamp(64px,9vw,110px) 0', background: 'var(--warm)', position: 'relative', overflow: 'hidden' }}>
+      {/* Twilight glow, echoing the hero */}
+      <div style={{
+        position: 'absolute', top: '-10%', right: '-6%', width: '400px', height: '400px',
+        borderRadius: '50%', background: 'var(--twilight-glow)', filter: 'blur(30px)',
+        pointerEvents: 'none', opacity: 0.5,
+      }} />
+
+      <div className="container" style={{ position: 'relative' }}>
 
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px', marginBottom: '40px' }} className="reveal">
-          <div>
-            <div className="eyebrow" style={{ marginBottom: '14px' }}>
-              <div className="eyebrow-line" />
-              <span className="eyebrow-text">Real Work, Real Events</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            {accentPhoto && (
+              <div style={{
+                position: 'relative', width: '64px', height: '64px', borderRadius: '50%',
+                overflow: 'hidden', border: '3px solid white', boxShadow: '0 6px 20px rgba(13,15,15,0.16)',
+                flexShrink: 0, display: 'none',
+              }} className="gp-accent-photo">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={accentPhoto.thumbnail_url || accentPhoto.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+            <div>
+              <div className="eyebrow" style={{ marginBottom: '14px' }}>
+                <div className="eyebrow-line" />
+                <span className="eyebrow-text">Real Events, Real Magic</span>
+              </div>
+              <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 300, color: 'var(--ink)', lineHeight: 1.05 }}>
+                See It <em style={{ fontStyle: 'italic', color: 'var(--teal)' }}>Come to Life.</em>
+              </h2>
             </div>
-            <h2 className="font-display" style={{ fontSize: 'clamp(2rem,4vw,3rem)', fontWeight: 300, color: 'var(--ink)', lineHeight: 1.05 }}>
-              Every Event. <em style={{ fontStyle: 'italic', color: 'var(--teal)' }}>Documented.</em>
-            </h2>
           </div>
           <Link href="/gallery" style={{
             display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -42,43 +98,34 @@ export default function GalleryPreview() {
             color: 'var(--teal)', textDecoration: 'none', letterSpacing: '0.04em',
             borderBottom: '1px solid rgba(91,191,191,0.4)', paddingBottom: '2px',
           }}>
-            View Full Gallery <ArrowRight size={14} />
+            See Every Event <ArrowRight size={14} />
           </Link>
         </div>
 
-        <div style={{ columns: 'auto 260px', columnGap: '14px' }} className="reveal reveal-delay-1">
-          {loading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} style={{ breakInside: 'avoid', marginBottom: '14px', height: `${220 + (i % 3) * 60}px`, borderRadius: '18px', background: '#F0EEE9' }} />
-            ))
-          ) : media.length === 0 ? null : (
-            media.map(m => (
-              <div key={m.id} className="gp-card" style={{ breakInside: 'avoid', marginBottom: '14px', borderRadius: '18px', overflow: 'hidden', position: 'relative' }}>
-                {m.type === 'video' ? (
-                  <div style={{ position: 'relative', minHeight: '200px', background: '#111' }}>
-                    {m.thumbnail_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.thumbnail_url} alt="" style={{ width: '100%', display: 'block', objectFit: 'cover' }} className="gp-img" />
-                    ) : (
-                      <div style={{ minHeight: '200px', background: 'linear-gradient(145deg,#0e1822 0%,#16213e 60%,#0a2540 100%)' }} />
-                    )}
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                      <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'rgba(255,255,255,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.25)' }}>
-                        <Play size={18} color="var(--teal)" fill="var(--teal)" style={{ marginLeft: '2px' }} />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={m.url} alt="Blue Luna Events installation" style={{ width: '100%', display: 'block', objectFit: 'cover', transition: 'transform 0.5s cubic-bezier(0.16,1,0.3,1)' }} className="gp-img" />
-                )}
+        {loading ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: '18px' }} className="reveal reveal-delay-1">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} style={{ height: '280px', borderRadius: '22px', background: '#F0EEE9' }} />
+            ))}
+          </div>
+        ) : videos.length === 0 ? null : (
+          <div className="gp-bento reveal reveal-delay-1" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(6, 1fr)',
+            gridAutoRows: '190px',
+            gap: '18px',
+          }}>
+            {videos.map((v, i) => (
+              <div key={v.id} style={{ gridColumn: i === 0 ? 'span 3' : 'span 2', gridRow: i === 0 ? 'span 2' : 'span 1' }} className="gp-bento-item">
+                <VideoTile item={v} big={i === 0} />
               </div>
-            ))
-          )}
-        </div>
+            ))}
+          </div>
+        )}
 
-        <p className="reveal" style={{ fontFamily: 'Inter, sans-serif', textAlign: 'center', marginTop: '32px', fontSize: '0.85rem', fontWeight: 300, color: 'var(--gray)' }}>
-          Follow Monica&apos;s work on Instagram{' '}
+        <p className="reveal" style={{ fontFamily: 'Inter, sans-serif', textAlign: 'center', marginTop: '36px', fontSize: '0.85rem', fontWeight: 300, color: 'var(--gray)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+          <Instagram size={14} style={{ flexShrink: 0 }} />
+          Watch more real reveals on Instagram{' '}
           <a href="https://instagram.com/bluelunamagic" target="_blank" rel="noopener noreferrer"
             style={{ color: 'var(--teal)', fontWeight: 600, textDecoration: 'none', borderBottom: '1px solid rgba(91,191,191,0.4)' }}>
             @BlueLunaMagic
@@ -86,7 +133,24 @@ export default function GalleryPreview() {
         </p>
       </div>
 
-      <style>{`.gp-card:hover .gp-img { transform: scale(1.04); }`}</style>
+      <style>{`
+        .gp-shimmer {
+          background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.18) 48%, rgba(255,255,255,0.32) 50%, rgba(255,255,255,0.18) 52%, transparent 70%);
+          background-size: 250% 250%;
+          background-position: 120% 0%;
+          transition: background-position 1.1s cubic-bezier(0.16,1,0.3,1);
+        }
+        .gp-video-tile:hover .gp-shimmer { background-position: -20% 100%; }
+        .gp-video-tile:hover { transform: translateY(-2px); transition: transform 0.3s ease; }
+        @media (max-width: 700px) {
+          .gp-bento { grid-template-columns: 1fr !important; grid-auto-rows: 240px !important; }
+          .gp-bento-item { grid-column: span 1 !important; grid-row: span 1 !important; }
+          .gp-accent-photo { display: none !important; }
+        }
+        @media (min-width: 560px) {
+          .gp-accent-photo { display: block !important; }
+        }
+      `}</style>
     </section>
   )
 }
