@@ -8,7 +8,11 @@ import { ArrowRight } from 'lucide-react'
 // indoor, controlled lighting, lit floral-projection backdrop, no faces in
 // frame. Replaced the outdoor "2026" marquee clip, which showed a chain-link
 // fence and cracked concrete in frame and read as less premium.
-const HERO_VIDEO_URL = 'https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/media/1782013473154-1um8vdby465.mov'
+// Source file was a raw iPhone .mov (moov atom at the end — same documented
+// issue as the video-thumbnail system elsewhere in this repo, blocks browser
+// playback). Re-encoded to a faststart .mp4 (libx264, audio stripped since
+// the hero video is always muted) and re-uploaded so it actually plays.
+const HERO_VIDEO_URL = 'https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/media/hero-quinceanera-optimized.mp4'
 const HERO_SLOWDOWN = 0.5 // half speed — makes a short clip read as cinematic B-roll instead of jumpy
 
 export default function Hero() {
