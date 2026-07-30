@@ -81,7 +81,7 @@ export default function GalleryPreview() {
                 flexShrink: 0, display: 'none',
               }} className="gp-accent-photo">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={accentPhoto.thumbnail_url || accentPhoto.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={accentPhoto.thumbnail_url || accentPhoto.url} alt="Real balloon décor by Blue Luna Events, Tucson AZ" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             )}
             <div>

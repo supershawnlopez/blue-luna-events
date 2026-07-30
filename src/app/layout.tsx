@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://bluelunaevents.com/images/hero-main.jpg',
+        url: 'https://bluelunaevents.com/images/gal-2.jpg',
         width: 1200,
         height: 630,
         alt: 'Blue Luna Events — Balloon Décor & Event Styling Tucson AZ',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Blue Luna Events | Balloon Décor Tucson AZ',
     description: "Tucson's premier balloon décor studio. Quinceañeras, graduations, weddings, birthdays.",
-    images: ['https://bluelunaevents.com/images/hero-main.jpg'],
+    images: ['https://bluelunaevents.com/images/gal-2.jpg'],
   },
   alternates: {
     canonical: 'https://bluelunaevents.com',

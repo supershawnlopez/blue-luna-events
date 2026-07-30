@@ -6,10 +6,10 @@ import { PACKAGE_CATALOG, type Package } from '@/lib/config'
 
 export const metadata: Metadata = {
   title: 'Quinceañera Balloon Décor in Tucson, AZ | Blue Luna Events',
-  description: 'Quinceañera balloon garlands, shimmer backdrops, and columns in Tucson, AZ. Packages from $450. Custom color palettes, professional installation, same-day takedown.',
+  description: 'Quinceañera balloon garlands, shimmer backdrops, and columns in Tucson, AZ. Custom color palettes, professional installation, same-day takedown. Tell us your vision for a personal quote.',
   openGraph: {
     title: 'Quinceañera Balloon Décor in Tucson, AZ | Blue Luna Events',
-    description: 'Quinceañera balloon garlands, shimmer backdrops, and columns in Tucson, AZ. Packages from $450.',
+    description: 'Quinceañera balloon garlands, shimmer backdrops, and columns in Tucson, AZ — custom-built around your vision.',
     url: 'https://bluelunaevents.com/quinceaneras',
     images: [{ url: 'https://bluelunaevents.com/images/gal-2.jpg', width: 1200, height: 630, alt: 'Quinceañera balloon décor in Tucson, AZ' }],
   },

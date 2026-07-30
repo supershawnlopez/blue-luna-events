@@ -6,10 +6,10 @@ import { PACKAGE_CATALOG, type Package } from '@/lib/config'
 
 export const metadata: Metadata = {
   title: 'Graduation Party Balloon Décor in Tucson, AZ | Blue Luna Events',
-  description: 'Graduation party balloon décor in Tucson, AZ. School-color garlands, backdrops, and photo-ready setups. Packages from $299. Fast turnaround for rush bookings.',
+  description: 'Graduation party balloon décor in Tucson, AZ. School-color garlands, backdrops, and photo-ready setups. Fast turnaround for rush bookings. Tell us your vision for a personal quote.',
   openGraph: {
     title: 'Graduation Party Balloon Décor in Tucson, AZ | Blue Luna Events',
-    description: 'Graduation party balloon décor in Tucson, AZ. School-color garlands, backdrops, and photo-ready setups. Packages from $299.',
+    description: 'Graduation party balloon décor in Tucson, AZ. School-color garlands, backdrops, and photo-ready setups.',
     url: 'https://bluelunaevents.com/graduations',
     images: [{ url: 'https://bluelunaevents.com/images/gal-4.jpg', width: 1200, height: 630, alt: 'Graduation party balloon décor in Tucson, AZ' }],
   },
