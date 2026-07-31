@@ -1,8 +1,25 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: July 30, 2026 — Claude Code (reconstructed after a second crash cut off doc updates — see note below)*
+*Last updated: July 30, 2026, evening — Claude Code*
 
-## 2026-07-30 — reconstructed from git log + Vercel after a crash
+## 2026-07-30, evening: Google Business Profile confirmed real + review button added
+
+Shawn set up what he thought was a new Google Business Profile, got confused when it already showed real photos and a review he didn't recognize, and almost cancelled it thinking Monica had a separate pre-existing one. Traced it down together: it's a real, single profile under **Monica's own Gmail** (not a duplicate, not new) — what looked unfamiliar was just his own submitted edits (photos, description, hours) still sitting in Google's review queue while the profile showed an older/auto-populated version in the meantime. **Confirmed: nothing to cancel here.**
+
+**What Shawn does still need to cancel:** a second, separate profile he'd started under his own email before catching this — that one's a real duplicate. Steps given to him (business.google.com → that profile → Business Profile settings → Remove Business Profile). **Not yet confirmed done — check next session.**
+
+**Shipped:** Got the real "write a review" link from Monica's profile (`g.page/r/CZsdOfmFmuebEAE/review`), added it to `SITE_CONFIG.googleReviewUrl`, and added a "Leave us a review" link to the site footer (next to phone/email/location, opens in a new tab). Live in production.
+
+**Open, needs Shawn:**
+1. Cancel the duplicate profile under his own email (see above).
+2. Confirm who left the existing "1 Google review" (5.0★) on Monica's real profile — needs to be verified as a real client before it's ever treated as genuine social proof.
+3. Once real reviews start coming in (via the new footer button or organically), rebuild the homepage `Reviews.tsx` section — currently removed, not deleted, since the prior testimonials were confirmed fabricated (see 2026-07-30 daytime entry below).
+
+**Shawn, test this:** scroll to the footer on any page — there should be a small "Leave us a review" link with a star icon under the phone/email/address, opening Google's review box in a new tab.
+
+---
+
+## Prior: 2026-07-30, daytime — reconstructed from git log + Vercel after a crash
 
 **About this reconstruction:** Shawn's computer crashed again (same failure pattern as 2026-07-28). This file was stuck showing last night's video-showcase work as the latest thing, but `git log` showed 7 more real commits after that, running up through this morning. Checked carefully: **nothing was lost.** Every commit through `c4e2db3f` is committed, pushed to `origin/main`, and confirmed `READY`/production on Vercel (deployment `dpl_A74uS784...`, promoted). `TASKS.md` and `DECISIONS.md` had actually already been kept current through today — only this file and `changelog.md` were behind. Below is everything that shipped since last night's handoff that hadn't been recorded here yet.
 

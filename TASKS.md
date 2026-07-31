@@ -70,6 +70,12 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-07-30, evening)
+
+- ✅ **Google Business Profile set up and confirmed real** — turned out to be an existing profile under Monica's own Gmail (not a new signup, not a duplicate), already carrying a real photo and a 5.0/1 review. Shawn was mid-setup on a second, separate profile under his own email before catching this — that one needs cancelling (his to do, steps given).
+- ✅ **"Leave us a review" link added to the site footer** — real Google review link (`g.page/r/CZsdOfmFmuebEAE/review`), added to `SITE_CONFIG.googleReviewUrl`, shown as a low-key footer link next to phone/email/location. Opens in a new tab.
+- 🟡 **Open: whose review is that existing 5.0/1 review?** Shawn to check and confirm it's a real client before it's ever treated as real social proof on the site.
+
 ## DONE (2026-07-30, later same day)
 
 - ✅ **Fabricated testimonials removed sitewide.** Shawn confirmed directly: Reviews.tsx names/quotes (Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) and the matching pull-quote in WhyMonica were fake. Same rule as the Google rating claims — removed. Reviews section pulled off the homepage (component kept, just unused) until real Google reviews exist to rebuild it with. Also clarified for Shawn: `/services`/`/about`/`/contact`/`/event-form` are old indexed URLs now redirecting, not missing nav items — nothing for him to add.

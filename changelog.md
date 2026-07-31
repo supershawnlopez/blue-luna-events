@@ -13,6 +13,25 @@
 
 ---
 
+## Session: July 30, 2026, evening — Google Business Profile Confirmed + Review Button
+**AI:** Claude Code
+**Worked on:** Shawn set up Google Business Profile, briefly thought it was a duplicate of one Monica already had (it showed unfamiliar photos/reviews), almost cancelled it before checking with Claude.
+
+### Completed This Session
+- Traced the confusion: profile is real, single, under Monica's own Gmail — the "unfamiliar" content was Shawn's own pending edits not yet cleared Google's review queue, not a second profile. Confirmed nothing needed cancelling here.
+- Identified a real separate duplicate: a second profile Shawn had started under his own email before catching the mix-up. Gave him cancellation steps (his to complete).
+- Added `SITE_CONFIG.googleReviewUrl` (`g.page/r/CZsdOfmFmuebEAE/review`) and a "Leave us a review" footer link, opens in new tab. Build verified clean, pushed to `main`.
+
+### Still Open
+- Shawn to cancel the duplicate profile under his own email — not yet confirmed done.
+- Shawn to confirm who left the existing "1 Google review" (5.0★) before it's ever treated as real.
+- Rebuild homepage Reviews section once real reviews exist (testimonials were confirmed fabricated earlier the same day — see below).
+
+### Shawn Test
+1. Footer on any page should show a "Leave us a review" star link under phone/email/address.
+
+---
+
 ## Session: July 30, 2026 — Hero Video Fix, Business-Wide Audit, SEO Fixes (reconstructed after a second crash)
 **AI:** Claude Code
 **Worked on:** A second crash (same pattern as 2026-07-28) cut off `SESSION_HANDOFF.md`/`changelog.md` updates, though `TASKS.md` and `DECISIONS.md` had already been kept current through the session. Reconstructed from `git log` + Vercel deploy history; confirmed nothing was lost — all work through `c4e2db3f` is committed, pushed, and live in production.
