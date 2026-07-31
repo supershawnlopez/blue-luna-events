@@ -12,6 +12,7 @@ export const SITE_CONFIG = {
   instagram: 'https://instagram.com/bluelunamagic',
   facebook: 'https://facebook.com/bluelunamagic',
   instagramHandle: '@BlueLunaMagic',
+  googleReviewUrl: 'https://g.page/r/CZsdOfmFmuebEAE/review',
   founder: 'Monica Denogean',
   zelle: 'monica@bluelunaevents.com',
   paymentMethods: ['Zelle', 'Check', 'Cash'],

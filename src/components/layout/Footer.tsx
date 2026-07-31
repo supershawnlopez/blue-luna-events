@@ -3,7 +3,8 @@
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Instagram, Facebook, Phone, Mail, MapPin } from 'lucide-react'
+import { Instagram, Facebook, Phone, Mail, MapPin, Star } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/config'
 
 export default function Footer() {
   const pathname = usePathname()
@@ -55,10 +56,10 @@ export default function Footer() {
           <div>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.65rem', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '18px' }}>Contact</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              {[{icon:Phone,label:'(520) 222-6142',href:'tel:5202226142'},{icon:Mail,label:'monica@bluelunaevents.com',href:'mailto:monica@bluelunaevents.com'},{icon:MapPin,label:'Tucson, AZ',href:undefined}].map((c,i) => (
+              {[{icon:Phone,label:'(520) 222-6142',href:'tel:5202226142'},{icon:Mail,label:'monica@bluelunaevents.com',href:'mailto:monica@bluelunaevents.com'},{icon:MapPin,label:'Tucson, AZ',href:undefined},{icon:Star,label:'Leave us a review',href:SITE_CONFIG.googleReviewUrl}].map((c,i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <c.icon size={15} color="#5BBFBF" style={{ flexShrink: 0 }} />
-                  {c.href ? <Link href={c.href} style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', fontWeight: 300, color: '#6B7280', textDecoration: 'none', transition: 'color 0.2s' }} className="footer-link">{c.label}</Link> : <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', fontWeight: 300, color: '#6B7280' }}>{c.label}</span>}
+                  {c.href ? <Link href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', fontWeight: 300, color: '#6B7280', textDecoration: 'none', transition: 'color 0.2s' }} className="footer-link">{c.label}</Link> : <span style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', fontWeight: 300, color: '#6B7280' }}>{c.label}</span>}
                 </div>
               ))}
             </div>
