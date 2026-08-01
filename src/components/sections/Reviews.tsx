@@ -1,38 +1,19 @@
 'use client'
 
-import { Star } from 'lucide-react'
+import { Star, MessageSquarePlus } from 'lucide-react'
+import { SITE_CONFIG } from '@/lib/config'
 
-const REVIEWS = [
-  {
-    text: "I looked at Monica's work on Instagram for six months before I called her. Then I walked into my daughter's quinceañera and literally started crying. I had no idea balloons could look like that — it looked like something from a magazine. She exceeded every expectation.",
-    name: 'Gabriela Morales',
-    loc: 'Tucson, AZ',
-    event: 'Quinceañera · 2025',
-    init: 'G',
-    bg: '#5BBFBF',
-  },
-  {
-    text: "Monica had the whole backyard done before any guests arrived. My son walked out and his jaw dropped — the arch and shimmer backdrop in his school colors looked incredible. The photo booth made the whole night. His friends are still posting those pictures.",
-    name: 'Diana & Robert Castillo',
-    loc: 'Oro Valley, AZ',
-    event: 'Graduation Party · 2025',
-    init: 'D',
-    bg: '#5BBFBF',
-  },
-  {
-    text: "She listened to exactly the vibe I was going for, suggested a color palette I hadn't even thought of, and showed up early to set up. By the time guests arrived it looked like a styled shoot. Every single person asked who did the décor.",
-    name: 'Sofia Reyes',
-    loc: 'Marana, AZ',
-    event: 'Baby Shower · 2024',
-    init: 'S',
-    bg: '#5BBFBF',
-  },
-]
+const REVIEW = {
+  text: "Highly, highly, highly recommend Blue Luna Events! They helped elevate a vision to perfection for our daughter's quinceañera. The team was incredibly professional and easy to work with.",
+  name: 'Christian Ortiz',
+  meta: 'Local Guide · Quinceañera',
+  init: 'C',
+}
 
-function Stars() {
+function Stars({ size = 13 }: { size?: number }) {
   return (
     <div style={{ display: 'flex', gap: '3px', marginBottom: '16px' }}>
-      {[...Array(5)].map((_, i) => <Star key={i} size={13} color="#C9A96E" fill="#C9A96E" />)}
+      {[...Array(5)].map((_, i) => <Star key={i} size={size} color="#C9A96E" fill="#C9A96E" />)}
     </div>
   )
 }
@@ -58,77 +39,77 @@ export default function Reviews() {
           </div>
         </div>
 
-        {/* Desktop — 3 columns */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '20px' }} className="reviews-desktop reveal">
-          {REVIEWS.map((r, i) => (
-            <div key={i} className="card" style={{ padding: '32px' }}>
-              <Stars />
+        <div className="reviews-grid reveal">
+          {/* Real Google review */}
+          <div className="card" style={{ padding: 'clamp(28px,4vw,40px)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <div>
+              <Stars size={15} />
               <p style={{
                 fontFamily: 'Cormorant Garamond, Georgia, serif',
-                fontSize: '1.1rem', fontWeight: 400, fontStyle: 'italic',
-                color: '#0D0F0F', lineHeight: 1.75, marginBottom: '24px',
+                fontSize: 'clamp(1.15rem,2vw,1.4rem)', fontWeight: 400, fontStyle: 'italic',
+                color: '#0D0F0F', lineHeight: 1.7, marginBottom: '28px',
               }}>
-                &ldquo;{r.text}&rdquo;
+                &ldquo;{REVIEW.text}&rdquo;
               </p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '40px', height: '40px', borderRadius: '50%',
-                  background: r.bg,
+                  width: '42px', height: '42px', borderRadius: '50%',
+                  background: '#5BBFBF',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontFamily: 'Cormorant Garamond, serif',
-                  fontSize: '1.1rem', color: 'white', fontWeight: 600, flexShrink: 0,
+                  fontSize: '1.15rem', color: 'white', fontWeight: 600, flexShrink: 0,
                 }}>
-                  {r.init}
+                  {REVIEW.init}
                 </div>
                 <div>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: '#0D0F0F' }}>{r.name}</p>
-                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 300, color: '#9CA3AF', marginTop: '2px' }}>{r.event} · {r.loc}</p>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 600, color: '#0D0F0F' }}>{REVIEW.name}</p>
+                  <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.72rem', fontWeight: 300, color: '#9CA3AF', marginTop: '2px' }}>{REVIEW.meta}</p>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Mobile — swipe carousel */}
-        <div className="reviews-mobile">
-          <div style={{
-            display: 'flex', gap: '16px',
-            overflowX: 'auto', scrollSnapType: 'x mandatory',
-            WebkitOverflowScrolling: 'touch',
-            paddingBottom: '8px', paddingLeft: '24px', paddingRight: '24px',
-            marginLeft: '-24px', marginRight: '-24px',
-          }}>
-            {REVIEWS.map((r, i) => (
-              <div key={i} style={{
-                flexShrink: 0, width: 'calc(88vw)', maxWidth: '340px',
-                scrollSnapAlign: 'center',
-                background: 'white', borderRadius: '20px',
-                border: '1px solid #E5E7EB', padding: '28px',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+              <span style={{
+                fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', fontWeight: 500,
+                color: '#9CA3AF', letterSpacing: '0.04em',
               }}>
-                <Stars />
-                <p style={{
-                  fontFamily: 'Cormorant Garamond, Georgia, serif',
-                  fontSize: '1.05rem', fontWeight: 300, fontStyle: 'italic',
-                  color: '#0D0F0F', lineHeight: 1.75, marginBottom: '20px',
-                }}>
-                  &ldquo;{r.text}&rdquo;
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    width: '38px', height: '38px', borderRadius: '50%',
-                    background: r.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'Cormorant Garamond, serif', fontSize: '1rem', color: 'white', fontWeight: 600, flexShrink: 0,
-                  }}>
-                    {r.init}
-                  </div>
-                  <div>
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.84rem', fontWeight: 600, color: '#0D0F0F' }}>{r.name}</p>
-                    <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.7rem', fontWeight: 300, color: '#9CA3AF', marginTop: '2px' }}>{r.event}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+                Posted on Google
+              </span>
+            </div>
+          </div>
+
+          {/* Ask for a review */}
+          <div style={{
+            borderRadius: '20px', background: '#0D0F0F', padding: 'clamp(28px,4vw,40px)',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '16px',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', bottom: '-20%', right: '-15%', width: '160px', height: '160px',
+              borderRadius: '50%', background: 'radial-gradient(circle, rgba(91,191,191,0.15) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }} />
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '50%',
+              background: 'rgba(91,191,191,0.12)', border: '1px solid rgba(91,191,191,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <MessageSquarePlus size={18} color="#5BBFBF" />
+            </div>
+            <h3 className="font-display" style={{ fontSize: 'clamp(1.3rem,2vw,1.6rem)', fontWeight: 400, color: 'white', lineHeight: 1.2 }}>
+              Worked with Monica?<br /><em style={{ fontStyle: 'italic', color: '#5BBFBF' }}>Tell the next family.</em>
+            </h3>
+            <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.85rem', fontWeight: 300, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>
+              A minute of your time helps another family find her.
+            </p>
+            <a
+              href={SITE_CONFIG.googleReviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-primary"
+              style={{ alignSelf: 'flex-start', fontSize: '0.82rem', padding: '13px 24px' }}
+            >
+              Leave a Google Review <Star size={14} />
+            </a>
           </div>
         </div>
 

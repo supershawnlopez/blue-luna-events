@@ -320,14 +320,15 @@ body {
 }
 
 /* ── REVIEWS ── */
-.reviews-desktop { display: grid !important; }
-.reviews-mobile { display: none !important; }
-@media (max-width: 768px) {
-  .reviews-desktop { display: none !important; }
-  .reviews-mobile { display: block !important; }
+.reviews-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  align-items: stretch;
 }
-.reviews-mobile > div::-webkit-scrollbar { display: none; }
-.reviews-mobile > div { -ms-overflow-style: none; scrollbar-width: none; }
+@media (max-width: 768px) {
+  .reviews-grid { grid-template-columns: 1fr; }
+}
 
 /* ── GALLERY GRID ── */
 @media (max-width: 640px) {
