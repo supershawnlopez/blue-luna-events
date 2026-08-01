@@ -6,6 +6,12 @@ import { Plus, ChevronRight, FileText } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance } from '@/lib/estimateBalance'
 
+function paidLine(totalPaid: number, amountOwed: number, isPaidInFull: boolean) {
+  if (isPaidInFull) return 'Paid in full'
+  if (totalPaid > 0) return `${fmt(totalPaid)} paid · ${fmt(amountOwed)} left`
+  return 'Unpaid'
+}
+
 type Estimate = {
   id: string
   client_name: string
@@ -96,22 +102,17 @@ export default function EstimatesList() {
             </Link>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {estimates.map(est => {
+          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', overflow: 'hidden' }}>
+            {estimates.map((est, i) => {
               const s = STATUS_STYLES[displayStatus(est)]
+              const balance = computeBalance(est, [{ id: '', method: '', created_at: '', amount: est.total_paid }])
+              const hasDiscount = balance.discountAmount > 0
               return (
                 <Link key={est.id} href={`/studio/estimates/${est.id}`} style={{
                   display: 'flex', alignItems: 'center', gap: '14px',
-                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '14px', padding: '16px 18px', textDecoration: 'none',
+                  padding: '16px 18px', textDecoration: 'none',
+                  borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)',
                 }}>
-                  <div style={{
-                    width: '42px', height: '42px', borderRadius: '10px',
-                    background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.2)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    <FileText size={18} color="#5BBFBF" />
-                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
                       <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'white', margin: 0 }}>{est.client_name}</p>
@@ -124,9 +125,16 @@ export default function EstimatesList() {
                     </p>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{fmt(est.quoted_total)}</p>
+                    {hasDiscount ? (
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', justifyContent: 'flex-end', marginBottom: '2px' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through' }}>{fmt(balance.subtotal)}</span>
+                        <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white' }}>{fmt(balance.finalTotal)}</span>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{fmt(balance.finalTotal)}</p>
+                    )}
                     <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
-                      {est.total_paid > 0 ? `${fmt(est.total_paid)} paid` : 'Unpaid'}
+                      {paidLine(balance.totalPaid, balance.amountOwed, balance.isPaidInFull)}
                     </p>
                   </div>
                   <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
