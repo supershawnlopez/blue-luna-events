@@ -47,7 +47,7 @@ export default function Footer() {
           <div>
             <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.65rem', fontWeight: 600, color: '#9CA3AF', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '18px' }}>Events</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {[{l:'Quinceañeras',h:'/quinceaneras'},{l:'Weddings',h:'/#packages'},{l:'Graduations',h:'/graduations'},{l:'Birthdays',h:'/#packages'},{l:'Corporate',h:'/#packages'}].map(e => (
+              {[{l:'Quinceañeras',h:'/quinceaneras'},{l:'Weddings',h:'/weddings'},{l:'Graduations',h:'/graduations'},{l:'Birthdays',h:'/birthdays'},{l:'Baby Showers',h:'/baby-showers'},{l:'Corporate',h:'/corporate-events'}].map(e => (
                 <Link key={e.l} href={e.h} style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.88rem', fontWeight: 300, color: '#6B7280', textDecoration: 'none', transition: 'color 0.2s' }} className="footer-link">{e.l}</Link>
               ))}
             </div>
