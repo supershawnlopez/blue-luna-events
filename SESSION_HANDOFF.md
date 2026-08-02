@@ -11,16 +11,19 @@ Shawn confirmed the existing "1 Google review" is real (Christian Ortiz, 5.0★,
 2. **Estimates list Round 3 shipped** — this was approved by Shawn back on 2026-07-09 but never actually built (`ESTIMATES_PAYMENTS_AUDIT.md`). Discounted total now shows bold with the original struck through (e.g. `~~$650~~ **$1**`); the "paid so far" line now describes the discounted balance; the decorative file icon and per-row card wrapper are gone in favor of flat rows on a hairline divider. Verified visually by temporarily discounting the real Shawn Lopez test estimate, screenshotting the result, then reverting it back to clean. Commit `3650a057`.
 3. **Four new landing pages: `/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events`.** These were the biggest remaining SEO/AEO/GEO gap — all four were named in the footer but routed to a homepage anchor instead of a real page. Held a short team discussion on depth (Phil/SEO led): went with full depth matching `/quinceaneras` and `/graduations` — real FAQPage schema, features, packages — not lighter pages, since thin/duplicate content was the actual problem being fixed. Reused the existing general Essential/Signature/Luxury tiers (already apply to all four event types, so no new pricing work). Footer links and `sitemap.xml` updated to point at the real routes. Commit `f9325c5b`.
 
-**Known, not a regression:** these four new pages (like the existing `/graduations` page) pull from the same small pool of 7 generic local photos in `/public/images` — a couple show visible signage from a different event (e.g. a "Happy Birthday Georgia" sign appears as the Graduations hero photo already, in production, before today). Not new to this session. A real fix means Monica tagging her Supabase photos by event type so these pages (and the homepage) can eventually pull matching real photos instead of the static pool — not scoped or built today.
+**Follow-up same session — Shawn flagged the photos as wrong, fixed:**
+Checked Studio's real tagged `gallery_media`: baby showers (4 real photos), birthdays (9), and corporate (4) all had real, usable content — no faces, no conflicting signage. Swapped those three pages' hero images and OG previews to the real ones. **Weddings has zero tagged photos in Studio at all** — Shawn's call was to keep the generic placeholder there until Monica has a real wedding job to tag. Also added an "Events" dropdown to the top nav (was footer-only for 4 of the 6 event types before) — desktop hover menu, flattened list on mobile. Commit `393597ca`.
 
 **Still open from before, unchanged:**
 - Shawn still needs to cancel the duplicate Google Business Profile he started under his own email (steps already given, not yet confirmed done).
 - The real live $1 Stripe payment test — still Shawn's to run.
+- **New:** Weddings page has no real Studio photos to pull from — needs Monica to shoot and tag a real wedding job, then swap `/weddings`' hero images the same way the other three were fixed today.
 
 **Shawn, test this:**
 1. Visit `bluelunaevents.com` and scroll to the Reviews section — you should see Christian Ortiz's real review on the left and a "Leave a Google Review" card on the right.
 2. In Studio → Estimates, open the list — any estimate with a discount should show the original price struck through next to the discounted price in bold, and the rows should be flat with a thin line between them, no icon, no separate card boxes.
-3. Visit `bluelunaevents.com/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events` — each should load as a real page (hero, features, packages, FAQ, CTA), not bounce to the homepage.
+3. Visit `bluelunaevents.com/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events` — each should load as a real page (hero, features, packages, FAQ, CTA), not bounce to the homepage. Birthdays/baby showers/corporate should show real event photos now, not generic stock-looking ones.
+4. Hover "Events" in the top nav (desktop) or open the mobile menu — all six event types should be listed.
 
 ---
 
