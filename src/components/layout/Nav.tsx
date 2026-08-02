@@ -4,19 +4,29 @@ import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { X, Menu, Instagram, Facebook, ArrowRight } from 'lucide-react'
+import { X, Menu, Instagram, Facebook, ArrowRight, ChevronDown } from 'lucide-react'
 
-const LINKS = [
+type NavLink = { label: string; href: string; color?: string }
+
+const LINKS: NavLink[] = [
   { label: 'Packages', href: '/#packages' },
   { label: 'Gallery', href: '/gallery' },
+]
+
+const EVENT_LINKS: NavLink[] = [
   { label: 'Quinceañeras', href: '/quinceaneras', color: '#5BBFBF' },
+  { label: 'Weddings', href: '/weddings' },
   { label: 'Graduations', href: '/graduations', color: '#E8CCA0' },
+  { label: 'Birthdays', href: '/birthdays' },
+  { label: 'Baby Showers', href: '/baby-showers' },
+  { label: 'Corporate', href: '/corporate-events' },
 ]
 
 export default function Nav() {
   const pathname = usePathname()
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
+  const [eventsOpen, setEventsOpen] = useState(false)
 
   if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/')) return null
 
@@ -68,13 +78,51 @@ export default function Nav() {
             {LINKS.map(l => (
               <Link key={l.href} href={l.href} style={{
                 fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 500,
-                color: l.color || (light ? '#374151' : 'rgba(255,255,255,0.78)'),
+                color: light ? '#374151' : 'rgba(255,255,255,0.78)',
                 letterSpacing: '0.06em', textTransform: 'uppercase',
                 textDecoration: 'none', whiteSpace: 'nowrap', transition: 'color 0.2s',
               }}>
                 {l.label}
               </Link>
             ))}
+
+            {/* Events dropdown */}
+            <div
+              style={{ position: 'relative' }}
+              onMouseEnter={() => setEventsOpen(true)}
+              onMouseLeave={() => setEventsOpen(false)}
+            >
+              <button style={{
+                display: 'flex', alignItems: 'center', gap: '5px',
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                fontFamily: 'Inter, sans-serif', fontSize: '0.78rem', fontWeight: 500,
+                color: light ? '#374151' : 'rgba(255,255,255,0.78)',
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+              }}>
+                Events <ChevronDown size={13} style={{ transform: eventsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+              </button>
+              <div style={{
+                position: 'absolute', top: '28px', left: '50%',
+                background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB',
+                boxShadow: '0 16px 44px rgba(13,15,15,0.14)',
+                padding: '10px', width: '190px',
+                opacity: eventsOpen ? 1 : 0,
+                pointerEvents: eventsOpen ? 'auto' : 'none',
+                transform: `translateX(-50%) translateY(${eventsOpen ? '0' : '-6px'})`,
+                transition: 'opacity 0.18s ease, transform 0.18s ease',
+              }}>
+                {EVENT_LINKS.map(e => (
+                  <Link key={e.href} href={e.href} onClick={() => setEventsOpen(false)} style={{
+                    display: 'block', padding: '9px 12px', borderRadius: '8px',
+                    fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 500,
+                    color: e.color || '#374151', textDecoration: 'none',
+                  }} className="nav-event-link">
+                    {e.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
             <Link href="/event-questionnaire" style={{
               fontFamily: 'Inter, sans-serif',
               background: '#5BBFBF', color: '#0D0F0F',
@@ -105,6 +153,8 @@ export default function Nav() {
           </button>
         </div>
       </nav>
+
+      <style>{`.nav-event-link:hover{background:#F9FAFB}`}</style>
 
       {/* FULL SCREEN MOBILE NAV — Calm/Warm variant, per DESIGN_DECISIONS.md */}
       <div style={{
@@ -146,7 +196,7 @@ export default function Nav() {
 
         {/* Nav links */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px', overflowY: 'auto' }}>
-          {LINKS.map((l, i) => {
+          {[...LINKS, ...EVENT_LINKS].map((l, i) => {
             const active = pathname === l.href || (l.href.startsWith('/#') && pathname === '/')
             return (
               <Link
@@ -155,23 +205,23 @@ export default function Nav() {
                 onClick={() => setOpen(false)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '18px 0',
+                  padding: '14px 0',
                   borderBottom: '1px solid #f5f5f5',
                   textDecoration: 'none',
                   transform: open ? 'translateX(0)' : 'translateX(20px)',
                   opacity: open ? 1 : 0,
-                  transition: `transform 0.45s cubic-bezier(0.16,1,0.3,1) ${0.1 + i * 0.05}s, opacity 0.35s ease ${0.08 + i * 0.05}s`,
+                  transition: `transform 0.45s cubic-bezier(0.16,1,0.3,1) ${0.1 + i * 0.04}s, opacity 0.35s ease ${0.08 + i * 0.04}s`,
                 }}
               >
                 <span className="font-display" style={{
                   fontStyle: 'italic',
-                  fontSize: '2rem', fontWeight: 400,
+                  fontSize: '1.6rem', fontWeight: 400,
                   color: active ? '#5BBFBF' : (l.color || '#333333'),
                   letterSpacing: '0.01em',
                 }}>
                   {l.label}
                 </span>
-                <ArrowRight size={18} color={l.color || (active ? '#5BBFBF' : '#9CA3AF')} />
+                <ArrowRight size={16} color={l.color || (active ? '#5BBFBF' : '#9CA3AF')} />
               </Link>
             )
           })}

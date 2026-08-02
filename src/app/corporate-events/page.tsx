@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     title: 'Corporate Event Balloon Décor in Tucson, AZ | Blue Luna Events',
     description: 'Brand-colored balloon installations for grand openings, launches, and corporate events in Tucson, AZ — custom-built around your vision.',
     url: 'https://bluelunaevents.com/corporate-events',
-    images: [{ url: 'https://bluelunaevents.com/images/hero-sec.jpg', width: 1200, height: 630, alt: 'Corporate event balloon décor in Tucson, AZ' }],
+    images: [{ url: 'https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/media/1782004577452-gwlt7whlquv.jpeg', width: 1200, height: 630, alt: 'Corporate event balloon décor in Tucson, AZ' }],
   },
   alternates: { canonical: 'https://bluelunaevents.com/corporate-events' },
 }
@@ -71,10 +71,10 @@ export default function CorporateEvents() {
               background: 'var(--twilight-glow)', filter: 'blur(16px)', pointerEvents: 'none',
             }} />
             <div style={{ position: 'absolute', top: '4%', left: '10%', width: '76%', height: '76%', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 16px 44px rgba(13,15,15,0.16)' }}>
-              <Image src="/images/hero-sec.jpg" alt="Corporate event balloon décor Tucson AZ" fill sizes="(max-width: 900px) 90vw, 45vw" priority style={{ objectFit: 'cover' }} />
+              <Image src="https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/media/1782004577452-gwlt7whlquv.jpeg" alt="Corporate event balloon décor Tucson AZ" fill sizes="(max-width: 900px) 90vw, 45vw" priority style={{ objectFit: 'cover' }} />
             </div>
             <div style={{ position: 'absolute', bottom: '2%', right: '0%', width: '38%', height: '38%', borderRadius: '50%', overflow: 'hidden', border: '4px solid white', boxShadow: '0 10px 32px rgba(13,15,15,0.16)' }}>
-              <Image src="/images/gal-2.jpg" alt="Corporate event balloon décor Tucson AZ" fill sizes="(max-width: 900px) 45vw, 20vw" priority style={{ objectFit: 'cover' }} />
+              <Image src="https://myumgaqlafbynsgnkdnj.supabase.co/storage/v1/object/public/media/media/1782004575729-6jzg3thaf8.jpeg" alt="Corporate event balloon décor Tucson AZ" fill sizes="(max-width: 900px) 45vw, 20vw" priority style={{ objectFit: 'cover' }} />
             </div>
           </div>
         </div>
