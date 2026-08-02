@@ -101,25 +101,31 @@ export default function Nav() {
               }}>
                 Events <ChevronDown size={13} style={{ transform: eventsOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
+              {/* Invisible padding bridge closes the hover gap between the button and the panel below, so the panel doesn't vanish while the cursor crosses it */}
               <div style={{
-                position: 'absolute', top: '28px', left: '50%',
-                background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB',
-                boxShadow: '0 16px 44px rgba(13,15,15,0.14)',
-                padding: '10px', width: '190px',
+                position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
+                paddingTop: '14px', width: '190px',
                 opacity: eventsOpen ? 1 : 0,
                 pointerEvents: eventsOpen ? 'auto' : 'none',
-                transform: `translateX(-50%) translateY(${eventsOpen ? '0' : '-6px'})`,
-                transition: 'opacity 0.18s ease, transform 0.18s ease',
+                transition: 'opacity 0.18s ease',
               }}>
-                {EVENT_LINKS.map(e => (
-                  <Link key={e.href} href={e.href} onClick={() => setEventsOpen(false)} style={{
-                    display: 'block', padding: '9px 12px', borderRadius: '8px',
-                    fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 500,
-                    color: e.color || '#374151', textDecoration: 'none',
-                  }} className="nav-event-link">
-                    {e.label}
-                  </Link>
-                ))}
+                <div style={{
+                  background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB',
+                  boxShadow: '0 16px 44px rgba(13,15,15,0.14)',
+                  padding: '10px',
+                  transform: `translateY(${eventsOpen ? '0' : '-6px'})`,
+                  transition: 'transform 0.18s ease',
+                }}>
+                  {EVENT_LINKS.map(e => (
+                    <Link key={e.href} href={e.href} onClick={() => setEventsOpen(false)} style={{
+                      display: 'block', padding: '9px 12px', borderRadius: '8px',
+                      fontFamily: 'Inter, sans-serif', fontSize: '0.82rem', fontWeight: 500,
+                      color: e.color || '#374151', textDecoration: 'none',
+                    }} className="nav-event-link">
+                      {e.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
             </div>
 
