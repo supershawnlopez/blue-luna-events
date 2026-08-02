@@ -31,7 +31,9 @@ export default function Nav() {
   if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/')) return null
 
   // Homepage hero is full-bleed video — let it show through the nav until scrolled past it.
-  const overHero = pathname === '/' && !scrolled
+  // Forced opaque while the mobile menu is open so the nav's own logo/close button don't
+  // show through as a duplicate over the full-screen panel's own header underneath.
+  const overHero = pathname === '/' && !scrolled && !open
   // Every other state (scrolled on homepage, or any other page) now uses the light nav to match the White/Twilight redesign.
   const light = !overHero
 
@@ -200,8 +202,8 @@ export default function Nav() {
           </button>
         </div>
 
-        {/* Nav links */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '4px', overflowY: 'auto' }}>
+        {/* Nav links — starts at the top and scrolls, so all 8 items are reachable instead of being centered with some hidden above the fold */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingTop: '8px', overflowY: 'auto' }}>
           {[...LINKS, ...EVENT_LINKS].map((l, i) => {
             const active = pathname === l.href || (l.href.startsWith('/#') && pathname === '/')
             return (
@@ -211,7 +213,7 @@ export default function Nav() {
                 onClick={() => setOpen(false)}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '14px 0',
+                  padding: '11px 0',
                   borderBottom: '1px solid #f5f5f5',
                   textDecoration: 'none',
                   transform: open ? 'translateX(0)' : 'translateX(20px)',
@@ -221,13 +223,13 @@ export default function Nav() {
               >
                 <span className="font-display" style={{
                   fontStyle: 'italic',
-                  fontSize: '1.6rem', fontWeight: 400,
+                  fontSize: '1.35rem', fontWeight: 400,
                   color: active ? '#5BBFBF' : (l.color || '#333333'),
                   letterSpacing: '0.01em',
                 }}>
                   {l.label}
                 </span>
-                <ArrowRight size={16} color={l.color || (active ? '#5BBFBF' : '#9CA3AF')} />
+                <ArrowRight size={15} color={l.color || (active ? '#5BBFBF' : '#9CA3AF')} />
               </Link>
             )
           })}
