@@ -221,11 +221,11 @@ export default function Nav() {
                   transition: `transform 0.45s cubic-bezier(0.16,1,0.3,1) ${0.1 + i * 0.04}s, opacity 0.35s ease ${0.08 + i * 0.04}s`,
                 }}
               >
-                <span className="font-display" style={{
-                  fontStyle: 'italic',
-                  fontSize: '1.35rem', fontWeight: 400,
-                  color: active ? '#5BBFBF' : (l.color || '#333333'),
-                  letterSpacing: '0.01em',
+                <span style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '1rem', fontWeight: 600,
+                  color: active ? '#5BBFBF' : (l.color || '#374151'),
+                  letterSpacing: '0.03em', textTransform: 'uppercase',
                 }}>
                   {l.label}
                 </span>

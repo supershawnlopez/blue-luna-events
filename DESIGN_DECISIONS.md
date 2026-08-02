@@ -86,11 +86,15 @@ Blue Luna Events uses the Calm/Warm mobile menu treatment:
 - Full-screen white panel, not a dark overlay.
 - Left border: 2px solid primary (teal).
 - Slide-in animation from the right.
-- Nav items: large, italic heading font, dark text (`#333333`); active item in teal.
+- Nav items: bold uppercase Inter (sans-serif), dark text (`#374151`); active item in teal — **revised 2026-08-01, see below.**
 - Items separated by hairline dividers in `#f5f5f5`.
 - Phone + CTA button anchored to the bottom, with a top border separator.
 
 Why: Calm/Warm reads as refined and unhurried — the right register for an event décor brand, versus the Bold/Modern dark-overlay treatment used for contractor-type brands elsewhere in Shawn's portfolio.
+
+**[2026-08-01] — REVISED: mobile menu items switched from italic serif to bold uppercase Inter, matching desktop nav.**
+Approved by: Shawn
+Why: Shawn found the mobile menu copy hard to read on his phone, especially the gold (Graduations) and teal (Quinceañeras) colored items — correctly diagnosed as a font/weight problem, not a color problem. The original spec used the large italic Cormorant Garamond display font at regular weight; thin serif strokes at an italic angle read poorly in light brand colors even at a bigger size. Desktop nav uses bold (500) uppercase Inter at those same colors with no legibility complaints, so mobile was changed to match exactly (weight 600, uppercase, `0.03em` tracking) for consistency and readability. Brand color hex values themselves were not changed — teal/gold stay locked, this was purely a typography fix.
 
 ---
 
