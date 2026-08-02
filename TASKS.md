@@ -41,17 +41,13 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Rebuild homepage Reviews section once real Google reviews exist**
-- Shawn confirmed the testimonials were fabricated — removed 2026-07-30 (see DONE below + DECISIONS.md). Shawn is setting up a real Google Business Profile the same day. Once real reviews come in, rebuild `Reviews.tsx` with real content and re-add it to `page.tsx`.
-- Owner: Shawn sets up GBP; ping Claude to rebuild once real reviews exist.
-
-2. **Dedicated landing pages for weddings, birthdays, baby showers, corporate events — real content gap, needs scoping**
-- Flagged in the July 8 audit, resurfaced in the 2026-07-30 business audit, still unaddressed. All four are named in the nav, footer, and the site's own SEO keyword targets, but route to a homepage anchor instead of a real page. Single biggest remaining SEO/AEO/GEO gap — needs Shawn's input on content/priority before building, not a same-session technical fix like the others.
-- Owner: needs a scoping conversation with Shawn.
-
-3. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
+1. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
 - Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
 - Owner: Shawn runs the test.
+
+2. **Cancel the duplicate Google Business Profile Shawn started under his own email**
+- Real profile lives under Monica's Gmail (confirmed 2026-07-30) — the second one Shawn started under his own email is a true duplicate. Steps already given (business.google.com → that profile → Business Profile settings → Remove Business Profile). Not yet confirmed done.
+- Owner: Shawn.
 
 *(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch.)*
 
@@ -79,6 +75,12 @@ Exit criteria for Phase 1:
 ## DONE (2026-07-30, later same day)
 
 - ✅ **Fabricated testimonials removed sitewide.** Shawn confirmed directly: Reviews.tsx names/quotes (Gabriela Morales, Diana & Robert Castillo, Sofia Reyes) and the matching pull-quote in WhyMonica were fake. Same rule as the Google rating claims — removed. Reviews section pulled off the homepage (component kept, just unused) until real Google reviews exist to rebuild it with. Also clarified for Shawn: `/services`/`/about`/`/contact`/`/event-form` are old indexed URLs now redirecting, not missing nav items — nothing for him to add.
+
+## DONE (2026-08-01)
+
+- ✅ **Homepage Reviews section rebuilt with a real review.** Shawn confirmed the existing "1 Google review" (5.0★, Christian Ortiz — quinceañera) is real. Verified the actual review text live on Google Maps (not guessed), rebuilt `Reviews.tsx` as a real-review spotlight card paired with a "Leave a Google Review" CTA card, re-added to the homepage. Commit `0c287592`.
+- ✅ **Estimates list Round 3 shipped** (`ESTIMATES_PAYMENTS_AUDIT.md` — was approved 2026-07-09, never built). Discounted total now shown bold with the original struck through; "paid so far" line describes the discounted balance; decorative file icon and per-row card wrapper replaced with flat rows on a hairline divider. Verified visually against the real Shawn Lopez test estimate (temporarily discounted, then reverted). Commit `3650a057`.
+- ✅ **Weddings, birthdays, baby showers, corporate events landing pages built.** Team recommendation (Phil/SEO-led): full depth matching `/quinceaneras` and `/graduations`, not lighter pages — thin/duplicate content was the actual problem. Reused the general Essential/Signature/Luxury tiers (already tagged for all event types, no new pricing work needed). Real FAQPage schema per page, consultive no-bare-number pricing answers. Footer links and `sitemap.xml` updated. Commit `f9325c5b`. Photo pool is the same 7 generic local images already used sitewide (`/public/images`) — some show mismatched event signage in the photo itself (e.g. a birthday sign on a non-birthday page), consistent with the same tolerance already live on `/graduations` (its hero photo reads "Happy Birthday Georgia"), not a new issue introduced today. Worth a real photo pass once Monica has tagged Supabase photos per event type.
 
 ## DONE (2026-07-30)
 

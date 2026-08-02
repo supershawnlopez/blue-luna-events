@@ -112,6 +112,8 @@ Approve both. This is exactly the "make space, no fluff" instinct Shawn had — 
 
 **Team recommendation: strike-through original price + bold discounted price; remove the icon and card wrapper in favor of flat rows with a hairline divider.**
 
+**SHIPPED 2026-08-01** (commit `3650a057`) — Shawn explicitly greenlit it that session. Verified visually against the real Shawn Lopez test estimate before reverting the test discount. See `SESSION_HANDOFF.md`.
+
 ---
 
 ## APPROVED — 2026-07-09

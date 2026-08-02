@@ -13,6 +13,28 @@
 
 ---
 
+## Session: August 1, 2026 — Real Reviews, Estimates Round 3, Four Landing Pages
+**AI:** Claude Code
+**Worked on:** Shawn confirmed the real Google review, and greenlit three prior open items in one message: rebuild Reviews, scope + build the event-type landing pages, and ship the previously-approved Estimates Round 3 design.
+
+### Completed This Session
+- Verified Christian Ortiz's real 5.0★ Google review live on Google Maps (reviewer, text, event type) rather than guessing or reusing old fabricated content. Rebuilt `Reviews.tsx` as a real-review spotlight card + a "Leave a Google Review" CTA card, re-added to `page.tsx`. Commit `0c287592`.
+- Shipped `ESTIMATES_PAYMENTS_AUDIT.md` Round 3, approved 2026-07-09 but never built: discounted total shown bold with the original struck through, "paid so far" line describes the discounted balance, decorative icon + card wrapper replaced with flat rows on a hairline divider. Verified visually by temporarily discounting the real Shawn Lopez test estimate via Supabase, screenshotting the Studio estimates list, then reverting. Commit `3650a057`.
+- Short team discussion on landing-page depth (Phil/SEO led) — went with full depth matching `/quinceaneras`/`/graduations`, not lighter pages. Built `/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events`: hero, features, packages (reusing the existing general Essential/Signature/Luxury tiers), FAQPage schema with consultive no-bare-number pricing answers, CTA. Updated footer links (previously `/#packages` for 3 of them, Baby Showers wasn't linked at all) and `sitemap.xml`. Commit `f9325c5b`.
+- All three deploys confirmed `READY`/production on Vercel and live on `bluelunaevents.com`.
+
+### Still Open
+- Shawn to cancel the duplicate Google Business Profile under his own email — not yet confirmed done.
+- The real live $1 Stripe payment test — still Shawn's to run.
+- The 4 new landing pages use the same static local photo pool as `/quinceaneras`/`/graduations` (not real Supabase photos tagged by event type) — same tolerance already live elsewhere on the site, not a regression, but a real fix needs Monica's photos tagged by event type.
+
+### Shawn Test
+1. `bluelunaevents.com` — scroll to Reviews, confirm the real review + "Leave a Google Review" card.
+2. Studio → Estimates list — a discounted estimate should show struck-through original + bold discounted price, flat rows, no icon.
+3. `bluelunaevents.com/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events` — each loads as a real page.
+
+---
+
 ## Session: July 30, 2026, evening — Google Business Profile Confirmed + Review Button
 **AI:** Claude Code
 **Worked on:** Shawn set up Google Business Profile, briefly thought it was a duplicate of one Monica already had (it showed unfamiliar photos/reviews), almost cancelled it before checking with Claude.

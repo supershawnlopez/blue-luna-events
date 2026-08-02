@@ -1,8 +1,30 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: July 30, 2026, evening — Claude Code*
+*Last updated: August 1, 2026 — Claude Code*
 
-## 2026-07-30, evening: Google Business Profile confirmed real + review button added
+## 2026-08-01: Real Reviews section, Estimates Round 3, four new landing pages — all LIVE
+
+Shawn confirmed the existing "1 Google review" is real (Christian Ortiz, 5.0★, quinceañera) and gave the go-ahead on three items from the prior handoff.
+
+**Shipped, in order:**
+1. **Homepage Reviews rebuilt with the real review.** Verified the actual review text live on Google Maps (not guessed or reused from the old fabricated set) — "Highly, highly, highly recommend Blue Luna Events! They helped elevate a vision to perfection for our daughter's quinceañera. The team was incredibly professional and easy to work with." Built as a spotlight card paired with a second card inviting past clients to leave their own review (links to the existing `googleReviewUrl`). Re-added to the homepage. Commit `0c287592`.
+2. **Estimates list Round 3 shipped** — this was approved by Shawn back on 2026-07-09 but never actually built (`ESTIMATES_PAYMENTS_AUDIT.md`). Discounted total now shows bold with the original struck through (e.g. `~~$650~~ **$1**`); the "paid so far" line now describes the discounted balance; the decorative file icon and per-row card wrapper are gone in favor of flat rows on a hairline divider. Verified visually by temporarily discounting the real Shawn Lopez test estimate, screenshotting the result, then reverting it back to clean. Commit `3650a057`.
+3. **Four new landing pages: `/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events`.** These were the biggest remaining SEO/AEO/GEO gap — all four were named in the footer but routed to a homepage anchor instead of a real page. Held a short team discussion on depth (Phil/SEO led): went with full depth matching `/quinceaneras` and `/graduations` — real FAQPage schema, features, packages — not lighter pages, since thin/duplicate content was the actual problem being fixed. Reused the existing general Essential/Signature/Luxury tiers (already apply to all four event types, so no new pricing work). Footer links and `sitemap.xml` updated to point at the real routes. Commit `f9325c5b`.
+
+**Known, not a regression:** these four new pages (like the existing `/graduations` page) pull from the same small pool of 7 generic local photos in `/public/images` — a couple show visible signage from a different event (e.g. a "Happy Birthday Georgia" sign appears as the Graduations hero photo already, in production, before today). Not new to this session. A real fix means Monica tagging her Supabase photos by event type so these pages (and the homepage) can eventually pull matching real photos instead of the static pool — not scoped or built today.
+
+**Still open from before, unchanged:**
+- Shawn still needs to cancel the duplicate Google Business Profile he started under his own email (steps already given, not yet confirmed done).
+- The real live $1 Stripe payment test — still Shawn's to run.
+
+**Shawn, test this:**
+1. Visit `bluelunaevents.com` and scroll to the Reviews section — you should see Christian Ortiz's real review on the left and a "Leave a Google Review" card on the right.
+2. In Studio → Estimates, open the list — any estimate with a discount should show the original price struck through next to the discounted price in bold, and the rows should be flat with a thin line between them, no icon, no separate card boxes.
+3. Visit `bluelunaevents.com/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events` — each should load as a real page (hero, features, packages, FAQ, CTA), not bounce to the homepage.
+
+---
+
+## Prior: 2026-07-30, evening: Google Business Profile confirmed real + review button added
 
 Shawn set up what he thought was a new Google Business Profile, got confused when it already showed real photos and a review he didn't recognize, and almost cancelled it thinking Monica had a separate pre-existing one. Traced it down together: it's a real, single profile under **Monica's own Gmail** (not a duplicate, not new) — what looked unfamiliar was just his own submitted edits (photos, description, hours) still sitting in Google's review queue while the profile showed an older/auto-populated version in the meantime. **Confirmed: nothing to cancel here.**
 
@@ -153,13 +175,13 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `c4e2db3f` — SEO/AEO/GEO audit fixes documented and closed out, confirmed `READY`/production on Vercel 2026-07-30. See the reconstructed entry at the top of this file for everything shipped between `d09f1bff` (2026-07-29 video showcase) and here.
+- Latest `main` commit: `f9325c5b` — weddings/birthdays/baby-showers/corporate-events landing pages, confirmed `READY`/production on Vercel 2026-08-01. See the 2026-08-01 entry at the top of this file for everything shipped today.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:
   - `PLATFORM_REBUILD_AUDIT.md` — the original full-scope audit (design, camera, calendar, leads, email, social, SEO)
   - `FRONTEND_REDESIGN_AUDIT.md` — public site redesign direction (SEO/AEO/GEO priority #1, then configurator shows real matching photos as customer builds, guided path as default)
-  - `ESTIMATES_PAYMENTS_AUDIT.md` — the payment ledger rework (most recent work), including an **approved-but-not-yet-built** design change (see below)
+  - `ESTIMATES_PAYMENTS_AUDIT.md` — the payment ledger rework, including Round 3 (discount-aware display + flat rows), shipped 2026-08-01
 - All locked decisions are in `DECISIONS.md` (product/technical) and `DESIGN_DECISIONS.md` (visual/UX) — read before assuming something is undecided.
 
 ### What's fully working and confirmed (not just "looks done")
@@ -168,12 +190,9 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - **Payment ledger rework shipped 2026-07-09** (commit `b74a9a4e`) — replaced the old fixed 50/50 deposit/balance booleans with a real `estimate_payments` ledger table + `src/lib/estimateBalance.ts` shared calculation used by the client page, PDF, Studio detail page, and weekly summary email. Built: discount editor (percent/flat + note), manual "Record Payment" (Zelle/cash/check + note), real one-tap "Email Estimate to Client" (PDF attached + live link, system-send not `mailto:`). Live-tested end-to-end on the real production test estimate, then cleaned up.
 - **Raw internal IDs bug fixed 2026-07-09** (commit `02ec1c79`) — add-ons and event types were printing as `shimmer_backdrop`, `cp_premium_3pack` etc. on customer-facing PDF/pages instead of proper labels. Fixed via `labelForAddOn()`/`labelForEventType()` in `config.ts`.
 - **SEO/AEO/GEO 5 fixes shipped 2026-07-08** (commit `8951d7b0`) — fixed invalid JSON-LD `@type`, removed fake review count, fixed `/quinceaneras` + `/graduations` to have their own metadata (were unnecessarily client components), added FAQPage schema, added sitemap.xml + robots.txt.
-
-### Approved but NOT yet built — likely next task
-`ESTIMATES_PAYMENTS_AUDIT.md` "Round 3" — team recommendation approved in principle by Shawn's framing but not yet explicitly greenlit to build, and not built:
-1. Estimates list page: show discounted total as the bold primary price with the original struck through (e.g. `~~$650~~ **$1**`) instead of showing the pre-discount total as if it's fully at risk.
-2. Remove the decorative file icon and the per-row card wrapper on the estimates list — replace with flat rows separated by a hairline divider (consistent with the already-locked "flowing surface, not card-stack" principle in `DESIGN_DECISIONS.md`).
-**Confirm with Shawn whether to proceed with this before building it** — last message in the conversation was Shawn saying he's switching to Codex, not an explicit "yes build it."
+- **Estimates list Round 3 shipped 2026-08-01** (commit `3650a057`) — discount-aware pricing display (struck-through original + bold discounted total) and flat rows replacing the per-row card/icon. See the 2026-08-01 entry above.
+- **Homepage Reviews section rebuilt with a real review shipped 2026-08-01** (commit `0c287592`) — see the 2026-08-01 entry above.
+- **Weddings, birthdays, baby showers, corporate events landing pages shipped 2026-08-01** (commit `f9325c5b`) — see the 2026-08-01 entry above.
 
 ### Still open / not started
 - Shawn has not yet run the real live $1 payment test (discount a test estimate near 100%, complete a real Stripe payment on himself) — capability is built, he just hasn't done it yet.
@@ -183,6 +202,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - Configurator redesign (`FRONTEND_REDESIGN_AUDIT.md` — real matching photos as customer builds, guided package path as default, visible deposit/cancellation policy) — not started. Requires gallery photos to be tagged by component/color, not just `event_type`, as a prerequisite.
 - Phase 5 — real Leads system, Contacts phone book, owner-editable email template system, SMS (Twilio, capability only — activation needs Shawn's A2P 10DLC carrier registration) — not started, was next after the payments work per the locked build order.
 - Camera/Photos port from Found (in-app `CameraSheet`, replacing the native file-input "Shoot" button) — not started.
+- The 4 new event-type landing pages (`/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events`) use the same static 7-photo local pool as `/quinceaneras`/`/graduations` — a real fix means tagging Monica's Supabase photos by event type so these pages can pull matching real photos instead. Not scoped yet.
 
 ---
 
