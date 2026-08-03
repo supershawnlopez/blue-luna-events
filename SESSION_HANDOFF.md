@@ -2,7 +2,21 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 3, 2026 — Claude Code*
 
-## 2026-08-03: Google Search Console fully set up
+## 2026-08-03: Phase 3 (Camera & Photos) shipped — Studio Intelligence rebuild continues
+
+Shawn said to move forward on the next phases in the team-directed order from `PLATFORM_REBUILD_AUDIT.md`: Camera → Calendar/Booking → Leads/Contacts/Email → Social. Started with Camera.
+
+**Shipped:** My Work's "Shoot" button now opens a real in-app camera instead of handing off to the phone's native camera app. Ported from Found's own production `CameraSheet` component (zoom, torch, aspect ratio + portrait/landscape, photo/video capture, the already-solved iOS permission-denied guidance) into a new `src/components/studio/CameraSheet.tsx`. Deliberately left out Found's photo-annotation feature — not part of what was approved. Blue Luna's existing "pick an event type, then capture" flow (already built) turned out to already be the "album-at-capture-time picker" the original audit called for — nothing needed to change there. Captured shots stay local with a review filmstrip until "Add N to Studio," then flow through the exact same upload pipeline the file-picker already used.
+
+**Verified:** clean type-check and build. Logged into a real running copy of Studio and confirmed the event-type sheet, the camera UI itself (all controls present and correctly laid out), and the permission-denied error message all work correctly. **Not verified:** actual photo/video capture — the test environment has no real camera, so the app correctly showed "Camera access denied" (the exact failure mode being fixed) instead of a live feed. Needs Shawn's confirmation on his real phone.
+
+**Also found, unrelated to today's work:** local `.env.local` was missing `STUDIO_SESSION_TOKEN` — Studio login has apparently been silently broken for local development this whole time (production is fine, that value only lives in Vercel there). Added a throwaway local-only value so local testing works; nothing committed, `.env.local` is gitignored.
+
+**Shawn, test this:** On your phone, Studio → My Work → Shoot. Confirm you get a real in-app camera (not your phone's own camera app) with zoom/flash/ratio controls, take a photo and/or a short video, tap "Add to Studio," and confirm it lands in your library tagged with whatever event type you picked beforehand.
+
+---
+
+## Prior: 2026-08-03: Google Search Console fully set up
 
 Closed out the last open piece from the 2026-08-02 analytics decision. Shawn created the GSC property himself (required his real Google login), sent Claude the DNS verification code, Claude added it as a TXT record via the Vercel API and confirmed via the live DNS records that nothing on any other project (Found Co. included — Shawn asked directly) was touched, only `bluelunaevents.com`'s own records. Shawn verified ownership in the GSC UI, then submitted `sitemap.xml` — confirmed `Success`, 9 pages discovered. Also noticed and helped clean up an unrelated stale sitemap entry from May 2025 pointing at a file that 404s.
 
@@ -231,6 +245,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - **Studio API auth gap + `/q/[token]` PII exposure fixed 2026-08-02** (commit `96086086`) — `/api/studio/*` now requires a valid session the same way pages do; the client estimate view no longer uses the anon key or forwards internal/PII fields.
 - **Studio "Today" surface + self-hosted traffic analytics shipped 2026-08-02** (commit `212dc29b`) — see the 2026-08-02 entry above. First concrete piece of the new Studio Intelligence north star (`DECISIONS.md`).
 - **Google Search Console fully verified and sitemap submitted, 2026-08-03** — `Success`, 9 pages discovered. See the 2026-08-03 entry above.
+- **Phase 3 — Camera & Photos shipped, 2026-08-03** — real in-app camera replacing the native camera handoff in My Work. See the 2026-08-03 entry above. Needs Shawn's real-device confirmation (couldn't verify actual capture in the dev sandbox — no camera hardware there).
 
 ### Still open / not started
 - Shawn has not yet run the real live $1 payment test (discount a test estimate near 100%, complete a real Stripe payment on himself) — capability is built, he just hasn't done it yet.
@@ -239,7 +254,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - Calendar/availability system (Platform Rebuild Lane A item 2) — not started. Decided: port Found's `availability`/`availability_blocks`/`bookings` pattern, schema built for a future iCloud CalDAV two-way sync (Monica's calendar is iCloud, not Google).
 - Configurator redesign (`FRONTEND_REDESIGN_AUDIT.md` — real matching photos as customer builds, guided package path as default, visible deposit/cancellation policy) — not started. Requires gallery photos to be tagged by component/color, not just `event_type`, as a prerequisite.
 - Phase 5 — real Leads system, Contacts phone book, owner-editable email template system, SMS (Twilio, capability only — activation needs Shawn's A2P 10DLC carrier registration) — not started, was next after the payments work per the locked build order.
-- Camera/Photos port from Found (in-app `CameraSheet`, replacing the native file-input "Shoot" button) — not started.
+- ~~Camera/Photos port from Found (in-app `CameraSheet`, replacing the native file-input "Shoot" button) — not started.~~ Shipped 2026-08-03, pending Shawn's real-device confirmation.
 - The 4 new event-type landing pages (`/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events`) use the same static 7-photo local pool as `/quinceaneras`/`/graduations` — a real fix means tagging Monica's Supabase photos by event type so these pages can pull matching real photos instead. Not scoped yet.
 
 ---

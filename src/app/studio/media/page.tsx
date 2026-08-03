@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles, Crown, GraduationCap, Cake, Baby, Gem, Briefcase, Download, LucideIcon } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
+import CameraSheet from '@/components/studio/CameraSheet'
 
 type MediaItem = {
   id: string
@@ -97,8 +98,8 @@ export default function StudioMedia() {
   const [thumbProgress, setThumbProgress]   = useState({ done: 0, total: 0 })
   const [remainingFiles, setRemainingFiles] = useState<File[]>([])
   const [remainingEventType, setRemainingEventType] = useState<string | null>(null)
+  const [showCameraSheet, setShowCameraSheet] = useState(false)
   const fileRef      = useRef<HTMLInputElement>(null)
-  const cameraRef    = useRef<HTMLInputElement>(null)
   const touchStartX  = useRef(0)
 
   const filtered = media.filter(m => {
@@ -154,7 +155,7 @@ export default function StudioMedia() {
   function selectType(eventType: string | null) {
     setPendingEventType(eventType)
     setShowTypeSheet(false)
-    if (pendingSource === 'camera') cameraRef.current?.click()
+    if (pendingSource === 'camera') setShowCameraSheet(true)
     else fileRef.current?.click()
   }
 
@@ -382,14 +383,17 @@ export default function StudioMedia() {
 
   async function onFilesChosen(files: FileList | null) {
     if (!files?.length) return
-    const all = Array.from(files)
+    await processFiles(Array.from(files))
+  }
+
+  async function processFiles(all: File[]) {
+    if (!all.length) return
     const dupes = all.filter(f => knownFingerprints.has(fingerprint(f)))
     let fresh = all.filter(f => !knownFingerprints.has(fingerprint(f)))
 
     if (dupes.length > 0 && fresh.length === 0) {
       showToast(`All ${dupes.length} selected file${dupes.length !== 1 ? 's have' : ' has'} already been uploaded — nothing new to add.`)
-      if (fileRef.current)   fileRef.current.value = ''
-      if (cameraRef.current) cameraRef.current.value = ''
+      if (fileRef.current) fileRef.current.value = ''
       return
     }
 
@@ -418,11 +422,15 @@ export default function StudioMedia() {
 
     fresh = [...freshPhotos, ...freshVideos]
     if (fresh.length === 0) {
-      if (fileRef.current)   fileRef.current.value = ''
-      if (cameraRef.current) cameraRef.current.value = ''
+      if (fileRef.current) fileRef.current.value = ''
       return
     }
     await runUploads(fresh)
+  }
+
+  function handleCameraDone(files: File[]) {
+    setShowCameraSheet(false)
+    processFiles(files)
   }
 
   async function runUploads(chosen: File[], eventTypeOverride?: string | null) {
@@ -451,8 +459,7 @@ export default function StudioMedia() {
     setPendingEventType(null)
     setPendingSource(null)
     setUploadProgress(0)
-    if (fileRef.current)   fileRef.current.value = ''
-    if (cameraRef.current) cameraRef.current.value = ''
+    if (fileRef.current) fileRef.current.value = ''
     if (failCount > 0) {
       showToast(`${failCount} of ${chosen.length} file${chosen.length !== 1 ? 's' : ''} failed to upload — check your connection and try again.`)
     }
@@ -488,8 +495,6 @@ export default function StudioMedia() {
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '120px' }}>
 
       <input ref={fileRef} type="file" multiple accept="image/*,video/*"
-        style={{ display: 'none' }} onChange={e => onFilesChosen(e.target.files)} />
-      <input ref={cameraRef} type="file" accept="image/*,video/*" capture="environment"
         style={{ display: 'none' }} onChange={e => onFilesChosen(e.target.files)} />
 
       {/* Header */}
@@ -893,6 +898,14 @@ export default function StudioMedia() {
             )}
           </div>
         </div>
+      )}
+
+      {/* In-app camera */}
+      {showCameraSheet && (
+        <CameraSheet
+          onClose={() => { setShowCameraSheet(false); setPendingEventType(null); setPendingSource(null) }}
+          onDone={handleCameraDone}
+        />
       )}
 
       <StudioNav />

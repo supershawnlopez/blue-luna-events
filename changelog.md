@@ -13,6 +13,28 @@
 
 ---
 
+## Session: August 3, 2026 — Google Search Console + Phase 3 Camera & Photos
+**AI:** Claude Code
+**Worked on:** Closed out Google Search Console setup from the prior session's analytics decision, then Shawn said to move forward on the Studio Intelligence rebuild's next phases in the team-directed order.
+
+### Completed This Session
+- Google Search Console fully verified (DNS TXT record added via Vercel API, Shawn verified ownership in the UI) and `sitemap.xml` submitted — `Success`, 9 pages discovered. Cleaned up an unrelated stale `sitemap_index.xml` entry from May 2025.
+- **Phase 3 — Camera & Photos.** Ported Found's real in-app `CameraSheet` (zoom, torch, aspect ratio, photo/video, iOS permission-denied handling) into `src/components/studio/CameraSheet.tsx`, replacing the native camera-app handoff on My Work's "Shoot" button. Skipped Found's annotation feature (not approved scope). Confirmed Blue Luna's existing event-type-first flow already satisfies "album-at-capture-time picker" — no change needed there. New captures flow through the same upload pipeline (`processFiles`/`runUploads`) the file picker already used.
+- Found and fixed a local-only dev gap: `.env.local` was missing `STUDIO_SESSION_TOKEN`, silently breaking local Studio login (production unaffected).
+- Verified: clean `tsc`/`npm run build`, real browser test against a live login and real media library — event-type sheet, camera UI, and permission-denied error path all confirmed working. Actual capture unverified (no camera hardware in the test sandbox).
+
+### Still Open
+- Shawn to confirm the real camera works end-to-end on his actual phone.
+- Cancel the duplicate Google Business Profile — still pending.
+- The real live $1 Stripe payment test — still Shawn's to run.
+- Phase 4 (Calendar/Booking) is next in the approved order.
+
+### Shawn Test
+1. Studio → My Work → Shoot — should open a real in-app camera (zoom/flash/ratio controls), not your phone's own camera app.
+2. Take a photo or short video, tap "Add to Studio," confirm it lands in your library correctly tagged.
+
+---
+
 ## Session: August 2, 2026 — Studio Intelligence North Star + "Today" Surface + Real Traffic Analytics
 **AI:** Claude Code
 **Worked on:** Shawn asked the team to resume the backend/Studio rebuild scoped in `PLATFORM_REBUILD_AUDIT.md` (Phases 3-6, never started). Before building, he raised the bar with his own brief across a real 3-round team meeting: Studio has to make both him and Monica say "wow," it has to think for her since she's not technical, Steve and Jony are the required approval gate, and it needs Apple/iOS-level ease — daily/weekly/monthly/quarterly usefulness, real traffic/source stats, and help promoting. Full reasoning and all locked decisions in `DECISIONS.md` "CUSTOM BACKEND / STUDIO INTELLIGENCE SYSTEM."
