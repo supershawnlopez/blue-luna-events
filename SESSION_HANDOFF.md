@@ -1,8 +1,16 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 2, 2026 — Claude Code*
+*Last updated: August 3, 2026 — Claude Code*
 
-## 2026-08-02: Studio Intelligence north star locked + "Today" surface + real traffic analytics — LIVE
+## 2026-08-03: Google Search Console fully set up
+
+Closed out the last open piece from the 2026-08-02 analytics decision. Shawn created the GSC property himself (required his real Google login), sent Claude the DNS verification code, Claude added it as a TXT record via the Vercel API and confirmed via the live DNS records that nothing on any other project (Found Co. included — Shawn asked directly) was touched, only `bluelunaevents.com`'s own records. Shawn verified ownership in the GSC UI, then submitted `sitemap.xml` — confirmed `Success`, 9 pages discovered. Also noticed and helped clean up an unrelated stale sitemap entry from May 2025 pointing at a file that 404s.
+
+**Note for next session:** search-query data (what people actually type to find Blue Luna) takes a few days to weeks to start populating in GSC — don't expect anything useful there immediately.
+
+---
+
+## Prior: 2026-08-02: Studio Intelligence north star locked + "Today" surface + real traffic analytics — LIVE
 
 Shawn asked to resume the backend/Studio rebuild (`PLATFORM_REBUILD_AUDIT.md` Phases 3-6, approved 2026-07-07, never started). Before any building, he raised the bar in a real 3-round team meeting: Studio has to make both him and Monica say "wow," it has to genuinely think for her (she's not technical), Steve and Jony are the required approval gate on anything shipped, and it needs to feel Apple/iOS-easy — daily/weekly/monthly/quarterly usefulness, real traffic/source stats she can actually read, help promoting. Full reasoning in `DECISIONS.md` "CUSTOM BACKEND / STUDIO INTELLIGENCE SYSTEM." This reframes the whole rebuild's build order: design the home "Today" surface first, build features as what it pulls from — not the old feature-list order.
 
@@ -222,6 +230,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - **Weddings, birthdays, baby showers, corporate events landing pages shipped 2026-08-01** (commit `f9325c5b`) — see the 2026-08-01 entry above.
 - **Studio API auth gap + `/q/[token]` PII exposure fixed 2026-08-02** (commit `96086086`) — `/api/studio/*` now requires a valid session the same way pages do; the client estimate view no longer uses the anon key or forwards internal/PII fields.
 - **Studio "Today" surface + self-hosted traffic analytics shipped 2026-08-02** (commit `212dc29b`) — see the 2026-08-02 entry above. First concrete piece of the new Studio Intelligence north star (`DECISIONS.md`).
+- **Google Search Console fully verified and sitemap submitted, 2026-08-03** — `Success`, 9 pages discovered. See the 2026-08-03 entry above.
 
 ### Still open / not started
 - Shawn has not yet run the real live $1 payment test (discount a test estimate near 100%, complete a real Stripe payment on himself) — capability is built, he just hasn't done it yet.

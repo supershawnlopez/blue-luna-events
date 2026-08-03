@@ -43,18 +43,20 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Create the Google Search Console property** (part of the analytics decision, `DECISIONS.md` 2026-08-02)
-- Requires Shawn or Monica's real Google login — Claude can't create this. Go to search.google.com/search-console → Add property → `bluelunaevents.com`. Once Shawn has the DNS verification value Google gives him, hand it to Claude to add via the Vercel API (domain is already on Vercel nameservers) and submit `sitemap.xml`.
-- Owner: Shawn to start it, Claude finishes the technical wiring.
-
-2. **Cancel the duplicate Google Business Profile Shawn started under his own email**
+1. **Cancel the duplicate Google Business Profile Shawn started under his own email**
 - Real profile lives under Monica's Gmail (confirmed 2026-07-30) — the second one Shawn started under his own email is a true duplicate. Steps already given (business.google.com → that profile → Business Profile settings → Remove Business Profile). Not yet confirmed done.
 - Owner: Shawn.
 
-3. **Continue the Studio Intelligence rebuild** — "Today" surface + traffic analytics shipped 2026-08-02 (see DONE below). Next up: Phases 3-6 (Camera, Calendar/Booking, Leads/Contacts, real email templates, Social) — needs Shawn to pick where to go next.
+2. **Continue the Studio Intelligence rebuild** — "Today" surface + traffic analytics shipped 2026-08-02 (see DONE below). Next up: Phases 3-6 (Camera, Calendar/Booking, Leads/Contacts, real email templates, Social) — needs Shawn to pick where to go next.
 - Owner: Claude Code, pending Shawn's direction.
 
 *(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: real live $1 Stripe payment test (Shawn's to run whenever ready), "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch.)*
+
+---
+
+## DONE (2026-08-03)
+
+- ✅ **Google Search Console fully set up.** Shawn created the property (`bluelunaevents.com`, Domain type), Claude added the DNS TXT verification record via the Vercel API (`rec_e1e3d080a130e66ea7aa6a5d`), Shawn verified ownership, Claude confirmed `sitemap.xml` was actually live and correct (200 OK, 9 URLs) before Shawn submitted it. Status: `Success`, 9 pages discovered. A stale, unrelated `sitemap_index.xml` entry from May 2025 (pointing to a file that 404s) was also cleaned up. This closes the last open piece of the 2026-08-02 analytics decision — GSC now complements Vercel Analytics + the self-hosted `site_visits` tracking as the third real data source.
 
 ---
 
