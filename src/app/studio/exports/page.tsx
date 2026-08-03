@@ -104,18 +104,39 @@ async function renderBrandPack(item: MediaItem, layout: Layout): Promise<Blob> {
   const pad = spec.w * 0.055
   const stripMid = stripY + stripH / 2
 
-  // logo image — left side
-  try {
-    const logo = await loadImage('/images/logo-white.png')
-    const logoH = stripH * 0.52
-    const logoW = logo.width * (logoH / logo.height)
-    ctx.drawImage(logo, pad, stripMid - logoH / 2, logoW, logoH)
-  } catch {
-    // fallback: "Blue Luna Events" text
-    ctx.font = `600 ${spec.w * 0.022}px sans-serif`
-    ctx.fillStyle = 'rgba(255,255,255,0.7)'
-    ctx.textAlign = 'left'
-    ctx.fillText('Blue Luna Events', pad, stripMid + spec.w * 0.008)
+  // Logo — drawn directly (moon mark + wordmark), not loaded from an image file.
+  // A prior version loaded /images/logo-white.png, which turned out to be a
+  // corrupted source asset (the wordmark itself was garbled — confirmed by
+  // opening the file directly, not a canvas rendering bug). Drawing it removes
+  // the dependency on that file entirely, so it can't silently break again.
+  const moonR = stripH * 0.19
+  const moonCx = pad + moonR
+  const moonCy = stripMid
+  ctx.fillStyle = '#5BBFBF'
+  ctx.beginPath()
+  ctx.arc(moonCx, moonCy, moonR, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.fillStyle = 'rgba(13,15,15,0.88)' // strip's own background — cuts the crescent
+  ctx.beginPath()
+  ctx.arc(moonCx + moonR * 0.55, moonCy - moonR * 0.15, moonR * 0.82, 0, Math.PI * 2)
+  ctx.fill()
+
+  const textX = moonCx + moonR + spec.w * 0.022
+  ctx.textAlign = 'left'
+  ctx.fillStyle = 'white'
+  ctx.font = `600 ${stripH * 0.36}px Georgia, "Cormorant Garamond", serif`
+  ctx.fillText('Blue Luna', textX, stripMid - stripH * 0.06)
+
+  // "EVENTS" — drawn letter by letter for the tracked-caps look the real brand uses
+  const evLabel = 'EVENTS'
+  const evSize = stripH * 0.16
+  const evTracking = evSize * 0.55
+  ctx.font = `500 ${evSize}px Georgia, serif`
+  ctx.fillStyle = 'rgba(255,255,255,0.6)'
+  let evX = textX
+  for (const ch of evLabel) {
+    ctx.fillText(ch, evX, stripMid + stripH * 0.3)
+    evX += ctx.measureText(ch).width + evTracking
   }
 
   // website — right side
