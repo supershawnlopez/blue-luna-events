@@ -13,6 +13,30 @@
 
 ---
 
+## Session: August 3, 2026, even later — Phase 5: Leads, Contacts, Email, SMS
+**AI:** Claude Code
+**Worked on:** Shawn approved moving straight to Phase 5, the last big phase of the originally-scoped Studio Intelligence rebuild.
+
+### Completed This Session
+- **Leads**: `leads.temperature` column (hot/warm/cold, no default). New Studio Leads tab (6th bottom-nav icon) — status/temperature filters, Call/Text/Email quick actions, "Create Estimate" handoff reusing the estimate builder's existing prefill query params. `/api/studio/leads` (GET) + `/api/studio/leads/[id]` (PATCH).
+- **Contacts**: new `contacts` table — real client phone book, not every raw lead. `/api/studio/contacts` (GET/POST/PATCH/DELETE) + `/api/studio/contacts/import` (one-tap import from `estimates`, deduped by email/phone). New Studio Contacts page, reachable from Leads.
+- **Email templates + campaigns**: `email_templates` + `campaign_sends` tables, `/api/studio/templates` CRUD, `/api/studio/campaigns/send`. Real unsubscribe (`contacts.unsubscribed` + `unsubscribe_token`, public `/api/unsubscribe`). Shared branded email shell (`src/lib/campaignEmail.ts`) matching the existing estimate-email look. New Studio Templates page, reachable from Contacts.
+- **SMS**: real `sms:` deep-link quick actions on Leads + Contacts detail sheets (zero setup, works today). `src/lib/sms.ts` — real Twilio-backed `sendSms()`, gated behind an explicit config check, genuinely untested (no Twilio account exists for Blue Luna yet).
+- Full architecture reasoning for every scope call (why Contacts isn't every lead, why no SMS mail-merge language, why the unsubscribe was added unprompted, the CAN-SPAM/private-address conflict) in `DECISIONS.md` "PHASE 5" section.
+- Verified: clean `tsc`/`npm run build`, every new API route confirmed `ƒ Dynamic`. Real end-to-end testing against live production data — real leads list, a real contact import (2 real contacts, correctly deduped), a real template created, a real campaign-send attempt confirmed to fail gracefully and log the reason (Resend key is a local-only placeholder — same limitation as every other email feature in this repo locally). Browser-verified all three new screens.
+
+### Still Open
+- Shawn to real-device test Leads, Contacts, and the campaign tool — ideally sending a first real template to himself before ever sending to real clients.
+- SMS bulk-send needs Shawn's own Twilio account + A2P 10DLC carrier registration before it can be trusted as real.
+- Phase 6 (Social/Branded Image Generation) is the last phase in the original rebuild plan, not started.
+
+### Shawn Test
+1. Studio → Leads → open a real lead → set temperature, change status, try Call/Text/Email.
+2. Leads → "Contacts" → "Import from Estimates" → confirm real past clients appear.
+3. Contacts → "Email Templates & Campaigns" → build a real template → send it to just yourself first.
+
+---
+
 ## Session: August 3, 2026, continued — Phase 4 Calendar/Booking + a real caching bug
 **AI:** Claude Code
 **Worked on:** Shawn said to do Phase 4 next (Calendar/Booking), following the team-directed order.

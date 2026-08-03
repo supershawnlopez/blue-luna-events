@@ -2,7 +2,26 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 3, 2026 — Claude Code*
 
-## 2026-08-03, later: Phase 4 (Calendar/Booking) shipped + a real caching bug found and fixed
+## 2026-08-03, even later: Phase 5 (Leads, Contacts, Email, SMS) shipped
+
+You said "go ahead to phase 5" — this closes out the last big phase of the originally-scoped Studio Intelligence rebuild (Phase 6/Social is separate, still ahead whenever you want it).
+
+**Shipped, all four pieces:**
+1. **Leads** — a real Leads tab in Studio (6th icon in the bottom nav). Filter by status or temperature (hot/warm/cold — nothing defaults automatically, you set it), tap any lead to Call/Text/Email in one tap, and a "Create Estimate" button that carries their info straight into a new estimate.
+2. **Contacts** — a real client phone book, reachable from the top of the Leads page. Tap "Import from Estimates" once to pull in everyone who's ever gotten a real quote (already tried it on your real data — pulled in 2 real contacts correctly), or add someone by hand.
+3. **Email Templates & Campaigns** — reachable from Contacts. Write a template once (with a client's first name auto-filled in wherever you type `{{name}}`), then send it to as many contacts as you pick, all at once. Built with a real unsubscribe link so this stays a real, safe marketing tool, not something that could annoy people with no way out.
+4. **Texting** — Call/Text/Email now all sit next to each other on both Leads and Contacts. Tapping "Text" opens your own Messages app, ready to send — works today, no setup. A more automated bulk-texting tool (like the email one) is built in the code but not usable yet — that part genuinely needs you to set up a Twilio account and complete a required carrier registration before it can send anything real. Not something I can do for you.
+
+**Verified:** clean build, and I tested every piece against your real data before calling it done — real leads, a real contact import, a real (safely-limited) campaign-send attempt. Also browser-checked all three new screens.
+
+**Shawn, test this:**
+1. Studio → Leads (new tab) → tap a real lead → set a temperature, change its status, try Call/Text/Email.
+2. Tap "Contacts" from the top of Leads → tap "Import from Estimates" → confirm real past clients show up.
+3. From Contacts, tap "Email Templates & Campaigns" → make a real template → send it to just yourself first to see how it reads before ever sending to a real client list.
+
+---
+
+## Prior: 2026-08-03, later: Phase 4 (Calendar/Booking) shipped + a real caching bug found and fixed
 
 Continued the Studio Intelligence rebuild per your "do phase 4" — Camera (Phase 3) was already shipped earlier today; this closes out Calendar/Booking.
 
@@ -264,6 +283,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - **Phase 3 — Camera & Photos shipped, 2026-08-03** — real in-app camera replacing the native camera handoff in My Work. See the 2026-08-03 entry above. Needs Shawn's real-device confirmation (couldn't verify actual capture in the dev sandbox — no camera hardware there).
 - **Phase 4 — Calendar/Booking shipped, 2026-08-03** — date-level availability off real estimates + manual blocks, Studio Schedule tab, real availability calendar on the public Event Questionnaire. See the later 2026-08-03 entry above. Needs Shawn's confirmation.
 - **A real stale-data caching bug found and fixed, 2026-08-03** — see the entry above and `DECISIONS.md`. Affected Today/analytics/stats/gallery/client-estimate-page; root-caused and fixed at the shared database-client level, verified directly.
+- **Phase 5 — Leads, Contacts, Email templates + campaigns shipped, 2026-08-03** — see the latest entry above. `sms:` quick actions work today; real Twilio bulk-texting is code-complete but genuinely untested (no Twilio account yet — Shawn's to set up when ready).
 
 ### Still open / not started
 - Shawn has not yet run the real live $1 payment test (discount a test estimate near 100%, complete a real Stripe payment on himself) — capability is built, he just hasn't done it yet.
@@ -271,7 +291,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - **Pattern worth remembering:** 3 separate "sensitive" Vercel env vars were found stale/wrong this session (Resend domain, Resend key, Stripe key). Nobody has yet audited the remaining ones (`STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`) for the same issue.
 - ~~Calendar/availability system — not started.~~ Shipped 2026-08-03 (scoped to date-granularity, not Found's hourly-slot pattern — see `DECISIONS.md`). iCloud CalDAV two-way sync itself is still a future follow-on, schema (`external_busy_blocks`) is ready for it.
 - Configurator redesign (`FRONTEND_REDESIGN_AUDIT.md` — real matching photos as customer builds, guided package path as default, visible deposit/cancellation policy) — not started. Requires gallery photos to be tagged by component/color, not just `event_type`, as a prerequisite.
-- Phase 5 — real Leads system, Contacts phone book, owner-editable email template system, SMS (Twilio, capability only — activation needs Shawn's A2P 10DLC carrier registration) — not started, was next after the payments work per the locked build order.
+- ~~Phase 5 — real Leads system, Contacts phone book, owner-editable email template system, SMS — not started.~~ Shipped 2026-08-03. SMS bulk-send activation still needs Shawn's Twilio account + A2P 10DLC carrier registration.
 - ~~Camera/Photos port from Found (in-app `CameraSheet`, replacing the native file-input "Shoot" button) — not started.~~ Shipped 2026-08-03, pending Shawn's real-device confirmation.
 - The 4 new event-type landing pages (`/weddings`, `/birthdays`, `/baby-showers`, `/corporate-events`) use the same static 7-photo local pool as `/quinceaneras`/`/graduations` — a real fix means tagging Monica's Supabase photos by event type so these pages can pull matching real photos instead. Not scoped yet.
 

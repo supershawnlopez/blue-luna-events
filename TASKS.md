@@ -47,15 +47,24 @@ Exit criteria for Phase 1:
 - Real profile lives under Monica's Gmail (confirmed 2026-07-30) — the second one Shawn started under his own email is a true duplicate. Steps already given (business.google.com → that profile → Business Profile settings → Remove Business Profile). Not yet confirmed done.
 - Owner: Shawn.
 
-2. **Continue the Studio Intelligence rebuild — Phases 3 (Camera) and 4 (Calendar/Booking) shipped 2026-08-03. Phase 5 (Leads/Contacts/Email) next.** Team-directed order from `PLATFORM_REBUILD_AUDIT.md`. See DONE below for what shipped.
-- Owner: Claude Code, in progress.
-
-3. **Shawn to test the Schedule tab and public availability calendar on his phone** — block a date in Studio → Schedule, confirm it shows as unavailable on `/event-questionnaire`.
+2. **Shawn to real-device test Phases 3, 4, and 5** — Camera capture, Schedule/availability calendar, and Leads/Contacts/Templates. See each phase's "Shawn Test" in `changelog.md`/`SESSION_HANDOFF.md`.
 - Owner: Shawn.
 
-*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: real live $1 Stripe payment test (Shawn's to run whenever ready), "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch.)*
+3. **If Shawn wants real SMS sending activated: needs a Twilio account + A2P 10DLC carrier registration.** Code capability exists (`src/lib/sms.ts`) but is genuinely untested — no Twilio credentials exist yet. This is Shawn's action item, not something Claude can complete alone.
+- Owner: Shawn.
+
+*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: real live $1 Stripe payment test, "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch. Phase 6 — Social/Branded Image Generation — is next in the approved rebuild order once Shawn's ready.)*
 
 ---
+
+## DONE (2026-08-03, continued — Phase 5: Leads, Contacts, Email, SMS)
+
+- ✅ **Phase 5 shipped in full** — the last major phase of the Studio Intelligence rebuild's originally-scoped work (Phase 6/Social is separate, still ahead). Full architecture reasoning for every scope decision in `DECISIONS.md` "PHASE 5" section.
+  - **Leads**: `leads.temperature` (hot/warm/cold, no default — Monica must set it herself). New **Leads** tab in Studio (6th bottom-nav item): status/temperature filters, one-tap Call/Text/Email, "Create Estimate" handoff reusing the estimate builder's existing prefill query params.
+  - **Contacts**: new `contacts` table — a real client phone book, not every raw inquiry. Populated via one-tap "Import from Estimates" (deduped by email/phone) or manual add. Reachable from the Leads page header.
+  - **Email**: real, owner-editable `email_templates` (create/edit/duplicate/delete) + a campaign send tool reusing the same branded email shell as estimate emails. Real unsubscribe built in (`contacts.unsubscribed` + per-contact token, public `/api/unsubscribe`) since a real marketing tool without one is a real risk, not a hypothetical. Every send logged to `campaign_sends`.
+  - **SMS**: real, working today — `sms:` deep-link quick actions on Leads/Contacts (zero setup, opens Monica's own Messages app). The Twilio-backed bulk-send capability (`src/lib/sms.ts`) is written but **genuinely untested** — no Twilio account exists yet; per the 2026-07-07 decision, activation is explicitly Shawn's to complete (account + A2P 10DLC carrier registration) whenever he's ready.
+  - Verified: clean `tsc`/`npm run build`, every new route confirmed `ƒ Dynamic`. Real end-to-end API testing against live data (real leads, real estimates) — temperature/status updates, contact import (2 real contacts imported correctly, deduped), template create, and a real campaign-send attempt (confirmed it fails gracefully and logs the failure reason when Resend isn't configured locally — same limitation every other local email feature in this repo already has; production has the real key). Browser-verified all three new screens render correctly with real data.
 
 ## DONE (2026-08-03, continued — Phase 4 + a real caching bug)
 
