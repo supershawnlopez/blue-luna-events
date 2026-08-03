@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Images, FolderOpen, FileText } from 'lucide-react'
+import { Home, Images, FolderOpen, FileText, CalendarDays } from 'lucide-react'
 
 const TABS = [
   { label: 'Home',      href: '/studio',           icon: Home },
   { label: 'My Work',   href: '/studio/media',      icon: Images },
+  { label: 'Schedule',  href: '/studio/schedule',   icon: CalendarDays },
   { label: 'Galleries', href: '/studio/galleries',  icon: FolderOpen },
   { label: 'Estimates', href: '/studio/estimates',  icon: FileText },
 ]

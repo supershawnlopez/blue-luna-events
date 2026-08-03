@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Check, ArrowRight, Phone, Mail, User, Calendar, MapPin, Clock, Users, Image as ImageIcon, X, Loader2 } from 'lucide-react'
 import { INQUIRY_EVENT_TYPES, LOOKING_FOR_CATEGORIES, BUDGET_RANGES } from '@/lib/config'
 import { submitLead } from '@/lib/actions'
+import DateAvailabilityPicker from './DateAvailabilityPicker'
 
 const TEAL = '#5BBFBF'
 const DARK = '#0D0F0F'
@@ -237,7 +238,7 @@ export default function InquiryForm() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <div>
             <SectionLabel icon={<Calendar size={12} />}>Event Date</SectionLabel>
-            <input className="input-field" type="date" value={form.eventDate} onChange={e => set('eventDate', e.target.value)} />
+            <DateAvailabilityPicker value={form.eventDate} onChange={date => set('eventDate', date)} />
           </div>
           <div>
             <SectionLabel icon={<MapPin size={12} />} optional>Venue Name or Address</SectionLabel>
