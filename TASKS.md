@@ -43,18 +43,27 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Build the Studio "Today" surface** — rules-based, non-AI logic that surfaces what needs Monica's attention (untouched leads, upcoming event/payment dates, starred-but-unposted photos) on the Studio home screen, replacing the current static stats-card dashboard. See `DECISIONS.md` 2026-08-02.
-- Owner: Claude Code, in progress.
+1. **Create the Google Search Console property** (part of the analytics decision, `DECISIONS.md` 2026-08-02)
+- Requires Shawn or Monica's real Google login — Claude can't create this. Go to search.google.com/search-console → Add property → `bluelunaevents.com`. Once Shawn has the DNS verification value Google gives him, hand it to Claude to add via the Vercel API (domain is already on Vercel nameservers) and submit `sitemap.xml`.
+- Owner: Shawn to start it, Claude finishes the technical wiring.
 
-2. **Wire up analytics: Vercel Analytics + Google Search Console**
-- Vercel Analytics for traffic/referrer-source data, GSC for real search-query insight. Both surfaced inside Studio in plain-English form, not a raw analytics dashboard. See `DECISIONS.md` 2026-08-02.
-- Owner: Claude Code, in progress.
-
-3. **Cancel the duplicate Google Business Profile Shawn started under his own email**
+2. **Cancel the duplicate Google Business Profile Shawn started under his own email**
 - Real profile lives under Monica's Gmail (confirmed 2026-07-30) — the second one Shawn started under his own email is a true duplicate. Steps already given (business.google.com → that profile → Business Profile settings → Remove Business Profile). Not yet confirmed done.
 - Owner: Shawn.
 
+3. **Continue the Studio Intelligence rebuild** — "Today" surface + traffic analytics shipped 2026-08-02 (see DONE below). Next up: Phases 3-6 (Camera, Calendar/Booking, Leads/Contacts, real email templates, Social) — needs Shawn to pick where to go next.
+- Owner: Claude Code, pending Shawn's direction.
+
 *(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: real live $1 Stripe payment test (Shawn's to run whenever ready), "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch.)*
+
+---
+
+## DONE (2026-08-02)
+
+- ✅ **Recovered and committed a real security fix left uncommitted by a prior crashed session** — `/api/studio/*` API routes had no auth check at all (only page routes were gated by middleware); `/q/[token]` used the anon key and forwarded client PII + internal fields to the browser. Both were already correctly fixed in the working tree, verified against a clean build, committed. Commit `96086086`.
+- ✅ **Studio Intelligence north star locked** — real 3-round team meeting, Shawn's own brief incorporated directly (not a rubber-stamp). Full decisions in `DECISIONS.md` "CUSTOM BACKEND / STUDIO INTELLIGENCE SYSTEM."
+- ✅ **Studio "Today" surface shipped** — `/api/studio/today`, rules-based (no AI): untouched leads, events soon with a balance owed, events soon generally, starred-but-unposted photos. Replaces the old stats-first Studio home. Commit `212dc29b`.
+- ✅ **Self-hosted traffic analytics shipped** — `site_visits` table, public `/api/track` beacon, `/api/studio/analytics`, plain-English "This Week" card on Studio home (visit count vs. last week, referrer-channel breakdown). Built self-hosted specifically so Monica doesn't need her own analytics account. `@vercel/analytics` added as a secondary source for Shawn. Commit `212dc29b`.
 
 ---
 

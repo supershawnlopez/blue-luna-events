@@ -13,6 +13,37 @@
 
 ---
 
+## Session: August 2, 2026 — Studio Intelligence North Star + "Today" Surface + Real Traffic Analytics
+**AI:** Claude Code
+**Worked on:** Shawn asked the team to resume the backend/Studio rebuild scoped in `PLATFORM_REBUILD_AUDIT.md` (Phases 3-6, never started). Before building, he raised the bar with his own brief across a real 3-round team meeting: Studio has to make both him and Monica say "wow," it has to think for her since she's not technical, Steve and Jony are the required approval gate, and it needs Apple/iOS-level ease — daily/weekly/monthly/quarterly usefulness, real traffic/source stats, and help promoting. Full reasoning and all locked decisions in `DECISIONS.md` "CUSTOM BACKEND / STUDIO INTELLIGENCE SYSTEM."
+
+### Decided
+- Build order flipped: design the home "Today" surface first (what needs Monica's attention right now), build features as what it pulls from — not the old feature-list order.
+- Rules-based smart surfacing now. AI-generated suggestions explicitly deferred — Shawn was direct that's a future layer, not now.
+- Analytics: Vercel Analytics + Google Search Console, team's call (Shawn delegated), using both for different signals rather than picking one.
+- No design-mockup ceremony step — Shawn trusts Jony to execute directly; Steve stays in the loop at a high level.
+
+### Completed This Session
+- **Found and committed real uncommitted security fixes from a prior (crashed) session** — `middleware.ts` had zero auth check on `/api/studio/*` API routes (only page routes were gated); `/q/[token]` was fetching estimates with the anon key and forwarding client PII + internal fields to the browser. Both fixed in the working tree already, verified against a clean build, committed separately. Commit `96086086`.
+- **Studio home rebuilt around a real "Today" surface** (`/api/studio/today`) — rules-based, no AI: untouched leads (status still `new`), estimates with an event soon and a balance still owed, events coming up without payment issues, and starred-but-unposted photos. Replaces the old static-only stats-first dashboard; empty state reads "You're all caught up."
+- **Self-hosted traffic analytics** — new `site_visits` Supabase table, a public `/api/track` beacon fired from a `VisitTracker` client component in the root layout (public site only, Studio itself excluded), and `/api/studio/analytics` aggregating this week's visit count vs. last week + a referrer-channel breakdown (Instagram/Facebook/Google/Direct/Other) in plain English on the Studio home screen. Built self-hosted (not just an external Vercel dashboard link) specifically so Monica can see it without needing her own separate analytics account.
+- **`@vercel/analytics` added** as a second, zero-effort traffic source for Shawn's own use.
+- Verified: `tsc --noEmit` clean, full `npm run build` clean (all new routes registered), a real Supabase insert/read/delete smoke test against `site_visits` before wiring the app to it. Both commits pushed, Vercel deployment confirmed `READY`/production (`dpl_4Q5CKyagwgaYrMqBFGvyhDAMppwk`). Commit `212dc29b`.
+
+### Still Open
+- **Google Search Console** — needs Shawn (or Monica) to actually create the property at search.google.com/search-console under a real Google login; Claude can then wire the DNS verification record via the Vercel API token already on file and submit the existing `sitemap.xml`. Not something Claude can do alone.
+- Shawn to cancel the duplicate Google Business Profile under his own email — still not confirmed done.
+- The real live $1 Stripe payment test — still Shawn's to run.
+- Full Phases 3-6 (Camera, Calendar/Booking, Leads/Contacts, real email templates, Social) are still ahead — Today surface + analytics were the first concrete piece under the new north star, not the whole rebuild.
+- `site_visits` has no data yet as of this deploy — the "This Week" card will read "just turned on" until real traffic accumulates.
+
+### Shawn Test
+1. Open Studio on your phone — the home screen should now lead with a "Today" section (or "You're all caught up" if nothing's pending), not just the stats grid.
+2. Below that, a "This Week" traffic card — will say tracking just started until a few days of real visits come in.
+3. Tapping a lead in Today should open your phone's dialer with that client's number already filled in.
+
+---
+
 ## Session: August 1, 2026 — Real Reviews, Estimates Round 3, Four Landing Pages
 **AI:** Claude Code
 **Worked on:** Shawn confirmed the real Google review, and greenlit three prior open items in one message: rebuild Reviews, scope + build the event-type landing pages, and ship the previously-approved Estimates Round 3 design.

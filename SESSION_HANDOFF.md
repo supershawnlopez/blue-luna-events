@@ -1,8 +1,32 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 1, 2026 — Claude Code*
+*Last updated: August 2, 2026 — Claude Code*
 
-## 2026-08-01: Real Reviews section, Estimates Round 3, four new landing pages — all LIVE
+## 2026-08-02: Studio Intelligence north star locked + "Today" surface + real traffic analytics — LIVE
+
+Shawn asked to resume the backend/Studio rebuild (`PLATFORM_REBUILD_AUDIT.md` Phases 3-6, approved 2026-07-07, never started). Before any building, he raised the bar in a real 3-round team meeting: Studio has to make both him and Monica say "wow," it has to genuinely think for her (she's not technical), Steve and Jony are the required approval gate on anything shipped, and it needs to feel Apple/iOS-easy — daily/weekly/monthly/quarterly usefulness, real traffic/source stats she can actually read, help promoting. Full reasoning in `DECISIONS.md` "CUSTOM BACKEND / STUDIO INTELLIGENCE SYSTEM." This reframes the whole rebuild's build order: design the home "Today" surface first, build features as what it pulls from — not the old feature-list order.
+
+**Also found and fixed, unrelated to today's brief:** a prior (crashed) session had left two real, uncommitted security fixes sitting in the working tree — `/api/studio/*` API routes had zero auth check (only page routes were gated by middleware), and `/q/[token]` was fetching estimates with the anon key and forwarding client PII + internal fields to the browser. Both were already correctly fixed in the code, just never committed. Verified against a clean build, committed separately. Commit `96086086`.
+
+**Shipped today, in order:**
+1. **Studio home rebuilt around a real "Today" surface.** New `/api/studio/today` — rules-based (explicitly no AI yet, per Shawn's direction), surfaces: leads still sitting untouched, estimates with an event coming up soon and a balance still owed, other events coming up soon, and starred-but-unposted photos. Replaces the old stats-first dashboard as the first thing Monica sees; shows "You're all caught up" when there's nothing pending. Tapping a lead opens the phone dialer directly with that client's number.
+2. **Self-hosted traffic analytics, built natively into Studio.** New `site_visits` table + a public `/api/track` beacon (fired from the public site only, not Studio itself) + `/api/studio/analytics` aggregating this week's visits vs. last week and a referrer-channel breakdown (Instagram/Facebook/Google/Direct/Other), shown in plain English on the Studio home screen. Built self-hosted on purpose — Monica has no separate analytics login, so it had to live where she already is. `@vercel/analytics` also added as a second, zero-effort source for Shawn.
+3. Both changes committed and pushed, Vercel deployment confirmed `READY`/production.
+
+**Still open:**
+- **Google Search Console** — needs Shawn/Monica to create the property themselves at search.google.com/search-console (requires a real Google login Claude doesn't have); Claude can then wire the DNS verification via the existing Vercel API access and submit `sitemap.xml`.
+- The full Phases 3-6 rebuild (Camera, Calendar/Booking, Leads/Contacts, real owner-editable email templates, Social) is still ahead of us — today was the first concrete piece under the new north star, not the whole thing.
+- `site_visits` has no real data yet — the "This Week" card will read "just turned on" until a few days of traffic accumulate.
+- Carried over, unchanged: cancel the duplicate Google Business Profile (Shawn's), the real live $1 Stripe payment test (Shawn's).
+
+**Shawn, test this:**
+1. Open Studio on your phone — home screen should lead with a "Today" section (or "You're all caught up"), not just the stats grid.
+2. Below it, a "This Week" traffic card — will say tracking just started for the first few days.
+3. Tap a lead in Today — should open your phone's dialer with that client's number already filled in.
+
+---
+
+## Prior: 2026-08-01: Real Reviews section, Estimates Round 3, four new landing pages — all LIVE
 
 Shawn confirmed the existing "1 Google review" is real (Christian Ortiz, 5.0★, quinceañera) and gave the go-ahead on three items from the prior handoff.
 
@@ -178,7 +202,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `f9325c5b` — weddings/birthdays/baby-showers/corporate-events landing pages, confirmed `READY`/production on Vercel 2026-08-01. See the 2026-08-01 entry at the top of this file for everything shipped today.
+- Latest `main` commit: `212dc29b` — Studio "Today" surface + real traffic analytics, confirmed `READY`/production on Vercel 2026-08-02 (`dpl_4Q5CKyagwgaYrMqBFGvyhDAMppwk`). See the 2026-08-02 entry at the top of this file. Preceding commit `96086086` is a recovered security fix (Studio API auth gap + `/q/[token]` PII exposure) from an earlier crashed session, also confirmed live.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:
@@ -196,6 +220,8 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - **Estimates list Round 3 shipped 2026-08-01** (commit `3650a057`) — discount-aware pricing display (struck-through original + bold discounted total) and flat rows replacing the per-row card/icon. See the 2026-08-01 entry above.
 - **Homepage Reviews section rebuilt with a real review shipped 2026-08-01** (commit `0c287592`) — see the 2026-08-01 entry above.
 - **Weddings, birthdays, baby showers, corporate events landing pages shipped 2026-08-01** (commit `f9325c5b`) — see the 2026-08-01 entry above.
+- **Studio API auth gap + `/q/[token]` PII exposure fixed 2026-08-02** (commit `96086086`) — `/api/studio/*` now requires a valid session the same way pages do; the client estimate view no longer uses the anon key or forwards internal/PII fields.
+- **Studio "Today" surface + self-hosted traffic analytics shipped 2026-08-02** (commit `212dc29b`) — see the 2026-08-02 entry above. First concrete piece of the new Studio Intelligence north star (`DECISIONS.md`).
 
 ### Still open / not started
 - Shawn has not yet run the real live $1 payment test (discount a test estimate near 100%, complete a real Stripe payment on himself) — capability is built, he just hasn't done it yet.
