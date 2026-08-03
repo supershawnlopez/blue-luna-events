@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Download, Sparkles, Play, Check, Loader2 } from 'lucide-react'
+import { ChevronLeft, Download, Sparkles, Play, Check, Loader2, Copy } from 'lucide-react'
+import { suggestCaption } from '@/lib/captionSuggestions'
 
 type MediaItem = { id: string; url: string; thumbnail_url?: string | null; type: string; file_name: string; caption?: string | null; event_type?: string | null }
 type Layout = 'single' | 'square' | 'story'
@@ -133,16 +134,45 @@ export default function StudioExports() {
   const [exporting, setExporting] = useState<string | null>(null)
   const [done, setDone]           = useState<string | null>(null)
   const [allExporting, setAllExporting] = useState(false)
+  const [captions, setCaptions]   = useState<Record<string, string>>({})
+  const [savingCaption, setSavingCaption] = useState<string | null>(null)
+  const [copiedId, setCopiedId]   = useState<string | null>(null)
 
   useEffect(() => {
     fetch('/api/studio/media')
       .then(r => r.json())
       .then((d: any[]) => {
-        setStarred(Array.isArray(d) ? d.filter(m => m.social_export) : [])
+        const items: MediaItem[] = Array.isArray(d) ? d.filter(m => m.social_export) : []
+        setStarred(items)
+        setCaptions(prev => {
+          const next = { ...prev }
+          for (const item of items) {
+            if (next[item.id] === undefined) next[item.id] = item.caption?.trim() || suggestCaption(item.event_type)
+          }
+          return next
+        })
         setLoading(false)
       })
       .catch(() => setLoading(false))
   }, [])
+
+  async function saveCaption(id: string) {
+    setSavingCaption(id)
+    await fetch(`/api/studio/media/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ caption: captions[id] ?? '' }),
+    })
+    setSavingCaption(null)
+  }
+
+  async function copyCaption(id: string) {
+    try {
+      await navigator.clipboard.writeText(captions[id] ?? '')
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch { /* clipboard unavailable */ }
+  }
 
   async function downloadOne(item: MediaItem) {
     setExporting(item.id)
@@ -191,7 +221,7 @@ export default function StudioExports() {
         <div style={{ background: 'rgba(91,191,191,0.06)', border: '1px solid rgba(91,191,191,0.18)', borderRadius: '14px', padding: '16px 18px', marginBottom: '28px' }}>
           <p style={{ fontSize: '0.82rem', fontWeight: 600, color: '#5BBFBF', margin: '0 0 4px' }}>How it works</p>
           <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: 1.55 }}>
-            Each photo is rendered at full Instagram resolution with your branding — Blue Luna wordmark, teal accent, caption, and website — already baked in. Tap Download on any photo to save it directly to your device. No zip. No fuss.
+            Each photo is rendered at full Instagram resolution with your branding — Blue Luna wordmark, teal accent, and website — already baked in. Tap Download to save it. Every photo also gets a ready-to-use caption below it — edit it if you want, then tap Copy Caption and paste it straight into Instagram.
           </p>
         </div>
 
@@ -246,7 +276,8 @@ export default function StudioExports() {
                 const isExporting = exporting === item.id
                 const isDone      = done === item.id
                 return (
-                  <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '12px 14px' }}>
+                  <div key={item.id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '12px' }}>
                     {/* Thumb */}
                     <div style={{ width: '58px', height: '58px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0, background: '#161616', position: 'relative' }}>
                       {item.thumbnail_url || item.type === 'image' ? (
@@ -263,7 +294,7 @@ export default function StudioExports() {
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: '0.88rem', fontWeight: 600, color: 'white', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {displayCaption(item) || (item.event_type ? toLabel(item.event_type) : 'Untagged photo')}
+                        {item.event_type ? toLabel(item.event_type) : 'Untagged photo'}
                       </p>
                       <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {item.file_name}
@@ -275,6 +306,25 @@ export default function StudioExports() {
                       style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '6px', background: isDone ? 'rgba(34,197,94,0.15)' : 'rgba(91,191,191,0.1)', border: `1px solid ${isDone ? 'rgba(34,197,94,0.4)' : 'rgba(91,191,191,0.25)'}`, borderRadius: '10px', padding: '9px 14px', color: isDone ? '#4ade80' : '#5BBFBF', fontSize: '0.75rem', fontWeight: 700, cursor: (isExporting || !!exporting) ? 'not-allowed' : 'pointer' }}>
                       {isDone ? <><Check size={14} /> Saved</> : isExporting ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <><Download size={14} /> Save</>}
                     </button>
+                  </div>
+
+                  {/* Caption */}
+                  <textarea
+                    value={captions[item.id] ?? ''}
+                    onChange={e => setCaptions(prev => ({ ...prev, [item.id]: e.target.value }))}
+                    rows={3}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px', color: 'rgba(255,255,255,0.75)', fontSize: '0.78rem', lineHeight: 1.5, boxSizing: 'border-box', resize: 'vertical', fontFamily: 'inherit', marginBottom: '8px' }}
+                  />
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button onClick={() => copyCaption(item.id)}
+                      style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: copiedId === item.id ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.05)', border: `1px solid ${copiedId === item.id ? 'rgba(34,197,94,0.35)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '9px', padding: '8px', color: copiedId === item.id ? '#4ade80' : 'rgba(255,255,255,0.55)', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}>
+                      {copiedId === item.id ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy Caption</>}
+                    </button>
+                    <button onClick={() => saveCaption(item.id)} disabled={savingCaption === item.id}
+                      style={{ flex: 1, background: 'rgba(91,191,191,0.08)', border: '1px solid rgba(91,191,191,0.22)', borderRadius: '9px', padding: '8px', color: '#5BBFBF', fontSize: '0.72rem', fontWeight: 600, cursor: 'pointer' }}>
+                      {savingCaption === item.id ? 'Saving…' : 'Save Caption'}
+                    </button>
+                  </div>
                   </div>
                 )
               })}
