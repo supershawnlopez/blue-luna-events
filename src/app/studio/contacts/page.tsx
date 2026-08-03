@@ -158,7 +158,7 @@ export default function StudioContacts() {
       {showAdd && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => setShowAdd(false)} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px env(safe-area-inset-bottom, 32px)' }}>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
             <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '0 0 20px' }}>Add Contact</p>
             {[
               { key: 'name', label: 'Name', placeholder: 'Maria Hernandez' },
@@ -190,7 +190,7 @@ export default function StudioContacts() {
       {active && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => setActive(null)} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px env(safe-area-inset-bottom, 32px)' }}>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
               <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: 0 }}>{active.name}</p>
               <button onClick={() => setActive(null)} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex' }}>
@@ -234,7 +234,7 @@ export default function StudioContacts() {
       {confirmDeleteId && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 70 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => setConfirmDeleteId(null)} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '28px 24px env(safe-area-inset-bottom, 32px)' }}>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '28px 24px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
             <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 24px' }}>Remove this contact?</p>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={() => setConfirmDeleteId(null)} style={{ flex: 1, padding: '15px 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>

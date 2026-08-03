@@ -297,6 +297,19 @@ export default function CameraSheet({ onClose, onDone }: {
         </div>
       )}
 
+      {/* Waiting on the browser's own permission prompt — without this, the
+          black screen before that native dialog appears (or resolves) reads
+          as broken instead of loading. */}
+      {!ready && !error && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', paddingBottom: '25vh', pointerEvents: 'none' }}>
+          <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)' }}>
+            <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2.5px solid rgba(255,255,255,0.2)', borderTopColor: 'white', animation: 'bl-cam-spin 0.8s linear infinite', margin: '0 auto 14px' }} />
+            <p style={{ fontSize: 13, fontWeight: 600, margin: 0 }}>Requesting camera access…</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '4px 0 0' }}>Tap Allow if your phone asks</p>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30,
@@ -341,22 +354,22 @@ export default function CameraSheet({ onClose, onDone }: {
         </button>
       </div>
 
-      {/* Done pill — only once there's something to add */}
-      {captures.length > 0 && !recording && reviewIndex === null && (
-        <div style={{ position: 'absolute', bottom: 'calc(max(env(safe-area-inset-bottom, 0px), 40px) + 168px)', left: 0, right: 0, zIndex: 30, display: 'flex', justifyContent: 'center' }}>
+      {/* Done pill, Zoom, Mode — one stacked column above the shutter row so they
+          can never overlap regardless of which combination is showing (previously
+          each had its own guessed `bottom` offset, which drifted out of sync and
+          visually collided — confirmed on a real device). */}
+      <div style={{
+        position: 'absolute', bottom: 'calc(max(env(safe-area-inset-bottom, 0px), 40px) + 130px)',
+        left: 0, right: 0, zIndex: 30,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+      }}>
+        {captures.length > 0 && !recording && reviewIndex === null && (
           <button onClick={handleDone} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#5BBFBF', border: 'none', borderRadius: 100, padding: '11px 20px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(0,0,0,0.35)' }}>
             <Check size={16} color="#0D0F0F" strokeWidth={3} />
             <span style={{ fontSize: 14, fontWeight: 800, color: '#0D0F0F' }}>Add {captures.length} to Studio</span>
           </button>
-        </div>
-      )}
+        )}
 
-      {/* Zoom + mode */}
-      <div style={{
-        position: 'absolute', bottom: 'calc(max(env(safe-area-inset-bottom, 0px), 40px) + 112px)',
-        left: 0, right: 0, zIndex: 30,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-      }}>
         {!recording && (
           <div style={{ display: 'flex', gap: 4, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 100, padding: '3px 4px', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}>
             {([1, 2, 3] as ZoomLevel[]).map(z => (
@@ -560,6 +573,7 @@ export default function CameraSheet({ onClose, onDone }: {
 
       <style>{`
         @keyframes bl-cam-blink { 0%,100% { opacity:1; } 50% { opacity:0.15; } }
+        @keyframes bl-cam-spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   )

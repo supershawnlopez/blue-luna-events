@@ -858,7 +858,7 @@ export default function StudioMedia() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }}
             onClick={() => { setShowTypeSheet(false); setEditingTypeId(null) }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px env(safe-area-inset-bottom, 32px)', maxHeight: '85vh', overflowY: 'auto' }}>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 20px' }} />
             <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 6px' }}>
               {editingTypeId ? 'Change Category' : 'What type of event?'}

@@ -13,6 +13,27 @@
 
 ---
 
+## Session: August 3, 2026, real-device feedback round — bug fixes to Phases 3 & 4
+**AI:** Claude Code
+**Worked on:** Shawn tested Phases 3-6 on his real phone and reported back real issues. Triaged: Phase 3/4 items were clear bugs, fixed directly. Phase 6 feedback ("weak and ugly," the "11 starred" button doesn't feel intuitive) was an explicit ask for a team conversation before touching any more code — held that in chat, no code changed for Phase 6 this round.
+
+### Completed This Session
+- **Camera (Phase 3):**
+  - Added a real "Requesting camera access…" loading state with a spinner — previously the screen was just black while waiting on the browser's own permission prompt, reading as broken instead of loading.
+  - Fixed a real overlap bug: the "Add N to Studio" button and the zoom/mode controls were each positioned with independently-guessed `bottom` offsets that drifted out of sync, causing them to visually collide (confirmed exactly what Shawn described — a button appearing "right behind the zoom features," unreadable). Restructured into one flex-column stack so spacing is never guessed again.
+- **Schedule (Phase 4):**
+  - Removed the native `<input type="date">` for the block sheet's end date — it was popping the phone's own OS calendar mid-flow right after Monica had already picked a date on the app's own calendar grid, which read as confusing and inconsistent (Shawn's exact complaint). Replaced with quick-pick buttons ("Just this day," "+1 day," "+2 days," "1 week") with a live date-range preview.
+  - Fixed bottom sheets sitting too low / partially hidden behind the mobile browser's own address-bar chrome (not covered by `env(safe-area-inset-bottom)`, which only accounts for the iPhone home-indicator area) — added a flat cushion on top of the safe-area inset across every Studio bottom sheet (Schedule, Leads, Contacts, Templates, My Work).
+- Verified: clean `tsc`/`npm run build`, browser-confirmed the Schedule block sheet (no more OS calendar popup, correct date-range preview) and the camera loading state (visible spinner + message instead of blank black) both work as intended.
+
+### Still Open
+- Shawn to confirm these fixes on his real phone.
+- Phase 6 (Social) needs a real team conversation before any more building — see the team discussion in the conversation itself, not yet resolved into a locked decision.
+- Camera upload progress "took a little long" for 4 photos — likely just real mobile upload time (same compression pipeline as file-picker uploads), not confirmed as a bug. Worth a second look if it keeps happening.
+- Whether/how to link Monica's iCloud calendar, or make bulk-blocking easier (e.g. recurring days off) — real ask, not yet scoped.
+
+---
+
 ## Session: August 3, 2026, last of the day — Phase 6: Social caption assistance
 **AI:** Claude Code
 **Worked on:** Shawn said "continue" right after Phase 5 shipped — kept going into Phase 6, the last phase in the original `PLATFORM_REBUILD_AUDIT.md` plan.

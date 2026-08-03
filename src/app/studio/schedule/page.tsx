@@ -10,9 +10,23 @@ type Blocked = { id: string; startDate: string; endDate: string; reason: string 
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const WEEKDAY_LABELS = ['S','M','T','W','T','F','S']
+const QUICK_RANGES = [
+  { label: 'Just this day', days: 0 },
+  { label: '+1 day', days: 1 },
+  { label: '+2 days', days: 2 },
+  { label: '1 week', days: 6 },
+]
 
 function toDateOnly(d: Date) { return d.toISOString().slice(0, 10) }
 function isPast(dateStr: string, todayStr: string) { return dateStr < todayStr }
+function addDays(dateStr: string, days: number) {
+  const d = new Date(dateStr + 'T00:00:00')
+  d.setDate(d.getDate() + days)
+  return toDateOnly(d)
+}
+function formatShort(dateStr: string) {
+  return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+}
 
 export default function StudioSchedule() {
   const [cursor, setCursor] = useState(() => { const d = new Date(); d.setDate(1); return d })
@@ -21,7 +35,7 @@ export default function StudioSchedule() {
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [blockReason, setBlockReason] = useState('')
-  const [blockEndDate, setBlockEndDate] = useState<string | null>(null)
+  const [blockRangeDays, setBlockRangeDays] = useState(0)
   const [saving, setSaving] = useState(false)
   const [confirmRemoveId, setConfirmRemoveId] = useState<string | null>(null)
 
@@ -71,11 +85,11 @@ export default function StudioSchedule() {
     const res = await fetch('/api/studio/availability', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ start_date: selectedDate, end_date: blockEndDate || selectedDate, reason: blockReason.trim() || null }),
+      body: JSON.stringify({ start_date: selectedDate, end_date: addDays(selectedDate, blockRangeDays), reason: blockReason.trim() || null }),
     })
     setSaving(false)
     if (res.ok) {
-      setSelectedDate(null); setBlockReason(''); setBlockEndDate(null)
+      setSelectedDate(null); setBlockReason(''); setBlockRangeDays(0)
       load()
     }
   }
@@ -185,22 +199,28 @@ export default function StudioSchedule() {
       {/* Block-a-date sheet */}
       {selectedDate && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => { setSelectedDate(null); setBlockReason(''); setBlockEndDate(null) }} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px env(safe-area-inset-bottom, 32px)' }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => { setSelectedDate(null); setBlockReason(''); setBlockRangeDays(0) }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
             <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 20px' }} />
             <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 6px' }}>Block this date?</p>
-            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '0 0 20px' }}>{selectedDate}</p>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.4)', textAlign: 'center', margin: '0 0 20px' }}>
+              {selectedDate && formatShort(selectedDate)}{blockRangeDays > 0 && selectedDate ? ` → ${formatShort(addDays(selectedDate, blockRangeDays))}` : ''}
+            </p>
 
             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '8px' }}>
-              Through (optional, for a multi-day block)
+              How many days?
             </label>
-            <input
-              type="date"
-              min={selectedDate}
-              value={blockEndDate ?? ''}
-              onChange={e => setBlockEndDate(e.target.value || null)}
-              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', color: 'white', fontSize: '0.85rem', marginBottom: '14px', colorScheme: 'dark' }}
-            />
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
+              {QUICK_RANGES.map(r => {
+                const active = blockRangeDays === r.days
+                return (
+                  <button key={r.days} onClick={() => setBlockRangeDays(r.days)}
+                    style={{ flex: 1, padding: '11px 4px', borderRadius: '10px', border: active ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: active ? 'rgba(91,191,191,0.12)' : 'rgba(255,255,255,0.04)', color: active ? '#5BBFBF' : 'rgba(255,255,255,0.5)', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}>
+                    {r.label}
+                  </button>
+                )
+              })}
+            </div>
 
             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '8px' }}>
               Reason (optional)
@@ -209,11 +229,11 @@ export default function StudioSchedule() {
               placeholder="e.g. Personal day, already booked elsewhere"
               value={blockReason}
               onChange={e => setBlockReason(e.target.value)}
-              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', color: 'white', fontSize: '0.85rem', marginBottom: '20px' }}
+              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', color: 'white', fontSize: '0.85rem', marginBottom: '20px', boxSizing: 'border-box' }}
             />
 
             <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => { setSelectedDate(null); setBlockReason(''); setBlockEndDate(null) }} style={{ flex: 1, padding: '15px 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+              <button onClick={() => { setSelectedDate(null); setBlockReason(''); setBlockRangeDays(0) }} style={{ flex: 1, padding: '15px 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
                 Cancel
               </button>
               <button onClick={submitBlock} disabled={saving} style={{ flex: 1, padding: '15px 0', borderRadius: '12px', border: 'none', background: '#5BBFBF', color: '#0D0F0F', fontSize: '0.9rem', fontWeight: 700, cursor: saving ? 'default' : 'pointer', opacity: saving ? 0.6 : 1 }}>
@@ -228,7 +248,7 @@ export default function StudioSchedule() {
       {confirmRemoveId && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => setConfirmRemoveId(null)} />
-          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '28px 24px env(safe-area-inset-bottom, 32px)' }}>
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '28px 24px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
             <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 24px' }}>Remove this block? The date opens back up.</p>
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={() => setConfirmRemoveId(null)} style={{ flex: 1, padding: '15px 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
