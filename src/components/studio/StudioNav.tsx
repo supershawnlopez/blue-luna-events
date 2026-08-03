@@ -2,10 +2,11 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Images, FolderOpen, FileText, CalendarDays } from 'lucide-react'
+import { Home, Images, FolderOpen, FileText, CalendarDays, Inbox } from 'lucide-react'
 
 const TABS = [
   { label: 'Home',      href: '/studio',           icon: Home },
+  { label: 'Leads',     href: '/studio/leads',      icon: Inbox },
   { label: 'My Work',   href: '/studio/media',      icon: Images },
   { label: 'Schedule',  href: '/studio/schedule',   icon: CalendarDays },
   { label: 'Galleries', href: '/studio/galleries',  icon: FolderOpen },
@@ -32,7 +33,7 @@ export default function StudioNav() {
               <div style={{ width: '44px', height: '28px', borderRadius: '14px', background: active ? 'rgba(91,191,191,0.15)' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.15s' }}>
                 <Icon size={18} color={active ? '#5BBFBF' : 'rgba(255,255,255,0.35)'} />
               </div>
-              <span style={{ fontSize: '11px', fontWeight: 600, color: active ? '#5BBFBF' : 'rgba(255,255,255,0.35)', letterSpacing: '0.02em' }}>{label}</span>
+              <span style={{ fontSize: '10px', fontWeight: 600, color: active ? '#5BBFBF' : 'rgba(255,255,255,0.35)', letterSpacing: '0.01em', whiteSpace: 'nowrap' }}>{label}</span>
             </Link>
           )
         })}
