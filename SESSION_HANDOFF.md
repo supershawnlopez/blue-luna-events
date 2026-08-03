@@ -2,7 +2,17 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 3, 2026 — Claude Code*
 
-## 2026-08-03, real-device feedback round: 3 real bugs fixed, Phase 6 paused for a real team conversation
+## 2026-08-03, final: Logo bug fixed, then Social Export scratched on your call
+
+Found the logo bug — it wasn't in the code, the actual `/images/logo-white.png` file was corrupted (the wordmark itself read "BLUFLUNA EVENTS"). Fixed by drawing the logo directly instead of depending on that file. You looked at the real result and called it: "looks horrible, let's scratch it for now and leave heart only for sites."
+
+**Done:** Removed Star/Social Export from Studio entirely — the star toggle, the "N starred" button, the Home quick-action, the Today nudge. My Work is Heart-only now, exactly what you asked for. Nothing underneath was deleted (the database columns, the `/studio/exports` page, the caption code) — it's just not shown anywhere, so nothing's lost if you want to revisit this once real Instagram posting is actually on the table.
+
+**Shawn, test this:** Studio → My Work — every photo card should show just a heart and a trash can, no star. Same in the lightbox (tap a photo) and no "starred" button up top next to Shoot/Upload.
+
+---
+
+## Prior: 2026-08-03, real-device feedback round: 3 real bugs fixed, Phase 6 paused for a real team conversation
 
 You tested Phases 3-6 for real and sent back concrete feedback. Fixed what were clearly bugs, and deliberately did NOT touch Phase 6 code — you asked directly for the team to figure out what Social is actually trying to do first, so that happened in conversation, not in the editor.
 

@@ -2,10 +2,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-import { ChevronLeft, Upload, Camera, Heart, Star, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles, Crown, GraduationCap, Cake, Baby, Gem, Briefcase, Download, LucideIcon } from 'lucide-react'
+import { ChevronLeft, Upload, Camera, Heart, Play, Check, Trash2, X, ChevronRight, Tag, Sparkles, Crown, GraduationCap, Cake, Baby, Gem, Briefcase, LucideIcon } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import CameraSheet from '@/components/studio/CameraSheet'
+// Star / Social Export was removed from Studio's UI 2026-08-03 per Shawn's
+// direct call — the exported branding looked bad and the "starred" entry
+// point didn't read as intuitive to a non-technical user. Left the underlying
+// `social_export` column, /studio/exports page, and caption code in place,
+// just unlinked — same pattern as the removed-but-not-deleted Reviews
+// section — in case this gets picked back up later. Heart (show_on_website)
+// is the only curation flag exposed here now.
 
 type MediaItem = {
   id: string
@@ -32,7 +38,7 @@ const EVENT_TYPES: EventType[] = [
   { id: 'other',       label: 'Other',       icon: Sparkles,        color: '#FB923C', bg: 'rgba(251,146,60,0.15)'  },
 ]
 
-type Filter = 'all' | 'website' | 'social'
+type Filter = 'all' | 'website'
 
 function getEventType(id?: string | null): EventType | null { return EVENT_TYPES.find(e => e.id === id) ?? null }
 
@@ -104,7 +110,6 @@ export default function StudioMedia() {
 
   const filtered = media.filter(m => {
     if (filter === 'website' && !m.show_on_website) return false
-    if (filter === 'social'  && !m.social_export)   return false
     if (eventFilter && m.event_type !== eventFilter) return false
     return true
   })
@@ -465,12 +470,12 @@ export default function StudioMedia() {
     }
   }
 
-  async function toggle(id: string, field: 'show_on_website' | 'social_export', current: boolean) {
-    setMedia(prev => prev.map(m => m.id === id ? { ...m, [field]: !current } : m))
+  async function toggle(id: string, current: boolean) {
+    setMedia(prev => prev.map(m => m.id === id ? { ...m, show_on_website: !current } : m))
     fetch(`/api/studio/media/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ [field]: !current }),
+      body: JSON.stringify({ show_on_website: !current }),
     })
   }
 
@@ -506,12 +511,6 @@ export default function StudioMedia() {
               <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.01em' }}>My Work</h1>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {media.filter(m => m.social_export).length > 0 && (
-                <Link href="/studio/exports"
-                  style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.3)', borderRadius: '10px', padding: '9px 12px', color: '#5BBFBF', fontSize: '0.72rem', fontWeight: 700, textDecoration: 'none' }}>
-                  <Download size={13} /> {media.filter(m => m.social_export).length} starred
-                </Link>
-              )}
               <button onClick={() => openTypeSheet('camera')}
                 style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '9px 13px', color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
                 <Camera size={14} /> Shoot
@@ -591,12 +590,11 @@ export default function StudioMedia() {
 
           {/* Status filter tabs */}
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: activeEventTypes.length > 0 ? '8px' : '0' }}>
-            {(['all', 'website', 'social'] as Filter[]).map(f => (
+            {(['all', 'website'] as Filter[]).map(f => (
               <button key={f} onClick={() => setFilter(f)}
                 style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 13px', borderRadius: '999px', border: filter === f ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: filter === f ? 'rgba(91,191,191,0.12)' : 'transparent', color: filter === f ? '#5BBFBF' : 'rgba(255,255,255,0.35)', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
                 {f === 'website' && <Heart size={11} fill="currentColor" />}
-                {f === 'social'  && <Star  size={11} fill="currentColor" />}
-                {f === 'all' ? `All (${media.length})` : f === 'website' ? `Website (${media.filter(m => m.show_on_website).length})` : `Social (${media.filter(m => m.social_export).length})`}
+                {f === 'all' ? `All (${media.length})` : `Website (${media.filter(m => m.show_on_website).length})`}
               </button>
             ))}
           </div>
@@ -627,7 +625,7 @@ export default function StudioMedia() {
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.88rem', marginBottom: '20px' }}>
-              {filter === 'all' ? 'No photos or videos yet.' : `Nothing tagged for ${filter === 'website' ? 'the website' : 'social'} yet.`}
+              {filter === 'all' ? 'No photos or videos yet.' : 'Nothing hearted for the website yet.'}
             </p>
             {filter === 'all' && (
               <button onClick={() => fileRef.current?.click()}
@@ -680,18 +678,12 @@ export default function StudioMedia() {
                   </button>
                 )})()}
 
-                {/* Bottom action bar — heart & star with generous tap targets */}
+                {/* Bottom action bar — heart, generous tap target */}
                 <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, display: 'flex', height: '44px' }}>
-                  <button onClick={e => { e.stopPropagation(); toggle(item.id, 'show_on_website', item.show_on_website) }}
+                  <button onClick={e => { e.stopPropagation(); toggle(item.id, item.show_on_website) }}
                     style={{ flex: 1, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: item.show_on_website ? 'rgba(239,68,68,0.85)' : 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
                       <Heart size={14} color="white" fill={item.show_on_website ? 'white' : 'none'} />
-                    </div>
-                  </button>
-                  <button onClick={e => { e.stopPropagation(); toggle(item.id, 'social_export', item.social_export) }}
-                    style={{ flex: 1, background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: item.social_export ? 'rgba(234,179,8,0.85)' : 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
-                      <Star size={14} color="white" fill={item.social_export ? 'white' : 'none'} />
                     </div>
                   </button>
                   <button onClick={e => { e.stopPropagation(); setConfirmDeleteId(item.id) }}
@@ -824,20 +816,12 @@ export default function StudioMedia() {
           </div>
 
           <div style={{ padding: '16px 24px env(safe-area-inset-bottom, 24px)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexShrink: 0 }}>
-            <button onClick={() => toggle(lightboxItem.id, 'show_on_website', lightboxItem.show_on_website)}
+            <button onClick={() => toggle(lightboxItem.id, lightboxItem.show_on_website)}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 20px' }}>
               <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: lightboxItem.show_on_website ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.06)', border: lightboxItem.show_on_website ? '1.5px solid rgba(239,68,68,0.5)' : '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}>
                 <Heart size={22} color={lightboxItem.show_on_website ? '#ef4444' : 'rgba(255,255,255,0.4)'} fill={lightboxItem.show_on_website ? '#ef4444' : 'none'} />
               </div>
               <span style={{ fontSize: '0.68rem', fontWeight: 600, color: lightboxItem.show_on_website ? '#ef4444' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>Website</span>
-            </button>
-
-            <button onClick={() => toggle(lightboxItem.id, 'social_export', lightboxItem.social_export)}
-              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 20px' }}>
-              <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: lightboxItem.social_export ? 'rgba(234,179,8,0.2)' : 'rgba(255,255,255,0.06)', border: lightboxItem.social_export ? '1.5px solid rgba(234,179,8,0.5)' : '1.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}>
-                <Star size={22} color={lightboxItem.social_export ? '#eab308' : 'rgba(255,255,255,0.4)'} fill={lightboxItem.social_export ? '#eab308' : 'none'} />
-              </div>
-              <span style={{ fontSize: '0.68rem', fontWeight: 600, color: lightboxItem.social_export ? '#eab308' : 'rgba(255,255,255,0.3)', letterSpacing: '0.05em' }}>Social</span>
             </button>
           </div>
         </div>

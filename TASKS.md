@@ -203,7 +203,7 @@ Exit criteria for Phase 1:
 3. ~~Phase 3 — Camera & Photos~~ ✅ Shipped 2026-08-03 — see DONE.
 4. ~~Phase 4 — Calendar/Booking~~ ✅ Shipped 2026-08-03 — see DONE. iCloud two-way sync itself is still a real future follow-on (schema is ready for it).
 5. ~~Phase 5 — Leads, Contacts, Email~~ ✅ Shipped 2026-08-03 — see DONE. SMS bulk-send activation still needs Shawn's Twilio account + A2P 10DLC registration.
-6. ~~Phase 6 — Social / Caption Assistance~~ ✅ Shipped 2026-08-03 — see DONE. Real Instagram/Facebook auto-posting (Meta Graph API) is a separate, bigger future project, not part of this.
+6. ~~Phase 6 — Social / Caption Assistance~~ Built 2026-08-03, then **scratched the same day** on Shawn's direct call after seeing the real export ("looks horrible") — see DONE + `DECISIONS.md`. Heart-only in Studio now. Code left in place, unlinked, in case real Instagram auto-posting (a separate, bigger future project) ever makes this worth revisiting.
 7. Component photos for custom builder — Image Agent task (see AGENTS.md → Image Agent). Source or generate 15–20 images for à la carte options in Step3Custom, from @BlueLunaMagic Instagram.
 8. Next.js upgrade (14.2 → 16.x) — own session, test build after.
 

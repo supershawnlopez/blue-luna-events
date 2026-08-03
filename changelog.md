@@ -28,6 +28,8 @@
 
 - **Logo bug fix (Phase 6):** Shawn sent real screenshots of an exported image. Opening `/public/images/logo-white.png` directly confirmed the source file itself is corrupted — the wordmark reads "BLUFLUNA EVENTS," letters missing/overlapping — not a bug in the canvas rendering code. Only ever visible inside generated export images, so it was never caught browsing the site. Fixed by no longer depending on that file at all: the branding strip now draws the moon mark and wordmark directly on canvas. Team explicitly held off on any further Social redesign per Shawn's ask — this was a pure bug fix, not a product/design decision.
 
+- **Social Export scratched.** Shawn tested the logo fix, said the export itself "looks horrible," and made the call directly: "let's scratch it for now and leave heart only for sites." Removed the Star toggle (grid + lightbox + filter pill), the "N starred" header button, and the "Export for Social" Home quick-action from Studio's UI. The Today surface no longer nudges about photos ready to post. Nothing deleted underneath — `social_export`/`caption` columns, `/studio/exports`, and the caption-suggestion code all stay in the repo, just unlinked, same treatment as the removed-but-not-deleted homepage Reviews section. Full reasoning in `DECISIONS.md`.
+
 ### Still Open
 - Shawn to confirm the logo fix on a real exported image (couldn't get a clean browser screenshot this round due to tooling issues — shipped on code-correctness grounds, needs his eyes on the real output).
 - Shawn to confirm the other 3 fixes on his real phone.
