@@ -26,9 +26,12 @@
   - Fixed bottom sheets sitting too low / partially hidden behind the mobile browser's own address-bar chrome (not covered by `env(safe-area-inset-bottom)`, which only accounts for the iPhone home-indicator area) — added a flat cushion on top of the safe-area inset across every Studio bottom sheet (Schedule, Leads, Contacts, Templates, My Work).
 - Verified: clean `tsc`/`npm run build`, browser-confirmed the Schedule block sheet (no more OS calendar popup, correct date-range preview) and the camera loading state (visible spinner + message instead of blank black) both work as intended.
 
+- **Logo bug fix (Phase 6):** Shawn sent real screenshots of an exported image. Opening `/public/images/logo-white.png` directly confirmed the source file itself is corrupted — the wordmark reads "BLUFLUNA EVENTS," letters missing/overlapping — not a bug in the canvas rendering code. Only ever visible inside generated export images, so it was never caught browsing the site. Fixed by no longer depending on that file at all: the branding strip now draws the moon mark and wordmark directly on canvas. Team explicitly held off on any further Social redesign per Shawn's ask — this was a pure bug fix, not a product/design decision.
+
 ### Still Open
-- Shawn to confirm these fixes on his real phone.
-- Phase 6 (Social) needs a real team conversation before any more building — see the team discussion in the conversation itself, not yet resolved into a locked decision.
+- Shawn to confirm the logo fix on a real exported image (couldn't get a clean browser screenshot this round due to tooling issues — shipped on code-correctness grounds, needs his eyes on the real output).
+- Shawn to confirm the other 3 fixes on his real phone.
+- Phase 6 (Social) — the bigger question (is manual download/copy-paste worth building further given real Instagram auto-posting is a separate future project) is still open, waiting on Shawn's call.
 - Camera upload progress "took a little long" for 4 photos — likely just real mobile upload time (same compression pipeline as file-picker uploads), not confirmed as a bug. Worth a second look if it keeps happening.
 - Whether/how to link Monica's iCloud calendar, or make bulk-blocking easier (e.g. recurring days off) — real ask, not yet scoped.
 
