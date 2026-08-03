@@ -2,7 +2,21 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 3, 2026 — Claude Code*
 
-## 2026-08-03, final: Logo bug fixed, then Social Export scratched on your call
+## 2026-08-03, truly final: the "This Week" traffic card now shows something useful
+
+You said the visit-count card "doesn't do her or me any good" and asked for a team meeting, Steve leading. Team's read: a raw number isn't useful, but knowing *which channel actually brings her leads* is — that's a real business answer, not a vanity stat. You said try it.
+
+**Shipped:** Studio Home's card is now "This Month" — it leads with something like "3 leads — 2 from Instagram, 1 from Google," captured at the exact moment someone submits the inquiry form (not guessed after the fact). The raw weekly visit count is still there, just smaller, underneath.
+
+**Found a real bug while testing this, not from anything you reported:** the "this month" cutoff was quietly using the server's own clock. It looked right on my test machine only because that machine happens to be set to Arizona time — but confirmed directly that on the real production server (which runs on UTC), a lead submitted late at night would have been counted into the wrong month. Fixed before it ever shipped.
+
+Google Search Console (what people actually search to find her — the other half of the original analytics plan) is still real and still worth doing, just needs its own session — it requires setting up a Google Cloud service account against the verified domain, more than a quick add.
+
+**Shawn, test this:** Studio → Home → the card right below Today should say "This Month" and lead with a plain sentence about your leads, not a bare number.
+
+---
+
+## Prior: 2026-08-03, final: Logo bug fixed, then Social Export scratched on your call
 
 Found the logo bug — it wasn't in the code, the actual `/images/logo-white.png` file was corrupted (the wordmark itself read "BLUFLUNA EVENTS"). Fixed by drawing the logo directly instead of depending on that file. You looked at the real result and called it: "looks horrible, let's scratch it for now and leave heart only for sites."
 
