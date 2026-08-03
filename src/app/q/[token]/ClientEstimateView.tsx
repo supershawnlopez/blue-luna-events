@@ -8,8 +8,6 @@ import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
 type Estimate = {
   id: string
   client_name: string
-  client_email: string
-  client_phone?: string
   event_type?: string
   event_date?: string
   venue?: string
@@ -19,8 +17,6 @@ type Estimate = {
   discount_type?: string | null
   discount_value?: number | null
   discount_note?: string | null
-  status: string
-  share_token: string
   payments: EstimatePayment[]
 }
 
