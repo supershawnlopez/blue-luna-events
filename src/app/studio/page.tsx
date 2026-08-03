@@ -14,6 +14,11 @@ type AnalyticsData = {
   channels: { channel: string; count: number }[]
 }
 
+type LeadSourceData = {
+  total: number
+  channels: { channel: string; count: number }[]
+}
+
 type TodayData = {
   leads: { count: number; items: { id: string; name: string; phone: string; eventType: string; daysWaiting: number }[] }
   eventsSoon: { id: string; clientName: string; eventType: string; eventDate: string; daysUntil: number; amountOwed: number }[]
@@ -86,6 +91,7 @@ export default function StudioHome() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [today, setToday] = useState<TodayData | null>(null)
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
+  const [leadSources, setLeadSources] = useState<LeadSourceData | null>(null)
 
   useEffect(() => {
     fetch('/api/studio/stats')
@@ -97,6 +103,9 @@ export default function StudioHome() {
     fetch('/api/studio/analytics')
       .then(r => r.ok ? r.json() : null)
       .then(d => d && setAnalytics(d))
+    fetch('/api/studio/lead-sources')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d && setLeadSources(d))
   }, [])
 
   const todayItems = today ? buildTodayItems(today) : []
@@ -161,44 +170,39 @@ export default function StudioHome() {
           </div>
         )}
 
-        {/* This Week — traffic */}
+        {/* This Month — where leads actually come from */}
         <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 14px' }}>
-          This Week
+          This Month
         </p>
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', marginBottom: '36px' }}>
-          {analytics === null ? (
+          {leadSources === null ? (
             <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Loading...</p>
-          ) : analytics.visitsThisWeek === 0 && analytics.visitsPrevWeek === 0 ? (
-            <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Traffic tracking just turned on — check back in a few days to see who&apos;s visiting the site.</p>
+          ) : leadSources.total === 0 ? (
+            <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>No new leads yet this month.</p>
           ) : (
-            <>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '10px' }}>
-                <p style={{ fontSize: '2rem', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.03em', lineHeight: 1 }}>
-                  {analytics.visitsThisWeek}
-                </p>
-                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>visits to the site this week</p>
-              </div>
-              {analytics.visitsPrevWeek > 0 && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px' }}>
-                  {analytics.visitsThisWeek >= analytics.visitsPrevWeek
-                    ? <TrendingUp size={14} color="#5BBFBF" />
-                    : <TrendingDown size={14} color="rgba(255,255,255,0.4)" />}
-                  <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                    {Math.abs(Math.round(((analytics.visitsThisWeek - analytics.visitsPrevWeek) / analytics.visitsPrevWeek) * 100))}% {analytics.visitsThisWeek >= analytics.visitsPrevWeek ? 'more' : 'fewer'} than last week
-                  </p>
-                </div>
-              )}
-              {analytics.channels.length > 0 && (
-                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.55)', margin: 0 }}>
-                  {analytics.channels.slice(0, 3).map((c, i) => (
-                    <span key={c.channel}>
-                      {i > 0 && ' · '}
-                      <span style={{ color: 'white', fontWeight: 600 }}>{c.channel}</span> {Math.round((c.count / analytics.visitsThisWeek) * 100)}%
-                    </span>
-                  ))}
-                </p>
-              )}
-            </>
+            <p style={{ fontSize: '0.92rem', color: 'white', margin: 0, lineHeight: 1.6 }}>
+              <span style={{ fontWeight: 700 }}>{leadSources.total} lead{leadSources.total === 1 ? '' : 's'}</span>
+              {' — '}
+              {leadSources.channels.map((c, i) => (
+                <span key={c.channel}>
+                  {i > 0 && (i === leadSources.channels.length - 1 ? ', and ' : ', ')}
+                  {c.count} from {c.channel === 'Direct' ? 'direct/unknown' : c.channel}
+                </span>
+              ))}
+              .
+            </p>
+          )}
+
+          {/* Site traffic — secondary, smaller */}
+          {analytics && !(analytics.visitsThisWeek === 0 && analytics.visitsPrevWeek === 0) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              {analytics.visitsPrevWeek > 0 && (analytics.visitsThisWeek >= analytics.visitsPrevWeek
+                ? <TrendingUp size={12} color="rgba(255,255,255,0.3)" />
+                : <TrendingDown size={12} color="rgba(255,255,255,0.3)" />)}
+              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+                {analytics.visitsThisWeek} site visits this week
+              </p>
+            </div>
           )}
         </div>
 

@@ -1,24 +1,10 @@
 import { NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
+import { channelFor } from '@/lib/channel'
 
 export const dynamic = 'force-dynamic'
 
 const DAY_MS = 24 * 60 * 60 * 1000
-
-function channelFor(referrer: string | null): string {
-  if (!referrer) return 'Direct'
-  let host = ''
-  try {
-    host = new URL(referrer).hostname.replace(/^www\.|^l\.|^lm\./, '')
-  } catch {
-    return 'Other'
-  }
-  if (host.includes('instagram.com')) return 'Instagram'
-  if (host.includes('facebook.com')) return 'Facebook'
-  if (host.includes('google.')) return 'Google'
-  if (host.includes('bluelunaevents.com')) return 'Direct'
-  return 'Other'
-}
 
 export async function GET() {
   const db = serverClient()

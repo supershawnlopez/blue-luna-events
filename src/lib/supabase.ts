@@ -76,6 +76,8 @@ export type Lead = {
   setup_time?: string
   looking_for?: string[]
   inspo_photos?: string[]
+  // Captured at submission time — document.referrer, categorized server-side
+  referrer_raw?: string
 }
 
 export type GalleryPhoto = {

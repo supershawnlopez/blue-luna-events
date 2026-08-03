@@ -3,6 +3,7 @@
 import { Resend } from 'resend'
 import { Lead, serverClient } from './supabase'
 import { SITE_CONFIG } from './config'
+import { channelFor } from './channel'
 
 export async function submitLead(data: Lead) {
   const supabase = serverClient()
@@ -40,6 +41,8 @@ export async function submitLead(data: Lead) {
       setup_time: data.setup_time ?? null,
       looking_for: data.looking_for ?? null,
       inspo_photos: data.inspo_photos ?? null,
+      referrer_raw: data.referrer_raw ?? null,
+      referrer_channel: channelFor(data.referrer_raw),
     }])
     .select('id')
     .single()

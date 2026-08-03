@@ -173,6 +173,7 @@ export default function InquiryForm() {
       looking_for: form.lookingFor.length ? form.lookingFor : undefined,
       inspo_photos: photos.filter(p => !p.uploading).map(p => p.url),
       source: 'inquiry',
+      referrer_raw: typeof document !== 'undefined' ? (document.referrer || undefined) : undefined,
     })
 
     setLoading(false)
