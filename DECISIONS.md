@@ -278,3 +278,22 @@ Approved by: Shawn ("approved follow team explicitly")
 Approved by: Shawn (asked the team to decide depth, driven by SEO/AEO/GEO)
 Why: Phil (Marketing/SEO) led — thin pages were the actual problem being fixed (these four routed to a homepage anchor, which reads as duplicate/no content to search engines); AEO and GEO both reward depth and extractable specifics (FAQPage schema, concrete service descriptions), so going lighter would have undercut the fix. Craig noted the general Essential/Signature/Luxury tiers already apply to all four event types (`eventTypes: 'all'` in `PACKAGE_CATALOG`), so no new pricing tiers were needed — same low lift as expected. Built to the exact same structure as `/quinceaneras`/`/graduations`: hero, features, packages, FAQ with schema, CTA. FAQ pricing answers follow the locked no-bare-number, consultive pattern ("depends on your vision, tell us and get a personal quote"). Shawn chose "build first, review after" for copy rather than pre-approving angles.
 - Uses the same static 7-photo local pool (`/public/images`) as the existing two pages, not real Supabase photos tagged by event type — same tolerance already live on `/graduations` (whose hero photo visibly reads "Happy Birthday Georgia"), not a new issue. Real fix needs Monica's photos tagged by event type — not scoped yet.
+
+---
+
+## CUSTOM BACKEND / STUDIO INTELLIGENCE SYSTEM (2026-08-02)
+
+Shawn asked the team to resume the backend rebuild scoped in `PLATFORM_REBUILD_AUDIT.md` (Phases 3-6, never started), then raised the bar with his own brief before any building started. Full team meeting held per `brief.md` Step 4 — Shawn participated directly across three rounds, not a rubber-stamp.
+
+**[2026-08-02] — Studio's north star: a system that "thinks for her," not a data-entry tool. Steve + Jony are the required approval gate on anything shipped.**
+Approved by: Shawn
+Why, in Shawn's own words: it has to make both Monica and Shawn say "wow," it has to not just be functional but think for her since she's not technical, and it has to be Apple/iOS-level easy. Concretely (Angela's translation, confirmed by Shawn): the Studio home screen should surface what needs Monica's attention *today* (untouched leads, upcoming payment/event dates, photos ready to post) rather than showing her tables/filters she has to interpret herself. This reframes the build order from "ship the Phase 3-6 feature list in order" to "design the home surface first, build features as what it pulls from" — see Jony's note below.
+- Steve is included at a high level on major decisions; Jony has Shawn's trust to execute without a separate design-mockup ceremony step first.
+
+**[2026-08-02] — Rules-based smart surfacing now. AI-generated suggestions explicitly deferred, not in scope yet.**
+Approved by: Shawn
+Why: Shawn was direct — "think for her" does not mean AI yet, that's an explicit future layer. For now: simple rule-based logic (e.g., lead untouched 48hrs → flag it; event in N days with balance owed → remind; starred photos with no recent social activity → nudge). Do not reach for an LLM-backed suggestion feature under this decision — that requires a fresh conversation with Shawn first.
+
+**[2026-08-02] — Analytics: Vercel Analytics (primary, traffic + referrer/source breakdown) + Google Search Console (complementary, real search-query-level insight for SEO/AEO).**
+Approved by: Shawn (delegated the tool choice to the team: "whatever they decide is fine... or if they wanna use all of them to grab different pieces of information")
+Why (Craig/Priya/Phil): Vercel Analytics is already on the hosting platform Blue Luna runs on — zero new vendor, no cookie-consent banner needed, gives page views + referrer/channel breakdown (Instagram vs. Google vs. direct) which directly answers Monica's "where do my visitors come from" question. Google Search Console is free and adds a different, valuable signal Vercel Analytics can't: the actual search queries bringing people to the site, which matters directly for the SEO/AEO work already underway. Both are zero-cost, consistent with this project's "zero-cost infrastructure" principle (`project.md`). Not mutually exclusive — using both to cover different questions, not picking one.

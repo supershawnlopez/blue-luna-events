@@ -16,9 +16,11 @@
 
 ## CURRENT PHASE
 
-**Platform Rebuild — Phase 1: Foundation (two parallel lanes) — APPROVED by Shawn 2026-07-07 (see DECISIONS.md).**
+**Studio Intelligence Rebuild — Phases 3-6 of the platform rebuild, reframed around a new north star — APPROVED by Shawn 2026-08-02 (see DECISIONS.md "CUSTOM BACKEND / STUDIO INTELLIGENCE SYSTEM").**
 
-Full audit + team decisions: `PLATFORM_REBUILD_AUDIT.md`. Locked decisions: `DECISIONS.md` (July 7, 2026 entries).
+Phase 1 (Stripe checkout, PDF receipts, SEO foundation) is DONE — see DONE sections below. This phase resumes the Camera/Calendar/Leads/Contacts/Email/Social work from `PLATFORM_REBUILD_AUDIT.md` Phases 3-6, but Shawn raised the bar first: Studio must "think for her," not just hold data — rules-based (no AI yet) surfacing of what needs Monica's attention, real traffic/source analytics she can actually read, Apple/iOS-level ease. Steve + Jony are the required approval gate. Build order is now: home "Today" surface first (what it needs to pull from drives what gets built), not feature-list order.
+
+Full audit + team decisions: `PLATFORM_REBUILD_AUDIT.md`. Locked decisions: `DECISIONS.md` (July 7 + August 2, 2026 entries).
 
 Goal: fix what's broken (unfinished payments, no real calendar) and lay SEO groundwork, without blocking Jony's design work behind it. Package Configurator + Lead Automation (the original Phase 1) is complete — see COMPLETED below — this is the next phase of the full platform rebuild Shawn requested.
 
@@ -41,15 +43,18 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Run the real live $1 payment test** (approach decided 2026-07-09 — using the discount trick, now built)
-- Shawn confirmed his approach: apply a near-100% discount to a test estimate so the actual charge is ~$1, then complete a real live Stripe payment on himself. Discounts are now built (see `ESTIMATES_PAYMENTS_AUDIT.md` — payment ledger rework shipped 2026-07-09) — Shawn can do this himself from the estimate detail page in Studio whenever ready.
-- Owner: Shawn runs the test.
+1. **Build the Studio "Today" surface** — rules-based, non-AI logic that surfaces what needs Monica's attention (untouched leads, upcoming event/payment dates, starred-but-unposted photos) on the Studio home screen, replacing the current static stats-card dashboard. See `DECISIONS.md` 2026-08-02.
+- Owner: Claude Code, in progress.
 
-2. **Cancel the duplicate Google Business Profile Shawn started under his own email**
+2. **Wire up analytics: Vercel Analytics + Google Search Console**
+- Vercel Analytics for traffic/referrer-source data, GSC for real search-query insight. Both surfaced inside Studio in plain-English form, not a raw analytics dashboard. See `DECISIONS.md` 2026-08-02.
+- Owner: Claude Code, in progress.
+
+3. **Cancel the duplicate Google Business Profile Shawn started under his own email**
 - Real profile lives under Monica's Gmail (confirmed 2026-07-30) — the second one Shawn started under his own email is a true duplicate. Steps already given (business.google.com → that profile → Business Profile settings → Remove Business Profile). Not yet confirmed done.
 - Owner: Shawn.
 
-*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch.)*
+*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: real live $1 Stripe payment test (Shawn's to run whenever ready), "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch.)*
 
 ---
 
