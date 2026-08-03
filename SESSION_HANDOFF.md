@@ -2,7 +2,23 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 3, 2026 — Claude Code*
 
-## 2026-08-03: Phase 3 (Camera & Photos) shipped — Studio Intelligence rebuild continues
+## 2026-08-03, later: Phase 4 (Calendar/Booking) shipped + a real caching bug found and fixed
+
+Continued the Studio Intelligence rebuild per your "do phase 4" — Camera (Phase 3) was already shipped earlier today; this closes out Calendar/Booking.
+
+**Shipped:** A real availability system, scoped to how Blue Luna actually works — one event per day, not many short appointment slots like a salon (which is what Found's original booking engine assumes). A date counts as unavailable if it already has a real estimate on it, or if Monica manually blocks it. Studio gets a new **Schedule** tab (5th icon in the bottom nav): a month calendar showing booked dates (tap to jump straight to that estimate) and blocked dates (tap to remove), plus tap any open date to block it with an optional reason. The public Event Questionnaire's date field is now a real calendar too — dates that are already taken show struck-through and can't be picked, so a prospective client sees real availability before they ever submit a request (this was Angela's specific ask from the original team meeting).
+
+**Also found and fixed, while testing Phase 4 — this is the important part:** a real bug where several pages that are supposed to show live data could silently freeze on old data instead. Confirmed directly: added a real test booking, and the public availability calendar kept showing the old (wrong) picture minutes later while a raw check straight against the database was correct the whole time. Root cause was how Next.js caches data-fetching under the hood — not something visible in the code, only in behavior. This affected **Studio's "Today" surface, the traffic analytics, the stats grid, the public photo gallery feed, and the client-facing estimate/payment page** — meaning any of those could have been quietly showing frozen numbers since the day they first shipped, not real live ones. Fixed at the root (the shared database-connection code, not route-by-route), and verified by re-testing the exact scenario that first exposed it. Full technical detail in `DECISIONS.md` if you want it — flagging plainly here because it's more consequential than anything else in today's build.
+
+**Shawn, test this:**
+1. Studio → Schedule → tap an open date → block it with a reason (e.g. "Personal day") → confirm it shows on the calendar and in the list below.
+2. Visit `/event-questionnaire` on the public site, open the date picker, confirm that same date now shows struck-through and can't be selected.
+3. Tap a booked (teal) date on the Schedule calendar and confirm it takes you straight to that client's estimate.
+4. General: reload Studio's home screen a few times over the next few days and confirm the numbers (Today, This Week traffic) actually change as real activity happens — they should never look "stuck."
+
+---
+
+## Prior: 2026-08-03: Phase 3 (Camera & Photos) shipped — Studio Intelligence rebuild continues
 
 Shawn said to move forward on the next phases in the team-directed order from `PLATFORM_REBUILD_AUDIT.md`: Camera → Calendar/Booking → Leads/Contacts/Email → Social. Started with Camera.
 
@@ -246,12 +262,14 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 - **Studio "Today" surface + self-hosted traffic analytics shipped 2026-08-02** (commit `212dc29b`) — see the 2026-08-02 entry above. First concrete piece of the new Studio Intelligence north star (`DECISIONS.md`).
 - **Google Search Console fully verified and sitemap submitted, 2026-08-03** — `Success`, 9 pages discovered. See the 2026-08-03 entry above.
 - **Phase 3 — Camera & Photos shipped, 2026-08-03** — real in-app camera replacing the native camera handoff in My Work. See the 2026-08-03 entry above. Needs Shawn's real-device confirmation (couldn't verify actual capture in the dev sandbox — no camera hardware there).
+- **Phase 4 — Calendar/Booking shipped, 2026-08-03** — date-level availability off real estimates + manual blocks, Studio Schedule tab, real availability calendar on the public Event Questionnaire. See the later 2026-08-03 entry above. Needs Shawn's confirmation.
+- **A real stale-data caching bug found and fixed, 2026-08-03** — see the entry above and `DECISIONS.md`. Affected Today/analytics/stats/gallery/client-estimate-page; root-caused and fixed at the shared database-client level, verified directly.
 
 ### Still open / not started
 - Shawn has not yet run the real live $1 payment test (discount a test estimate near 100%, complete a real Stripe payment on himself) — capability is built, he just hasn't done it yet.
 - Supabase auto-pause: root cause never fully proven (likely Vercel Hobby-plan cron reliability). Mitigated by replacing the silent keepalive ping with a real weekly business-summary email (`/api/cron/weekly-summary`) so a failure becomes visible (missing email) instead of silent. If Shawn stops getting the Monday/Thursday email, that's the signal to investigate further or pay for Supabase Pro ($25/mo).
 - **Pattern worth remembering:** 3 separate "sensitive" Vercel env vars were found stale/wrong this session (Resend domain, Resend key, Stripe key). Nobody has yet audited the remaining ones (`STRIPE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`) for the same issue.
-- Calendar/availability system (Platform Rebuild Lane A item 2) — not started. Decided: port Found's `availability`/`availability_blocks`/`bookings` pattern, schema built for a future iCloud CalDAV two-way sync (Monica's calendar is iCloud, not Google).
+- ~~Calendar/availability system — not started.~~ Shipped 2026-08-03 (scoped to date-granularity, not Found's hourly-slot pattern — see `DECISIONS.md`). iCloud CalDAV two-way sync itself is still a future follow-on, schema (`external_busy_blocks`) is ready for it.
 - Configurator redesign (`FRONTEND_REDESIGN_AUDIT.md` — real matching photos as customer builds, guided package path as default, visible deposit/cancellation policy) — not started. Requires gallery photos to be tagged by component/color, not just `event_type`, as a prerequisite.
 - Phase 5 — real Leads system, Contacts phone book, owner-editable email template system, SMS (Twilio, capability only — activation needs Shawn's A2P 10DLC carrier registration) — not started, was next after the payments work per the locked build order.
 - ~~Camera/Photos port from Found (in-app `CameraSheet`, replacing the native file-input "Shoot" button) — not started.~~ Shipped 2026-08-03, pending Shawn's real-device confirmation.

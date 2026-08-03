@@ -13,6 +13,27 @@
 
 ---
 
+## Session: August 3, 2026, continued — Phase 4 Calendar/Booking + a real caching bug
+**AI:** Claude Code
+**Worked on:** Shawn said to do Phase 4 next (Calendar/Booking), following the team-directed order.
+
+### Completed This Session
+- **Phase 4 shipped**, scoped to Blue Luna's real shape (one event per day) rather than Found's generic hourly-appointment engine — see `DECISIONS.md` 2026-08-02 for the full reasoning. New `availability_blocks` + `external_busy_blocks` (future CalDAV) tables, `src/lib/availability.ts`, public `/api/availability`, Studio `/api/studio/availability`, new Schedule tab (5th Studio nav item, month calendar), and a real availability-aware calendar replacing the bare date input on the public Event Questionnaire.
+- **Found and fixed a real production bug while testing**: `force-dynamic` alone wasn't reliably busting Next.js's fetch cache for Supabase queries — confirmed directly (added real data, the public endpoint kept serving the old result while a raw curl against the database was correct). This affected `/api/studio/today`, `/api/studio/analytics`, `/api/studio/stats`, `/api/availability`, and by extension anything relying on those. Fixed at the shared `serverClient()` level (forces `cache: 'no-store'`) and consolidated 9 other files that were each independently creating their own Supabase client (including the public gallery feed and the client-facing `/q/[token]` estimate page) onto the same shared, now-fixed client. Full detail in `DECISIONS.md` 2026-08-03.
+- Verified: clean `tsc`/`npm run build`, confirmed every API route now shows `ƒ Dynamic` (none `○ Static`) in the build output, live end-to-end test (added a real block, confirmed the public calendar reflected it immediately and consistently), browser-tested both the Studio Schedule page and the public calendar picker visually.
+
+### Still Open
+- Shawn to test Schedule + the public availability calendar for real.
+- Phase 5 (Leads/Contacts/Email) is next in the approved order.
+- Phase 3 Camera still needs Shawn's real-device confirmation.
+
+### Shawn Test
+1. Studio → Schedule → block a date → confirm it shows on the calendar and in the list.
+2. `/event-questionnaire` → open the date picker → confirm that date shows struck-through.
+3. Tap a booked (teal) date on Schedule → confirms it opens that client's estimate.
+
+---
+
 ## Session: August 3, 2026 — Google Search Console + Phase 3 Camera & Photos
 **AI:** Claude Code
 **Worked on:** Closed out Google Search Console setup from the prior session's analytics decision, then Shawn said to move forward on the Studio Intelligence rebuild's next phases in the team-directed order.
