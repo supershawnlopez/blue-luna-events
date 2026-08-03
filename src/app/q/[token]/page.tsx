@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation'
-import { createClient } from '@supabase/supabase-js'
+import { serverClient } from '@/lib/supabase'
 import type { Metadata } from 'next'
 import ClientEstimateView from './ClientEstimateView'
+
+export const dynamic = 'force-dynamic'
 
 type Props = { params: { token: string } }
 
@@ -9,10 +11,7 @@ type Props = { params: { token: string } }
 // (never sent to the browser) and estimates are no longer publicly readable via
 // the anon key/RLS — access here is gated entirely by knowing the share_token.
 async function getEstimate(token: string) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabase = serverClient()
   const { data } = await supabase
     .from('estimates')
     .select('*')

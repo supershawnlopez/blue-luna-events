@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { serverClient } from '@/lib/supabase'
 
-function adminClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const supabase = adminClient()
+  const supabase = serverClient()
   const [{ data, error }, { data: payments }] = await Promise.all([
     supabase.from('estimates').select('*').order('created_at', { ascending: false }),
     supabase.from('estimate_payments').select('estimate_id, amount'),
@@ -28,7 +23,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const supabase = adminClient()
+  const supabase = serverClient()
 
   const { data, error } = await supabase
     .from('estimates')

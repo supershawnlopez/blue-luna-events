@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { serverClient } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = serverClient()
   const { path, filename, type, event_type, file_size, file_fingerprint, thumbnail_path } = await req.json()
 
   const { data: { publicUrl } } = supabase.storage.from('media').getPublicUrl(path)

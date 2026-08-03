@@ -6,10 +6,17 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Server-side client — uses service role key, never call from client components
+// Next.js's fetch-patching caches requests by default even on routes marked
+// `force-dynamic` — supabase-js's internal fetch calls aren't reliably exempted,
+// which silently served stale data (confirmed: a query returned an empty result
+// long after a row existed, while a raw curl against the same PostgREST endpoint
+// was always correct). Passing a fetch override forces `cache: 'no-store'` on
+// every request this client makes, regardless of route config.
 export function serverClient(): SupabaseClient {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { fetch: (url, options) => fetch(url, { ...options, cache: 'no-store' }) } }
   )
 }
 

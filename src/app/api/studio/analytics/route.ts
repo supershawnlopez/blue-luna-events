@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
 
+export const dynamic = 'force-dynamic'
+
 const DAY_MS = 24 * 60 * 60 * 1000
 
 function channelFor(referrer: string | null): string {

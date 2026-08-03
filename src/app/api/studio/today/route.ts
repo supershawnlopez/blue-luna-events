@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
 import { computeDiscountAmount } from '@/lib/estimateBalance'
 
+export const dynamic = 'force-dynamic'
+
 const DAY_MS = 24 * 60 * 60 * 1000
 const LEAD_RESPONSE_WINDOW_DAYS = 14
 const EVENT_LOOKAHEAD_DAYS = 14
