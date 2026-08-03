@@ -327,3 +327,18 @@ Why: this was locked back on 2026-07-07 specifically because Spa Mambo's "templa
 **[2026-08-03] — SMS: real zero-config `sms:` deep-link quick actions shipped now (Leads + Contacts); the Twilio-backed bulk-send capability is written but genuinely untested and inactive.**
 Approved by: Chris Lattner / Craig Federighi
 Why: the 2026-07-07 decision explicitly separated "build sending capability" from "activation, pending Shawn's A2P 10DLC carrier registration" — no Twilio account or credentials exist for Blue Luna yet. `src/lib/sms.ts` is a real `sendSms()` function using the Twilio SDK, gated behind an explicit `smsConfigured()` check (`TWILIO_ACCOUNT_SID`/`TWILIO_AUTH_TOKEN`/`TWILIO_PHONE_NUMBER`), so it fails clearly instead of pretending to work — but it has never been exercised against a real Twilio account, since none exists, and should not be treated as verified until it has been. What *is* real and working today, no setup required: `sms:` links next to Call/Email on both the Leads and Contacts detail sheets, opening Monica's own Messages app pre-addressed — same fallback pattern Found itself uses.
+
+---
+
+## PHASE 6 — SOCIAL / CAPTION ASSISTANCE (2026-08-03)
+
+**[2026-08-03] — Caption suggestions are template-based per event type, not AI-generated.**
+Approved by: Craig Federighi (consistency call — same standing rule as the 2026-08-02 Studio Intelligence decision)
+Why: the same "no AI yet, that's an explicit future layer" rule locked for the Today surface applies here too, for the same reason — Shawn hasn't approved an AI-generation feature, and reaching for one silently under a different phase's banner would be exactly the kind of scope-creep that rule exists to prevent. `src/lib/captionSuggestions.ts` is a plain lookup table (one line + 3 hashtags per event type: quinceañera, graduation, birthday, baby shower, wedding, corporate, other) — simple, predictable, fully editable by Monica before use, not a black box.
+
+**[2026-08-03] — Caption editing lives on the Exports page, not My Work — and `gallery_media.caption` + the PATCH allow-list for it already existed in the code before this session, unused.**
+Why: `caption` was already in `/api/studio/media/[id]`'s PATCH allow-list and `exports/page.tsx` already had a `displayCaption()` helper reading `item.caption` — evidence a caption field was planned earlier but the actual DB column and editing UI were never finished. Completed it rather than re-designing: added the missing `gallery_media.caption` column, wired a real editor (pre-filled with the saved caption, or a template suggestion if none exists yet) directly onto each starred photo's card in Social Export — that's the exact moment Monica is about to post, so editing the caption where she already is beats sending her to a different screen first.
+
+**[2026-08-03] — "Lightweight posting view" = Copy Caption next to the existing Save-image button, not real Instagram API posting.**
+Approved by: Marcus Webb
+Why: `PLATFORM_REBUILD_AUDIT.md` Phase 6 always scoped a real automated Instagram/Facebook feed as "its own future project" requiring Monica's Instagram Business account connected via the Meta Graph API — separate, bigger, and not part of this pass. What "lightweight posting view" concretely closes today: previously Monica downloaded a branded image with no caption text attached, then had to write a caption from scratch inside Instagram itself. Now she taps Copy Caption, opens Instagram, pastes — the full manual-post workflow is covered without needing any Meta API integration at all.

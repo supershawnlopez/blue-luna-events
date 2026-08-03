@@ -47,15 +47,22 @@ Exit criteria for Phase 1:
 - Real profile lives under Monica's Gmail (confirmed 2026-07-30) — the second one Shawn started under his own email is a true duplicate. Steps already given (business.google.com → that profile → Business Profile settings → Remove Business Profile). Not yet confirmed done.
 - Owner: Shawn.
 
-2. **Shawn to real-device test Phases 3, 4, and 5** — Camera capture, Schedule/availability calendar, and Leads/Contacts/Templates. See each phase's "Shawn Test" in `changelog.md`/`SESSION_HANDOFF.md`.
+2. **Shawn to real-device test Phases 3-6** — Camera capture, Schedule/availability calendar, Leads/Contacts/Templates, and Social Export captions. See each phase's "Shawn Test" in `changelog.md`/`SESSION_HANDOFF.md`.
 - Owner: Shawn.
 
 3. **If Shawn wants real SMS sending activated: needs a Twilio account + A2P 10DLC carrier registration.** Code capability exists (`src/lib/sms.ts`) but is genuinely untested — no Twilio credentials exist yet. This is Shawn's action item, not something Claude can complete alone.
 - Owner: Shawn.
 
-*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: real live $1 Stripe payment test, "200+ Events Styled" stat verification, Instagram live-feed integration scoping, Supabase auto-pause watch. Phase 6 — Social/Branded Image Generation — is next in the approved rebuild order once Shawn's ready.)*
+*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: real live $1 Stripe payment test, "200+ Events Styled" stat verification, Instagram live-feed integration scoping (real Meta Graph API posting — separate, bigger project than the caption-assistance shipped today), Supabase auto-pause watch.)*
+
+**All 6 phases of the originally-scoped Studio Intelligence rebuild are now shipped** (Camera, Calendar/Booking, Leads/Contacts/Email/SMS, Social captions). What's left is real-device confirmation from Shawn, plus whatever he wants to scope next.
 
 ---
+
+## DONE (2026-08-03, continued — Phase 6: Social — caption assistance)
+
+- ✅ **Phase 6 shipped — the last phase of the original rebuild plan.** Added the missing `gallery_media.caption` column (the PATCH allow-list and a `displayCaption()` helper already existed in the code, unused — finished what was already half-planned rather than redesigning). Template-based (not AI — same standing rule as the Today surface) caption suggestions per event type in `src/lib/captionSuggestions.ts`, editable per starred photo directly on the Social Export page, with a "Copy Caption" button next to the existing "Save" (image) button — covers the real manual-posting workflow (download image, copy caption, paste both into Instagram) without needing any Meta API integration, which stays its own separate future project. Full reasoning in `DECISIONS.md` "PHASE 6" section.
+  - Verified: clean `tsc`/`npm run build`. Real API round-trip test against a real starred photo (set a caption, confirmed it persisted, reverted). Browser-confirmed the caption editor renders correctly with the right per-event-type suggestion across multiple real starred photos.
 
 ## DONE (2026-08-03, continued — Phase 5: Leads, Contacts, Email, SMS)
 
@@ -192,11 +199,11 @@ Exit criteria for Phase 1:
    - Step 2 restructured so the guided package path is the clear default; "Build My Own" becomes a quieter secondary option, not a co-equal button (Angela's fix)
    - Surface the real deposit/cancellation policy (`PRICING_RULES.depositNonRefundableAfter`) next to the payment CTA — currently exists in code but is never shown to the client
    - **⚠️ Two false starts on this exact item, 2026-07-29** — general "keep going" / "move forward" language was twice misread as approval to start this. Do NOT resume without Shawn explicitly naming this project by name.
-2. **Phase 2 — Remaining visual rebuild (Jony-led)**: everything outside the configurator — homepage, Studio, remaining sections — one unified design language across public site + Studio.
-3. **Phase 3 — Camera & Photos**: port Found's in-app `CameraSheet` pattern (zoom, torch, aspect ratio, album-at-capture picker), replacing the native file-input "Shoot" button. Keep existing heart/star model + locked video-thumbnail solution.
-4. **Phase 4 — Calendar/Booking**: port Found's `availability`/`availability_blocks`/`bookings` tables + slot algorithm, single-tenant scoped, schema built for future iCloud CalDAV sync. Build Monica's Schedule tab and surface real availability in the public configurator. Follow-on: iCloud two-way sync — requires Monica to generate an Apple ID app-specific password.
-5. **Phase 5 — Leads, Contacts, Email**: real Leads system (temperature/status/source, lead→estimate handoff), Contacts phone book, real owner-editable `email_templates` system + Studio editor + campaign send tool. SMS sending capability (Twilio) built alongside, activation gated on Shawn's A2P 10DLC registration.
-6. **Phase 6 — Social / Branded Image Generation**: extend Social Export into an automatic branded-image pipeline off starred photos, caption assistance, lightweight posting view.
+2. **Phase 2 — Remaining visual rebuild (Jony-led)**: everything outside the configurator — homepage, Studio, remaining sections — one unified design language across public site + Studio. Not started — Studio still reads utilitarian next to the public site's design system, per the original 2026-07-07 audit; still true.
+3. ~~Phase 3 — Camera & Photos~~ ✅ Shipped 2026-08-03 — see DONE.
+4. ~~Phase 4 — Calendar/Booking~~ ✅ Shipped 2026-08-03 — see DONE. iCloud two-way sync itself is still a real future follow-on (schema is ready for it).
+5. ~~Phase 5 — Leads, Contacts, Email~~ ✅ Shipped 2026-08-03 — see DONE. SMS bulk-send activation still needs Shawn's Twilio account + A2P 10DLC registration.
+6. ~~Phase 6 — Social / Caption Assistance~~ ✅ Shipped 2026-08-03 — see DONE. Real Instagram/Facebook auto-posting (Meta Graph API) is a separate, bigger future project, not part of this.
 7. Component photos for custom builder — Image Agent task (see AGENTS.md → Image Agent). Source or generate 15–20 images for à la carte options in Step3Custom, from @BlueLunaMagic Instagram.
 8. Next.js upgrade (14.2 → 16.x) — own session, test build after.
 

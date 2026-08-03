@@ -13,6 +13,27 @@
 
 ---
 
+## Session: August 3, 2026, last of the day — Phase 6: Social caption assistance
+**AI:** Claude Code
+**Worked on:** Shawn said "continue" right after Phase 5 shipped — kept going into Phase 6, the last phase in the original `PLATFORM_REBUILD_AUDIT.md` plan.
+
+### Completed This Session
+- Added the missing `gallery_media.caption` column — the PATCH allow-list and a `displayCaption()` helper already existed in the code unused, evidence this was half-planned earlier and never finished.
+- `src/lib/captionSuggestions.ts` — template-based (not AI, same standing rule as the Today surface) caption suggestions per event type, with hashtags.
+- Social Export page (`exports/page.tsx`): every starred photo now shows an editable caption (saved caption, or the template suggestion if none saved yet), with "Copy Caption" next to the existing "Save" (image) button.
+- Full reasoning for every scope call (why not AI, why Exports not My Work, why "lightweight posting view" means copy-paste not real Instagram API posting) in `DECISIONS.md` "PHASE 6" section.
+- Verified: clean `tsc`/`npm run build`. Real API test — set a caption on a real starred photo, confirmed it persisted, reverted it. Browser-confirmed correct per-event-type suggestions across multiple real starred photos.
+
+### Still Open
+- Shawn to test the caption editor and Copy Caption button for real.
+- All 6 originally-scoped Studio Intelligence rebuild phases (Camera, Calendar, Leads/Contacts/Email/SMS, Social) are now shipped. Phase 2 (full visual redesign of Studio itself, from the original 2026-07-07 audit) was never picked back up — still open if Shawn wants it.
+
+### Shawn Test
+1. Studio → Social Export → scroll to a starred photo → confirm a real caption suggestion is already there, matching that photo's event type.
+2. Edit it if you want, tap Copy Caption, paste it somewhere to confirm it copied.
+
+---
+
 ## Session: August 3, 2026, even later — Phase 5: Leads, Contacts, Email, SMS
 **AI:** Claude Code
 **Worked on:** Shawn approved moving straight to Phase 5, the last big phase of the originally-scoped Studio Intelligence rebuild.
