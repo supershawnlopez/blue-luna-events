@@ -1,8 +1,27 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 3, 2026 — Claude Code*
+*Last updated: August 4, 2026 — Claude Code*
 
-## 2026-08-03, truly final: the "This Week" traffic card now shows something useful
+## 2026-08-04: fixed the estimate confusion that was blocking a real payment, added "where did you hear about us?"
+
+You reported a real lead (Daniella Zepeda) came in, Monica tried to enter an estimate for her, and the "+ New" tool looked broken — like it opened with someone else's info already typed in.
+
+**Checked it directly first, because this was urgent:** her estimate actually saved just fine — real record, $650, Essential package, a working share link ready to send her right now. Nothing was lost and nothing was broken on the backend. **You can send Daniella her estimate/payment link today without waiting on anything.**
+
+**What was actually wrong:** the "Client Info" step shows light gray example text in each blank field before you type ("Maria Hernandez," "maria@email.com") to show you what goes there. That gray example text wasn't gray/dim enough to look clearly like an example instead of real typed-in text — so it read as if someone else's info was already sitting in the form. Fixed two ways: the example text now reads as an obvious instruction ("Type the client's full name") instead of a realistic fake name, and it's now visibly lighter and italic so it can't be mistaken for real input again.
+
+**Also shipped, since you asked:** a "Where did you hear about us?" question on the public Event Questionnaire — optional, tap one of a few buttons (Google Search, Instagram, Facebook, Referral, Saw her work, Other). Shows up on that lead's detail page in Studio as "Heard About Us Via," right under their event vision.
+
+**Shawn, test this:**
+1. Studio → Estimates → "+ New" → the Client Info fields should now show clearly gray/italic instruction text like "Type the client's full name" — not a name that looks real.
+2. Visit `/event-questionnaire` on the public site — scroll to the budget section, you should see "Where Did You Hear About Us?" with tappable options.
+3. Submit a real test inquiry picking one of those options, then check Studio → Leads → that lead's detail sheet — should show "Heard About Us Via" with what you picked.
+
+Commits `885495ff` (estimate fix) and `300ad340` (lead-source question), both pushed and confirmed live on Vercel.
+
+---
+
+## Prior: 2026-08-03, truly final: the "This Week" traffic card now shows something useful
 
 You said the visit-count card "doesn't do her or me any good" and asked for a team meeting, Steve leading. Team's read: a raw number isn't useful, but knowing *which channel actually brings her leads* is — that's a real business answer, not a vanity stat. You said try it.
 
@@ -316,7 +335,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `212dc29b` — Studio "Today" surface + real traffic analytics, confirmed `READY`/production on Vercel 2026-08-02 (`dpl_4Q5CKyagwgaYrMqBFGvyhDAMppwk`). See the 2026-08-02 entry at the top of this file. Preceding commit `96086086` is a recovered security fix (Studio API auth gap + `/q/[token]` PII exposure) from an earlier crashed session, also confirmed live.
+- Latest `main` commit: `300ad340` — "where did you hear about us?" lead-source question, confirmed `READY`/`PROMOTED` on Vercel 2026-08-04 (`dpl_Dxo5LmycTQ7pkjX2qViVMPXQgSgW`). Preceding commit `885495ff` (same session) fixed the estimate-form placeholder confusion that was blocking a real client payment. See the 2026-08-04 entry at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:

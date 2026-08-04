@@ -59,6 +59,12 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-04 — estimate-form confusion fix + lead-source question)
+
+- ✅ **Fixed the bug blocking a real payment.** Monica had a real lead (Daniella Zepeda) and reported the "+ New" estimate tool "wasn't working" — believed it opened with someone else's info already filled in. Traced directly: the estimate had actually saved correctly (real row, $650, Essential package, real share link) — the real issue was the Client Info step's placeholder text ("Maria Hernandez", "maria@email.com") reading as real content instead of an example, since inline `style` props can't target `::placeholder` and the browser default wasn't distinct enough. Reworded placeholders to explicit instructions + added real dimmed/italic `::placeholder` CSS. Confirmed live against production before fixing. Commit `885495ff`.
+- ✅ **Added "Where did you hear about us?" to the public Event Questionnaire** — Shawn asked directly, now that real leads are coming in, to know if they're from Google, social, or a referral. Reused an existing-but-unused `leads.referral_source` column rather than adding a new one. Optional chip-style question, shown in Studio's lead detail sheet as "Heard About Us Via." Commit `300ad340`.
+- Both verified: clean `tsc`/`npm run build`, pushed, Vercel confirmed `READY`/`PROMOTED`, production returns 200.
+
 ## DONE (2026-08-03, continued — Phase 6: Social — caption assistance)
 
 - ✅ **Phase 6 shipped — the last phase of the original rebuild plan.** Added the missing `gallery_media.caption` column (the PATCH allow-list and a `displayCaption()` helper already existed in the code, unused — finished what was already half-planned rather than redesigning). Template-based (not AI — same standing rule as the Today surface) caption suggestions per event type in `src/lib/captionSuggestions.ts`, editable per starred photo directly on the Social Export page, with a "Copy Caption" button next to the existing "Save" (image) button — covers the real manual-posting workflow (download image, copy caption, paste both into Instagram) without needing any Meta API integration, which stays its own separate future project. Full reasoning in `DECISIONS.md` "PHASE 6" section.

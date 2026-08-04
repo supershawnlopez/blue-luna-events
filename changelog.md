@@ -13,6 +13,19 @@
 
 ---
 
+## Session: August 4, 2026 — estimate-form confusion fix (real payment blocker) + lead-source question
+**AI:** Claude Code
+**Worked on:** Urgent — Shawn reported a real lead (Daniella Zepeda) came in and Monica couldn't complete an estimate for her in Studio, describing the "+ New" flow as looking pre-filled with someone else's info. Also asked for a "where did you hear about us?" question on the public form now that real leads are starting to arrive.
+
+### Completed This Session
+- **Diagnosed live, not from description alone:** queried Supabase directly for Daniella Zepeda's lead and confirmed her estimate had in fact saved correctly — real row, $650, Essential package, $325/$325 deposit/balance split, valid `share_token`. No data loss, nothing structurally broken. Then logged into production Studio and live-tested the "+ New" estimate wizard myself to see the actual confusion firsthand.
+- **Root cause confirmed:** the Client Info step's placeholder text (`'Maria Hernandez'`, `'maria@email.com'`, `'(520) 555-0100'`) was realistic-looking example data with no explicit `::placeholder` styling — inline `style` props can't target that pseudo-element, so it fell back to the browser's default dimming, which wasn't visually distinct enough to read as "example," not "already filled in."
+- **Fixed** (`src/app/studio/estimates/new/page.tsx`): reworded every placeholder to an unambiguous instruction ("Type the client's full name," "Type their email address," etc.) and added a real `<style>` block targeting `.est-client-input::placeholder` (dimmer + italic) so it can't be mistaken for real content again. Commit `885495ff`.
+- **Added "Where did you hear about us?"** to the public Event Questionnaire — reused an existing-but-unused `leads.referral_source` column (confirmed via `information_schema` + a repo-wide grep that it was never wired up) rather than adding a new one. Optional chip question (Google Search / Instagram / Facebook / Referral / Saw her work / Other) between Budget and Delivery in `InquiryForm.tsx`, stored on submission via `actions.ts`, surfaced in Studio's lead detail sheet (`src/app/studio/leads/page.tsx`) as "Heard About Us Via." Commit `300ad340`.
+- Verified: clean `tsc`/`npm run build` for both changes, pushed, Vercel confirmed `READY`/`PROMOTED` (`dpl_Dxo5LmycTQ7pkjX2qViVMPXQgSgW`), production (`bluelunaevents.com`) confirmed 200.
+
+---
+
 ## Session: August 3, 2026, real-device feedback round — bug fixes to Phases 3 & 4
 **AI:** Claude Code
 **Worked on:** Shawn tested Phases 3-6 on his real phone and reported back real issues. Triaged: Phase 3/4 items were clear bugs, fixed directly. Phase 6 feedback ("weak and ugly," the "11 starred" button doesn't feel intuitive) was an explicit ask for a team conversation before touching any more code — held that in chat, no code changed for Phase 6 this round.
