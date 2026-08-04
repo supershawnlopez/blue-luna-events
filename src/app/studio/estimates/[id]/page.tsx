@@ -437,7 +437,14 @@ export default function EstimateDetail() {
                 ))}
               </div>
 
-              <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Add-Ons</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Add-Ons</p>
+                {selAddOnIds.length > 0 && (
+                  <button onClick={() => setSelAddOnIds([])} style={{ background: 'none', border: 'none', color: '#5BBFBF', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700 }}>
+                    No Add-Ons
+                  </button>
+                )}
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
                 {ADD_ONS.filter(a => a.eventTypes === 'all' || (est.event_type && a.eventTypes.includes(est.event_type as EventTypeId))).map(a => {
                   const selected = selAddOnIds.includes(a.id)
