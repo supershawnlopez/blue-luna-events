@@ -37,6 +37,7 @@ const METHODS = [
   { id: 'zelle', label: 'Zelle' },
   { id: 'cash', label: 'Cash' },
   { id: 'check', label: 'Check' },
+  { id: 'stripe', label: 'Stripe' },
   { id: 'other', label: 'Other' },
 ]
 
@@ -74,6 +75,9 @@ export default function EstimateDetail() {
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('zelle')
   const [paymentNote, setPaymentNote] = useState('')
+  const [receiptSendingId, setReceiptSendingId] = useState<string | null>(null)
+  const [receiptSentId, setReceiptSentId] = useState<string | null>(null)
+  const [receiptErrorId, setReceiptErrorId] = useState<string | null>(null)
 
   // Email
   const [emailSending, setEmailSending] = useState(false)
@@ -266,6 +270,20 @@ export default function EstimateDetail() {
     await fetch(`/api/studio/estimates/${id}/payments?paymentId=${paymentId}`, { method: 'DELETE' })
     await load()
     setSaving(false)
+  }
+
+  async function resendReceipt(paymentId: string) {
+    setReceiptSendingId(paymentId)
+    setReceiptSentId(null)
+    setReceiptErrorId(null)
+    const res = await fetch(`/api/studio/estimates/${id}/payments/${paymentId}/receipt`, { method: 'POST' })
+    setReceiptSendingId(null)
+    if (res.ok) {
+      setReceiptSentId(paymentId)
+      setTimeout(() => setReceiptSentId(null), 3000)
+    } else {
+      setReceiptErrorId(paymentId)
+    }
   }
 
   async function sendEmail() {
@@ -690,16 +708,33 @@ export default function EstimateDetail() {
           )}
 
           {payments.map(p => (
-            <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div>
-                <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', marginBottom: '2px', textTransform: 'capitalize' }}>{p.method}{p.note ? ` — ${p.note}` : ''}</p>
-                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0 }}>{new Date(p.created_at).toLocaleDateString()}</p>
+            <div key={p.id} style={{ padding: '12px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', marginBottom: '2px', textTransform: 'capitalize' }}>{p.method}{p.note ? ` — ${p.note}` : ''}</p>
+                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0 }}>{new Date(p.created_at).toLocaleDateString()}</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>{fmt(Number(p.amount))}</p>
+                  <button onClick={() => deletePayment(p.id)} disabled={saving} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: '2px' }}>
+                    <Trash2 size={13} />
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>{fmt(Number(p.amount))}</p>
-                <button onClick={() => deletePayment(p.id)} disabled={saving} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: '2px' }}>
-                  <Trash2 size={13} />
+              <div style={{ marginTop: '8px' }}>
+                <button
+                  onClick={() => resendReceipt(p.id)}
+                  disabled={receiptSendingId === p.id}
+                  style={{ background: 'none', border: 'none', color: '#5BBFBF', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.72rem', fontWeight: 600, padding: 0 }}
+                >
+                  <Mail size={11} /> {receiptSendingId === p.id ? 'Sending…' : 'Resend Receipt'}
                 </button>
+                {receiptSentId === p.id && (
+                  <p style={{ fontSize: '0.72rem', color: '#5BBFBF', margin: '4px 0 0' }}>✓ Sent to {est.client_email}</p>
+                )}
+                {receiptErrorId === p.id && (
+                  <p style={{ fontSize: '0.72rem', color: '#f87171', margin: '4px 0 0' }}>Couldn&apos;t send — check Resend is configured and try again.</p>
+                )}
               </div>
             </div>
           ))}

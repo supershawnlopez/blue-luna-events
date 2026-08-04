@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   if (!amount || amount <= 0) {
     return NextResponse.json({ error: 'Amount must be greater than zero' }, { status: 400 })
   }
-  if (!['zelle', 'cash', 'check', 'other'].includes(method)) {
+  if (!['zelle', 'cash', 'check', 'stripe', 'other'].includes(method)) {
     return NextResponse.json({ error: 'Invalid payment method' }, { status: 400 })
   }
 
