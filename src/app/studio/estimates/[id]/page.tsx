@@ -3,10 +3,11 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Copy, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag } from 'lucide-react'
+import { ChevronLeft, Copy, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag, Pencil, X } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
-import { labelForAddOn, labelForEventType } from '@/lib/config'
+import { computeTotal } from '@/lib/pricing'
+import { labelForAddOn, labelForEventType, PACKAGE_CATALOG, ADD_ONS, getPackagesForEvent, type EventTypeId } from '@/lib/config'
 
 type Estimate = {
   id: string
@@ -16,6 +17,7 @@ type Estimate = {
   event_type?: string | null
   event_date?: string | null
   venue?: string | null
+  package_id?: string | null
   package_name?: string | null
   add_ons?: string | null
   quoted_total: number
@@ -68,6 +70,20 @@ export default function EstimateDetail() {
   const [emailSending, setEmailSending] = useState(false)
   const [emailSent, setEmailSent] = useState<string | null>(null)
 
+  // Edit details (client info + event info)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [dName, setDName] = useState('')
+  const [dEmail, setDEmail] = useState('')
+  const [dPhone, setDPhone] = useState('')
+  const [dEventDate, setDEventDate] = useState('')
+  const [dVenue, setDVenue] = useState('')
+  const [dNotes, setDNotes] = useState('')
+
+  // Edit selection (package + add-ons)
+  const [selectionOpen, setSelectionOpen] = useState(false)
+  const [selPackageId, setSelPackageId] = useState<string | null>(null)
+  const [selAddOnIds, setSelAddOnIds] = useState<string[]>([])
+
   const load = useCallback(async () => {
     const [estRes, paymentsRes] = await Promise.all([
       fetch(`/api/studio/estimates/${id}`),
@@ -79,6 +95,14 @@ export default function EstimateDetail() {
       setDiscountType(data.discount_type === 'flat' ? 'flat' : 'percent')
       setDiscountValue(data.discount_value ? String(data.discount_value) : '')
       setDiscountNote(data.discount_note ?? '')
+      setDName(data.client_name ?? '')
+      setDEmail(data.client_email ?? '')
+      setDPhone(data.client_phone ?? '')
+      setDEventDate(data.event_date ?? '')
+      setDVenue(data.venue ?? '')
+      setDNotes(data.notes ?? '')
+      setSelPackageId(data.package_id ?? null)
+      setSelAddOnIds(parseAddOns(data.add_ons))
     }
     if (paymentsRes.ok) setPayments(await paymentsRes.json())
     setLoading(false)
@@ -113,6 +137,49 @@ export default function EstimateDetail() {
     setDiscountType('percent'); setDiscountValue(''); setDiscountNote('')
     await load()
     setSaving(false)
+  }
+
+  async function saveDetails() {
+    setSaving(true)
+    await fetch(`/api/studio/estimates/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        client_name: dName,
+        client_email: dEmail,
+        client_phone: dPhone || null,
+        event_date: dEventDate || null,
+        venue: dVenue || null,
+        notes: dNotes || null,
+      }),
+    })
+    await load()
+    setSaving(false)
+    setDetailsOpen(false)
+  }
+
+  async function saveSelection() {
+    if (!selPackageId) return
+    setSaving(true)
+    const pkg = PACKAGE_CATALOG.find(p => p.id === selPackageId)
+    const total = computeTotal(selPackageId, selAddOnIds).total
+    await fetch(`/api/studio/estimates/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        package_id: selPackageId,
+        package_name: pkg?.name ?? null,
+        add_ons: JSON.stringify(selAddOnIds),
+        quoted_total: total,
+      }),
+    })
+    await load()
+    setSaving(false)
+    setSelectionOpen(false)
+  }
+
+  function toggleSelAddOn(addonId: string) {
+    setSelAddOnIds(ids => ids.includes(addonId) ? ids.filter(i => i !== addonId) : [...ids, addonId])
   }
 
   async function addPayment() {
@@ -224,8 +291,16 @@ export default function EstimateDetail() {
 
         {/* Event details */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px', marginBottom: '16px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Details</p>
-          {[
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Details</p>
+            {!detailsOpen && (
+              <button onClick={() => setDetailsOpen(true)} style={{ background: 'none', border: 'none', color: '#5BBFBF', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', fontWeight: 700 }}>
+                <Pencil size={12} /> Edit
+              </button>
+            )}
+          </div>
+
+          {!detailsOpen && [
             ['Email', est.client_email], ['Phone', est.client_phone], ['Event', labelForEventType(est.event_type)],
             ['Date', est.event_date], ['Venue', est.venue], ['Notes', est.notes],
           ].filter(([, v]) => v).map(([label, value], i) => (
@@ -234,17 +309,115 @@ export default function EstimateDetail() {
               <p style={{ fontSize: '13px', fontWeight: 500, color: 'white', margin: 0 }}>{value}</p>
             </div>
           ))}
+
+          {detailsOpen && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '8px' }}>
+              {[
+                { label: 'Client Name', value: dName, set: setDName, type: 'text' },
+                { label: 'Email', value: dEmail, set: setDEmail, type: 'email' },
+                { label: 'Phone', value: dPhone, set: setDPhone, type: 'tel' },
+                { label: 'Event Date', value: dEventDate, set: setDEventDate, type: 'date' },
+                { label: 'Venue', value: dVenue, set: setDVenue, type: 'text' },
+                { label: 'Notes', value: dNotes, set: setDNotes, type: 'text' },
+              ].map(f => (
+                <div key={f.label}>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{f.label}</label>
+                  <input
+                    type={f.type} value={f.value} onChange={e => f.set(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.85rem', color: 'white', boxSizing: 'border-box' }}
+                  />
+                </div>
+              ))}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                <button onClick={() => { setDetailsOpen(false); setDName(est.client_name); setDEmail(est.client_email); setDPhone(est.client_phone ?? ''); setDEventDate(est.event_date ?? ''); setDVenue(est.venue ?? ''); setDNotes(est.notes ?? '') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={saveDetails} disabled={saving || !dName || !dEmail} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Selection */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px', marginBottom: '16px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Selection</p>
-          {est.package_name && (
-            <p style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, marginBottom: '6px' }}>{est.package_name} Package</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Selection</p>
+            {!selectionOpen && (
+              <button onClick={() => setSelectionOpen(true)} style={{ background: 'none', border: 'none', color: '#5BBFBF', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.78rem', fontWeight: 700 }}>
+                <Pencil size={12} /> Edit
+              </button>
+            )}
+          </div>
+
+          {!selectionOpen && (
+            <>
+              {est.package_name && (
+                <p style={{ fontSize: '0.9rem', color: 'white', fontWeight: 600, marginBottom: '6px' }}>{est.package_name} Package</p>
+              )}
+              {addOns.map((a, i) => (
+                <p key={i} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0' }}>+ {labelForAddOn(a)}</p>
+              ))}
+            </>
           )}
-          {addOns.map((a, i) => (
-            <p key={i} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0' }}>+ {labelForAddOn(a)}</p>
-          ))}
+
+          {selectionOpen && (
+            <div>
+              <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Package</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                {getPackagesForEvent(est.event_type as EventTypeId | null).map(p => (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelPackageId(p.id)}
+                    style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left',
+                      background: selPackageId === p.id ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.04)',
+                      border: selPackageId === p.id ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: '10px', padding: '12px 14px', cursor: 'pointer',
+                    }}
+                  >
+                    <div>
+                      <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', margin: 0 }}>{p.name}</p>
+                      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{p.tagline}</p>
+                    </div>
+                    <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5BBFBF', flexShrink: 0, marginLeft: '12px' }}>${p.price.toLocaleString()}</p>
+                  </button>
+                ))}
+              </div>
+
+              <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Add-Ons</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+                {ADD_ONS.filter(a => a.eventTypes === 'all' || (est.event_type && a.eventTypes.includes(est.event_type as EventTypeId))).map(a => {
+                  const selected = selAddOnIds.includes(a.id)
+                  return (
+                    <button
+                      key={a.id}
+                      onClick={() => toggleSelAddOn(a.id)}
+                      style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left',
+                        background: selected ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.04)',
+                        border: selected ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.08)',
+                        borderRadius: '10px', padding: '10px 14px', cursor: 'pointer',
+                      }}
+                    >
+                      <p style={{ fontSize: '0.8rem', fontWeight: 600, color: selected ? 'white' : 'rgba(255,255,255,0.7)', margin: 0 }}>{a.label}</p>
+                      <p style={{ fontSize: '0.82rem', fontWeight: 700, color: selected ? '#5BBFBF' : 'rgba(255,255,255,0.4)', flexShrink: 0, marginLeft: '10px' }}>+${a.price}</p>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {selPackageId && (
+                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>
+                  New total: <strong style={{ color: 'white' }}>${computeTotal(selPackageId, selAddOnIds).total.toLocaleString()}</strong>
+                </p>
+              )}
+
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => { setSelectionOpen(false); setSelPackageId(est.package_id ?? null); setSelAddOnIds(addOns) }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>
+                  <X size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />Cancel
+                </button>
+                <button onClick={saveSelection} disabled={saving || !selPackageId} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Pricing + Discount */}
