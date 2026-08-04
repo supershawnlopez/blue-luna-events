@@ -33,6 +33,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       amount,
       method,
       note: body.note || null,
+      stripe_payment_intent_id: body.stripe_payment_intent_id || null,
     }])
     .select('*')
     .single()
