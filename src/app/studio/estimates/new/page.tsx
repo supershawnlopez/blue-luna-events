@@ -192,11 +192,11 @@ function NewEstimateInner() {
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '28px 24px 0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {[
-              { key: 'name', label: 'Client Name', placeholder: 'Maria Hernandez', required: true, type: 'text' },
-              { key: 'email', label: 'Email', placeholder: 'maria@email.com', required: true, type: 'email' },
-              { key: 'phone', label: 'Phone', placeholder: '(520) 555-0100', type: 'tel' },
+              { key: 'name', label: 'Client Name', placeholder: 'Type the client\'s full name', required: true, type: 'text' },
+              { key: 'email', label: 'Email', placeholder: 'Type their email address', required: true, type: 'email' },
+              { key: 'phone', label: 'Phone', placeholder: 'Type their phone number', type: 'tel' },
               { key: 'event_date', label: 'Event Date', type: 'date' },
-              { key: 'venue', label: 'Venue', placeholder: 'Radisson Hotel, Tucson', type: 'text' },
+              { key: 'venue', label: 'Venue', placeholder: 'Type the venue name or address', type: 'text' },
               { key: 'notes', label: 'Notes (private)', placeholder: 'Colors requested, special setup notes...', type: 'text' },
             ].map(field => (
               <div key={field.key}>
@@ -204,6 +204,7 @@ function NewEstimateInner() {
                   {field.label}{field.required && <span style={{ color: '#5BBFBF' }}> *</span>}
                 </label>
                 <input
+                  className="est-client-input"
                   type={field.type}
                   placeholder={field.placeholder}
                   value={(client as Record<string, string>)[field.key]}
@@ -215,6 +216,13 @@ function NewEstimateInner() {
                 />
               </div>
             ))}
+            {/* Placeholder hint text must read as unmistakably "not real data" —
+                confirmed with a real live client that realistic-looking example
+                text ("Maria Hernandez") got mistaken for an already-filled-in
+                template. Inline styles can't target ::placeholder, hence this. */}
+            <style>{`
+              .est-client-input::placeholder { color: rgba(255,255,255,0.32); font-style: italic; }
+            `}</style>
             <button
               onClick={() => dispatch({ type: 'SET_STEP', step: 'event' })}
               disabled={!valid}
