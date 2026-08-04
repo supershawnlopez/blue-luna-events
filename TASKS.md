@@ -59,11 +59,13 @@ Exit criteria for Phase 1:
 
 ---
 
-## DONE (2026-08-04 — estimate-form confusion fix + lead-source question)
+## DONE (2026-08-04 — estimate-form confusion fix, editing, custom items, lead-source question)
 
 - ✅ **Fixed the bug blocking a real payment.** Monica had a real lead (Daniella Zepeda) and reported the "+ New" estimate tool "wasn't working" — believed it opened with someone else's info already filled in. Traced directly: the estimate had actually saved correctly (real row, $650, Essential package, real share link) — the real issue was the Client Info step's placeholder text ("Maria Hernandez", "maria@email.com") reading as real content instead of an example, since inline `style` props can't target `::placeholder` and the browser default wasn't distinct enough. Reworded placeholders to explicit instructions + added real dimmed/italic `::placeholder` CSS. Confirmed live against production before fixing. Commit `885495ff`.
+- ✅ **Added real editing to existing estimates.** Once created, an estimate had zero way to change its package, add-ons, or client/event info — only discount and payments were editable. Shawn called mid-conversation with a real client needing this. Added inline Edit mode to the Details card and Selection card on the estimate detail page; PATCH route's allow-list extended accordingly. Commit `83f63511`.
+- ✅ **Added support for fully custom estimates.** Immediate follow-up — a client might abandon the premade packages entirely mid-call (packages are still a work in progress). Added `estimates.custom_items` (jsonb array of `{label, price}`), a "No Package — Custom Only" clear option, and a free-form add-item box in the Selection editor. Wired through the client-facing `/q/[token]` page and PDF so custom items display correctly everywhere, not just in Studio. Commit `47c035fb`.
 - ✅ **Added "Where did you hear about us?" to the public Event Questionnaire** — Shawn asked directly, now that real leads are coming in, to know if they're from Google, social, or a referral. Reused an existing-but-unused `leads.referral_source` column rather than adding a new one. Optional chip-style question, shown in Studio's lead detail sheet as "Heard About Us Via." Commit `300ad340`.
-- Both verified: clean `tsc`/`npm run build`, pushed, Vercel confirmed `READY`/`PROMOTED`, production returns 200.
+- All four verified: clean `tsc`/`npm run build` for each, pushed, Vercel confirmed `READY`, production returns 200.
 
 ## DONE (2026-08-03, continued — Phase 6: Social — caption assistance)
 

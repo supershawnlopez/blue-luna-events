@@ -2,7 +2,29 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 4, 2026 — Claude Code*
 
-## 2026-08-04: fixed the estimate confusion that was blocking a real payment, added "where did you hear about us?"
+## 2026-08-04, continued: estimates can now go fully custom, not just premade packages
+
+Right after the estimate-editing fix below shipped, you flagged the real next gap: on a call, a client might want to change their mind entirely and go custom instead of one of the premade packages (which are still a work in progress anyway) — and there was no way to clear the package or add something that isn't in the catalog.
+
+**Shipped:** the Selection editor on any estimate now has a **"No Package — Custom Only"** option at the top (clears the premade package entirely) plus a free-form **"Item + $"** box under Add-Ons — type anything from the conversation ("Extra floral arrangement," "$75") and tap the + button to add it as its own line. Add as many as you need, delete any by mistake, total updates live. Shows up correctly everywhere the estimate is seen — the client's own link, the PDF, and if you email it.
+
+**Shawn, test this:** Studio → Estimates → open any estimate → Selection → Edit → tap "No Package — Custom Only," add a couple of test items with the Item/$ box, confirm the total updates, Save, then open the client link (or PDF) and confirm those custom items show up with the right prices.
+
+Commit `47c035fb`, pushed and confirmed live.
+
+---
+
+## Prior: 2026-08-04, continued: existing estimates can now actually be edited
+
+Right after the placeholder-confusion fix below, you called with the real next problem: Daniella had already picked a package online, and there was no way to change her package, add-ons, or client/event info on an existing estimate — only the discount and payments were editable. If she'd changed her mind, Monica would've had to make her a whole second estimate.
+
+**Shipped:** every estimate now has an **Edit** link on both the Details card (client name/email/phone, event date, venue, notes) and the Selection card (package + add-ons — reuses the same pricing the "+ New" wizard uses, so the total is always correct). Saving updates the same estimate and the same share link the client already has — nothing needs to be re-sent.
+
+Commit `83f63511`, pushed and confirmed live.
+
+---
+
+## Prior: 2026-08-04: fixed the estimate confusion that was blocking a real payment, added "where did you hear about us?"
 
 You reported a real lead (Daniella Zepeda) came in, Monica tried to enter an estimate for her, and the "+ New" tool looked broken — like it opened with someone else's info already typed in.
 
@@ -335,7 +357,8 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `300ad340` — "where did you hear about us?" lead-source question, confirmed `READY`/`PROMOTED` on Vercel 2026-08-04 (`dpl_Dxo5LmycTQ7pkjX2qViVMPXQgSgW`). Preceding commit `885495ff` (same session) fixed the estimate-form placeholder confusion that was blocking a real client payment. See the 2026-08-04 entry at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
+- Latest `main` commit: `47c035fb` — custom/freeform line items on estimates, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `83f63511` (real editing added to existing estimates — package/add-ons/client info), `300ad340` ("where did you hear about us?" lead-source question), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
+- **Schema note:** `estimates.custom_items` (jsonb, default `[]`) added 2026-08-04 via Supabase Management API — array of `{label, price}`.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
 - Full context for everything below lives in three audit docs — read them before making changes in these areas:
