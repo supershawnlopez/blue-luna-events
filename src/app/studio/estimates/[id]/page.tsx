@@ -29,7 +29,7 @@ type Estimate = {
   discount_note?: string | null
 }
 
-type CustomItem = { label: string; price: number }
+type CustomItem = { label: string; description?: string; price: number }
 
 const METHODS = [
   { id: 'zelle', label: 'Zelle' },
@@ -87,6 +87,7 @@ export default function EstimateDetail() {
   const [selAddOnIds, setSelAddOnIds] = useState<string[]>([])
   const [selCustomItems, setSelCustomItems] = useState<CustomItem[]>([])
   const [newItemLabel, setNewItemLabel] = useState('')
+  const [newItemDescription, setNewItemDescription] = useState('')
   const [newItemPrice, setNewItemPrice] = useState('')
 
   const load = useCallback(async () => {
@@ -199,8 +200,9 @@ export default function EstimateDetail() {
   function addCustomItem() {
     const price = parseFloat(newItemPrice)
     if (!newItemLabel.trim() || !price || price <= 0) return
-    setSelCustomItems(items => [...items, { label: newItemLabel.trim(), price }])
+    setSelCustomItems(items => [...items, { label: newItemLabel.trim(), description: newItemDescription.trim() || undefined, price }])
     setNewItemLabel('')
+    setNewItemDescription('')
     setNewItemPrice('')
   }
 
@@ -382,9 +384,15 @@ export default function EstimateDetail() {
                 <p key={i} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0' }}>+ {labelForAddOn(a)}</p>
               ))}
               {(est.custom_items ?? []).map((it, i) => (
-                <p key={`c${i}`} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0', display: 'flex', justifyContent: 'space-between' }}>
-                  <span>+ {it.label}</span><span style={{ color: '#5BBFBF', fontWeight: 600 }}>${Number(it.price).toLocaleString()}</span>
-                </p>
+                <div key={`c${i}`} style={{ margin: '4px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ minWidth: 0, marginRight: '10px' }}>
+                    <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>+ {it.label}</p>
+                    {it.description && (
+                      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>{it.description}</p>
+                    )}
+                  </div>
+                  <span style={{ color: '#5BBFBF', fontWeight: 600, fontSize: '0.82rem', flexShrink: 0 }}>${Number(it.price).toLocaleString()}</span>
+                </div>
               ))}
               {!est.package_name && addOns.length === 0 && (est.custom_items ?? []).length === 0 && (
                 <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Nothing selected yet.</p>
@@ -455,9 +463,14 @@ export default function EstimateDetail() {
               <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Custom Items — anything from a call that isn&apos;t in the catalog above</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
                 {selCustomItems.map((it, i) => (
-                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 14px' }}>
-                    <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'white', margin: 0 }}>{it.label}</p>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 14px' }}>
+                    <div style={{ minWidth: 0, marginRight: '10px' }}>
+                      <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'white', margin: 0 }}>{it.label}</p>
+                      {it.description && (
+                        <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>{it.description}</p>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
                       <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>${Number(it.price).toLocaleString()}</p>
                       <button onClick={() => removeCustomItem(i)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '2px' }}>
                         <Trash2 size={13} />
@@ -466,19 +479,42 @@ export default function EstimateDetail() {
                   </div>
                 ))}
               </div>
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
-                <input
-                  type="text" placeholder="Item — e.g. Extra floral arrangement" value={newItemLabel}
-                  onChange={e => setNewItemLabel(e.target.value)}
-                  style={{ flex: 2, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.82rem', color: 'white', boxSizing: 'border-box' }}
-                />
-                <input
-                  type="number" placeholder="$" value={newItemPrice}
-                  onChange={e => setNewItemPrice(e.target.value)}
-                  style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.82rem', color: 'white', boxSizing: 'border-box' }}
-                />
-                <button onClick={addCustomItem} disabled={!newItemLabel.trim() || !newItemPrice} style={{ flexShrink: 0, background: '#5BBFBF', border: 'none', borderRadius: '8px', padding: '0 14px', color: '#0D0F0F', cursor: 'pointer' }}>
-                  <Plus size={15} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px', background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Item Name</label>
+                  <input
+                    type="text" placeholder="e.g. Extra floral arrangement" value={newItemLabel}
+                    onChange={e => setNewItemLabel(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Description (optional)</label>
+                  <input
+                    type="text" placeholder="Any detail worth noting" value={newItemDescription}
+                    onChange={e => setNewItemDescription(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Price</label>
+                  <input
+                    type="number" inputMode="decimal" placeholder="$" value={newItemPrice}
+                    onChange={e => setNewItemPrice(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <button
+                  onClick={addCustomItem}
+                  disabled={!newItemLabel.trim() || !newItemPrice}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', width: '100%',
+                    background: (!newItemLabel.trim() || !newItemPrice) ? 'rgba(91,191,191,0.2)' : '#5BBFBF',
+                    border: 'none', borderRadius: '8px', padding: '11px', color: (!newItemLabel.trim() || !newItemPrice) ? 'rgba(91,191,191,0.4)' : '#0D0F0F',
+                    fontWeight: 700, fontSize: '0.85rem', cursor: (!newItemLabel.trim() || !newItemPrice) ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  <Plus size={15} /> Add Item
                 </button>
               </div>
 
@@ -487,7 +523,7 @@ export default function EstimateDetail() {
               </p>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { setSelectionOpen(false); setSelPackageId(est.package_id ?? null); setSelAddOnIds(addOns); setSelCustomItems(est.custom_items ?? []); setNewItemLabel(''); setNewItemPrice('') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>
+                <button onClick={() => { setSelectionOpen(false); setSelPackageId(est.package_id ?? null); setSelAddOnIds(addOns); setSelCustomItems(est.custom_items ?? []); setNewItemLabel(''); setNewItemDescription(''); setNewItemPrice('') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>
                   <X size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />Cancel
                 </button>
                 <button onClick={saveSelection} disabled={saving || (!selPackageId && selAddOnIds.length === 0 && selCustomItems.length === 0)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>

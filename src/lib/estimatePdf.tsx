@@ -11,6 +11,7 @@ const styles = StyleSheet.create({
   sectionLabel: { fontSize: 8, fontWeight: 700, letterSpacing: 1, color: '#9CA3AF', textTransform: 'uppercase', marginBottom: 8, marginTop: 18 },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   rowLabel: { fontSize: 10, color: '#374151' },
+  rowSub: { fontSize: 8, color: '#9CA3AF', marginTop: 2 },
   rowValue: { fontSize: 10, color: '#0D0F0F', fontWeight: 500 },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#0D0F0F', marginTop: 4 },
   totalLabel: { fontSize: 12, fontWeight: 700 },
@@ -31,7 +32,7 @@ export type EstimateRow = EstimateForBalance & {
   venue?: string | null
   package_name?: string | null
   add_ons?: string | null
-  custom_items?: { label: string; price: number }[] | null
+  custom_items?: { label: string; description?: string; price: number }[] | null
   discount_note?: string | null
   created_at: string
 }
@@ -87,7 +88,10 @@ function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
       ),
       ...customItems.map((it, i) =>
         React.createElement(View, { key: `c${i}`, style: styles.row },
-          React.createElement(Text, { style: styles.rowLabel }, it.label),
+          React.createElement(View, {},
+            React.createElement(Text, { style: styles.rowLabel }, it.label),
+            ...(it.description ? [React.createElement(Text, { key: 'sub', style: styles.rowSub }, it.description)] : [])
+          ),
           React.createElement(Text, { style: styles.rowValue }, fmt(it.price))
         )
       ),

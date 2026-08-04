@@ -13,7 +13,7 @@ type Estimate = {
   venue?: string
   package_name?: string
   add_ons?: string
-  custom_items?: { label: string; price: number }[]
+  custom_items?: { label: string; description?: string; price: number }[]
   quoted_total: number
   discount_type?: string | null
   discount_value?: number | null
@@ -141,9 +141,14 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
               </div>
             ))}
             {customItems.map((it, i) => (
-              <div key={`c${i}`} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: i < customItems.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>{it.label}</p>
-                <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>{fmt(it.price)}</p>
+              <div key={`c${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '12px 20px', borderBottom: i < customItems.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                <div style={{ minWidth: 0, marginRight: '12px' }}>
+                  <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>{it.label}</p>
+                  {it.description && (
+                    <p style={{ fontSize: '12px', color: '#9CA3AF', margin: '2px 0 0' }}>{it.description}</p>
+                  )}
+                </div>
+                <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0, flexShrink: 0 }}>{fmt(it.price)}</p>
               </div>
             ))}
             {!est.package_name && addOns.length === 0 && customItems.length === 0 && (
