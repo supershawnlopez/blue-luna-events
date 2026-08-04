@@ -3,7 +3,6 @@ export type EstimatePayment = {
   amount: number | string
   method: string
   note?: string | null
-  stripe_payment_intent_id?: string | null
   created_at: string
 }
 

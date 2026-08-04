@@ -75,7 +75,6 @@ export default function EstimateDetail() {
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('zelle')
   const [paymentNote, setPaymentNote] = useState('')
-  const [paymentStripeId, setPaymentStripeId] = useState('')
   const [receiptSendingId, setReceiptSendingId] = useState<string | null>(null)
   const [receiptSentId, setReceiptSentId] = useState<string | null>(null)
   const [receiptErrorId, setReceiptErrorId] = useState<string | null>(null)
@@ -259,12 +258,9 @@ export default function EstimateDetail() {
     await fetch(`/api/studio/estimates/${id}/payments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        amount, method: paymentMethod, note: paymentNote || null,
-        stripe_payment_intent_id: paymentMethod === 'stripe' ? (paymentStripeId.trim() || null) : null,
-      }),
+      body: JSON.stringify({ amount, method: paymentMethod, note: paymentNote || null }),
     })
-    setPaymentAmount(''); setPaymentNote(''); setPaymentStripeId(''); setPaymentOpen(false)
+    setPaymentAmount(''); setPaymentNote(''); setPaymentOpen(false)
     await load()
     setSaving(false)
   }
@@ -725,7 +721,7 @@ export default function EstimateDetail() {
                   </button>
                 </div>
               </div>
-              <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ marginTop: '8px' }}>
                 <button
                   onClick={() => resendReceipt(p.id)}
                   disabled={receiptSendingId === p.id}
@@ -733,15 +729,6 @@ export default function EstimateDetail() {
                 >
                   <Mail size={11} /> {receiptSendingId === p.id ? 'Sending…' : 'Resend Receipt'}
                 </button>
-                {p.stripe_payment_intent_id && (
-                  <a
-                    href={`https://dashboard.stripe.com/payments/${p.stripe_payment_intent_id}`}
-                    target="_blank" rel="noopener noreferrer"
-                    style={{ color: 'rgba(255,255,255,0.4)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', fontWeight: 600 }}
-                  >
-                    View in Stripe <ExternalLink size={10} />
-                  </a>
-                )}
               </div>
               <div>
                 {receiptSentId === p.id && (
@@ -771,18 +758,6 @@ export default function EstimateDetail() {
                 onChange={e => setPaymentNote(e.target.value)}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.85rem', color: 'white', marginBottom: '10px', boxSizing: 'border-box' }}
               />
-              {paymentMethod === 'stripe' && (
-                <div style={{ marginBottom: '10px' }}>
-                  <input
-                    type="text" placeholder="Stripe Payment ID (optional) — e.g. pi_..." value={paymentStripeId}
-                    onChange={e => setPaymentStripeId(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-                  />
-                  <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.35)', margin: '6px 0 0' }}>
-                    Find it in Stripe Dashboard → Payments → click the payment — links this record directly to the real transaction.
-                  </p>
-                </div>
-              )}
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={() => setPaymentOpen(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>Cancel</button>
                 <button onClick={addPayment} disabled={saving} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Record Payment</button>
