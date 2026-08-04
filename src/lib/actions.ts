@@ -24,6 +24,7 @@ export async function submitLead(data: Lead) {
       venue: data.venue,
       vision,
       budget_range: data.budget_range,
+      referral_source: data.referral_source ?? null,
       status: 'new',
       created_at: new Date().toISOString(),
       package_id: data.package_id,

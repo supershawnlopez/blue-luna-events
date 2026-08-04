@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Check, ArrowRight, Phone, Mail, User, Calendar, MapPin, Clock, Users, Image as ImageIcon, X, Loader2 } from 'lucide-react'
-import { INQUIRY_EVENT_TYPES, LOOKING_FOR_CATEGORIES, BUDGET_RANGES } from '@/lib/config'
+import { INQUIRY_EVENT_TYPES, LOOKING_FOR_CATEGORIES, BUDGET_RANGES, REFERRAL_SOURCES } from '@/lib/config'
 import { submitLead } from '@/lib/actions'
 import DateAvailabilityPicker from './DateAvailabilityPicker'
 
@@ -27,12 +27,13 @@ type FormState = {
   colors: string
   budget: string
   delivery: 'Yes' | 'No' | ''
+  heardAbout: string
 }
 
 const initialState: FormState = {
   name: '', phone: '', email: '',
   eventType: '', eventDate: '', venue: '', setupTime: '', guestCount: '',
-  lookingFor: [], vibe: '', colors: '', budget: '', delivery: '',
+  lookingFor: [], vibe: '', colors: '', budget: '', delivery: '', heardAbout: '',
 }
 
 function chip(active: boolean) {
@@ -174,6 +175,7 @@ export default function InquiryForm() {
       inspo_photos: photos.filter(p => !p.uploading).map(p => p.url),
       source: 'inquiry',
       referrer_raw: typeof document !== 'undefined' ? (document.referrer || undefined) : undefined,
+      referral_source: form.heardAbout || undefined,
     })
 
     setLoading(false)
@@ -345,6 +347,20 @@ export default function InquiryForm() {
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {BUDGET_RANGES.map(b => (
             <button key={b} type="button" onClick={() => set('budget', b)} style={chip(form.budget === b)}>{b}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* Referral source */}
+      <div>
+        <p className="eyebrow-text" style={{ marginBottom: 4 }}>
+          Where Did You Hear About Us?
+          <span style={{ color: '#9CA3AF', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}> (optional)</span>
+        </p>
+        <p style={{ fontFamily: 'Inter, sans-serif', fontSize: '0.8rem', color: MUTED, marginBottom: 14 }}>Helps Monica know where to focus.</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {REFERRAL_SOURCES.map(r => (
+            <button key={r} type="button" onClick={() => set('heardAbout', r)} style={chip(form.heardAbout === r)}>{r}</button>
           ))}
         </div>
       </div>

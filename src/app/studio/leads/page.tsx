@@ -19,6 +19,7 @@ type Lead = {
   status: 'new' | 'contacted' | 'quoted' | 'booked' | 'completed'
   temperature: 'hot' | 'warm' | 'cold' | null
   source: string | null
+  referral_source: string | null
 }
 
 const STATUSES: { id: Lead['status']; label: string }[] = [
@@ -174,6 +175,13 @@ export default function StudioLeads() {
               <div style={{ marginBottom: '20px' }}>
                 <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Vision</p>
                 <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: 0 }}>{activeLead.vision}</p>
+              </div>
+            )}
+
+            {activeLead.referral_source && (
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Heard About Us Via</p>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: 0 }}>{activeLead.referral_source}</p>
               </div>
             )}
 

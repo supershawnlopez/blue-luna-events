@@ -425,6 +425,20 @@ export const BUDGET_RANGES = [
   "Not sure yet — help me figure it out",
 ]
 
+// Self-reported source — a real answer to "where did this lead come from,"
+// which the automatic browser-referrer tracking (leads.referrer_channel)
+// can't always tell you: personal referrals, word of mouth, and in-app
+// browsers (Instagram's own browser often strips the referrer) all show up
+// as "Direct" there even though the actual source is known to the person.
+export const REFERRAL_SOURCES = [
+  'Google Search',
+  'Instagram',
+  'Facebook',
+  'Referral from a friend or family',
+  'Saw her work at another event',
+  'Other',
+]
+
 export type LookingForCategory = {
   label: string
   emoji: string

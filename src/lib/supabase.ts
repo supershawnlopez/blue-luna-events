@@ -58,6 +58,7 @@ export type Lead = {
   venue?: string
   vision?: string
   budget_range?: string
+  referral_source?: string
   status?: 'new' | 'contacted' | 'quoted' | 'booked' | 'completed'
   // Configurator fields — all optional for backwards compat with BookingSheet
   package_id?: string
