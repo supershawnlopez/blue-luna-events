@@ -13,6 +13,7 @@ type Estimate = {
   venue?: string
   package_name?: string
   add_ons?: string
+  custom_items?: { label: string; price: number }[]
   quoted_total: number
   discount_type?: string | null
   discount_value?: number | null
@@ -37,6 +38,7 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
   const [paying, setPaying] = useState(false)
   const first = firstName(est.client_name)
   const addOns = parseAddOns(est.add_ons)
+  const customItems = est.custom_items ?? []
   const balance = computeBalance(est, est.payments)
   const hasPaidAnything = balance.totalPaid > 0
 
@@ -125,7 +127,7 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
           </div>
           <div>
             {est.package_name && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: addOns.length > 0 ? '1px solid #F3F4F6' : 'none' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 20px', borderBottom: (addOns.length > 0 || customItems.length > 0) ? '1px solid #F3F4F6' : 'none' }}>
                 <div>
                   <p style={{ fontSize: '14px', fontWeight: 600, color: '#0D0F0F', marginBottom: '2px' }}>{est.package_name} Package</p>
                   <p style={{ fontSize: '12px', color: '#9CA3AF', margin: 0 }}>Base package</p>
@@ -133,11 +135,22 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
               </div>
             )}
             {addOns.map((a, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: i < addOns.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: (i < addOns.length - 1 || customItems.length > 0) ? '1px solid #F3F4F6' : 'none' }}>
                 <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>{labelForAddOn(a)}</p>
                 <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>Add-on</p>
               </div>
             ))}
+            {customItems.map((it, i) => (
+              <div key={`c${i}`} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: i < customItems.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>{it.label}</p>
+                <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>{fmt(it.price)}</p>
+              </div>
+            ))}
+            {!est.package_name && addOns.length === 0 && customItems.length === 0 && (
+              <div style={{ padding: '14px 20px' }}>
+                <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>Custom quote — see pricing below.</p>
+              </div>
+            )}
           </div>
         </div>
 

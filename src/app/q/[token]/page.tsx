@@ -36,6 +36,7 @@ async function getEstimate(token: string) {
     venue: data.venue,
     package_name: data.package_name,
     add_ons: data.add_ons,
+    custom_items: data.custom_items,
     quoted_total: data.quoted_total,
     discount_type: data.discount_type,
     discount_value: data.discount_value,

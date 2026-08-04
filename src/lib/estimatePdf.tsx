@@ -31,6 +31,7 @@ export type EstimateRow = EstimateForBalance & {
   venue?: string | null
   package_name?: string | null
   add_ons?: string | null
+  custom_items?: { label: string; price: number }[] | null
   discount_note?: string | null
   created_at: string
 }
@@ -46,6 +47,7 @@ function parseAddOns(raw?: string | null): string[] {
 
 function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
   const addOns = parseAddOns(est.add_ons)
+  const customItems = est.custom_items ?? []
   const balance = computeBalance(est, payments)
   const detailRows: [string, string][] = [
     ['Client', est.client_name],
@@ -81,6 +83,12 @@ function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
         React.createElement(View, { key: `a${i}`, style: styles.row },
           React.createElement(Text, { style: styles.rowLabel }, labelForAddOn(a)),
           React.createElement(Text, { style: styles.rowValue }, 'Add-on')
+        )
+      ),
+      ...customItems.map((it, i) =>
+        React.createElement(View, { key: `c${i}`, style: styles.row },
+          React.createElement(Text, { style: styles.rowLabel }, it.label),
+          React.createElement(Text, { style: styles.rowValue }, fmt(it.price))
         )
       ),
 

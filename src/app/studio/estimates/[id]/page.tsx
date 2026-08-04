@@ -6,7 +6,6 @@ import Link from 'next/link'
 import { ChevronLeft, Copy, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag, Pencil, X } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
-import { computeTotal } from '@/lib/pricing'
 import { labelForAddOn, labelForEventType, PACKAGE_CATALOG, ADD_ONS, getPackagesForEvent, type EventTypeId } from '@/lib/config'
 
 type Estimate = {
@@ -20,6 +19,7 @@ type Estimate = {
   package_id?: string | null
   package_name?: string | null
   add_ons?: string | null
+  custom_items?: CustomItem[] | null
   quoted_total: number
   notes?: string | null
   status: string
@@ -28,6 +28,8 @@ type Estimate = {
   discount_value?: number | null
   discount_note?: string | null
 }
+
+type CustomItem = { label: string; price: number }
 
 const METHODS = [
   { id: 'zelle', label: 'Zelle' },
@@ -79,10 +81,13 @@ export default function EstimateDetail() {
   const [dVenue, setDVenue] = useState('')
   const [dNotes, setDNotes] = useState('')
 
-  // Edit selection (package + add-ons)
+  // Edit selection (package + add-ons + custom items)
   const [selectionOpen, setSelectionOpen] = useState(false)
   const [selPackageId, setSelPackageId] = useState<string | null>(null)
   const [selAddOnIds, setSelAddOnIds] = useState<string[]>([])
+  const [selCustomItems, setSelCustomItems] = useState<CustomItem[]>([])
+  const [newItemLabel, setNewItemLabel] = useState('')
+  const [newItemPrice, setNewItemPrice] = useState('')
 
   const load = useCallback(async () => {
     const [estRes, paymentsRes] = await Promise.all([
@@ -103,6 +108,7 @@ export default function EstimateDetail() {
       setDNotes(data.notes ?? '')
       setSelPackageId(data.package_id ?? null)
       setSelAddOnIds(parseAddOns(data.add_ons))
+      setSelCustomItems(Array.isArray(data.custom_items) ? data.custom_items : [])
     }
     if (paymentsRes.ok) setPayments(await paymentsRes.json())
     setLoading(false)
@@ -158,11 +164,18 @@ export default function EstimateDetail() {
     setDetailsOpen(false)
   }
 
+  function calcSelectionTotal(): number {
+    const pkgPrice = selPackageId ? (PACKAGE_CATALOG.find(p => p.id === selPackageId)?.price ?? 0) : 0
+    const addOnsTotal = selAddOnIds.reduce((sum, aid) => sum + (ADD_ONS.find(a => a.id === aid)?.price ?? 0), 0)
+    const customTotal = selCustomItems.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
+    return pkgPrice + addOnsTotal + customTotal
+  }
+
   async function saveSelection() {
-    if (!selPackageId) return
+    if (!selPackageId && selAddOnIds.length === 0 && selCustomItems.length === 0) return
     setSaving(true)
-    const pkg = PACKAGE_CATALOG.find(p => p.id === selPackageId)
-    const total = computeTotal(selPackageId, selAddOnIds).total
+    const pkg = selPackageId ? PACKAGE_CATALOG.find(p => p.id === selPackageId) : null
+    const total = calcSelectionTotal()
     await fetch(`/api/studio/estimates/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -170,6 +183,7 @@ export default function EstimateDetail() {
         package_id: selPackageId,
         package_name: pkg?.name ?? null,
         add_ons: JSON.stringify(selAddOnIds),
+        custom_items: selCustomItems,
         quoted_total: total,
       }),
     })
@@ -180,6 +194,18 @@ export default function EstimateDetail() {
 
   function toggleSelAddOn(addonId: string) {
     setSelAddOnIds(ids => ids.includes(addonId) ? ids.filter(i => i !== addonId) : [...ids, addonId])
+  }
+
+  function addCustomItem() {
+    const price = parseFloat(newItemPrice)
+    if (!newItemLabel.trim() || !price || price <= 0) return
+    setSelCustomItems(items => [...items, { label: newItemLabel.trim(), price }])
+    setNewItemLabel('')
+    setNewItemPrice('')
+  }
+
+  function removeCustomItem(index: number) {
+    setSelCustomItems(items => items.filter((_, i) => i !== index))
   }
 
   async function addPayment() {
@@ -355,13 +381,35 @@ export default function EstimateDetail() {
               {addOns.map((a, i) => (
                 <p key={i} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0' }}>+ {labelForAddOn(a)}</p>
               ))}
+              {(est.custom_items ?? []).map((it, i) => (
+                <p key={`c${i}`} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>+ {it.label}</span><span style={{ color: '#5BBFBF', fontWeight: 600 }}>${Number(it.price).toLocaleString()}</span>
+                </p>
+              ))}
+              {!est.package_name && addOns.length === 0 && (est.custom_items ?? []).length === 0 && (
+                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Nothing selected yet.</p>
+              )}
             </>
           )}
 
           {selectionOpen && (
             <div>
-              <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Package</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Package (optional — leave off for a fully custom quote)</p>
+              </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                <button
+                  onClick={() => setSelPackageId(null)}
+                  style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', textAlign: 'left',
+                    background: !selPackageId ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.04)',
+                    border: !selPackageId ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: '10px', padding: '12px 14px', cursor: 'pointer',
+                  }}
+                >
+                  <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', margin: 0 }}>No Package — Custom Only</p>
+                  {!selPackageId && <Check size={16} color="#5BBFBF" />}
+                </button>
                 {getPackagesForEvent(est.event_type as EventTypeId | null).map(p => (
                   <button
                     key={p.id}
@@ -404,17 +452,45 @@ export default function EstimateDetail() {
                 })}
               </div>
 
-              {selPackageId && (
-                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>
-                  New total: <strong style={{ color: 'white' }}>${computeTotal(selPackageId, selAddOnIds).total.toLocaleString()}</strong>
-                </p>
-              )}
+              <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Custom Items — anything from a call that isn&apos;t in the catalog above</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                {selCustomItems.map((it, i) => (
+                  <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 14px' }}>
+                    <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'white', margin: 0 }}>{it.label}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>${Number(it.price).toLocaleString()}</p>
+                      <button onClick={() => removeCustomItem(i)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '2px' }}>
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '16px' }}>
+                <input
+                  type="text" placeholder="Item — e.g. Extra floral arrangement" value={newItemLabel}
+                  onChange={e => setNewItemLabel(e.target.value)}
+                  style={{ flex: 2, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.82rem', color: 'white', boxSizing: 'border-box' }}
+                />
+                <input
+                  type="number" placeholder="$" value={newItemPrice}
+                  onChange={e => setNewItemPrice(e.target.value)}
+                  style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.82rem', color: 'white', boxSizing: 'border-box' }}
+                />
+                <button onClick={addCustomItem} disabled={!newItemLabel.trim() || !newItemPrice} style={{ flexShrink: 0, background: '#5BBFBF', border: 'none', borderRadius: '8px', padding: '0 14px', color: '#0D0F0F', cursor: 'pointer' }}>
+                  <Plus size={15} />
+                </button>
+              </div>
+
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>
+                New total: <strong style={{ color: 'white' }}>${calcSelectionTotal().toLocaleString()}</strong>
+              </p>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { setSelectionOpen(false); setSelPackageId(est.package_id ?? null); setSelAddOnIds(addOns) }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>
+                <button onClick={() => { setSelectionOpen(false); setSelPackageId(est.package_id ?? null); setSelAddOnIds(addOns); setSelCustomItems(est.custom_items ?? []); setNewItemLabel(''); setNewItemPrice('') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>
                   <X size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />Cancel
                 </button>
-                <button onClick={saveSelection} disabled={saving || !selPackageId} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
+                <button onClick={saveSelection} disabled={saving || (!selPackageId && selAddOnIds.length === 0 && selCustomItems.length === 0)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
               </div>
             </div>
           )}
