@@ -173,7 +173,6 @@ export default function EstimateDetail() {
   }
 
   async function saveSelection() {
-    if (!selPackageId && selAddOnIds.length === 0 && selCustomItems.length === 0) return
     setSaving(true)
     const pkg = selPackageId ? PACKAGE_CATALOG.find(p => p.id === selPackageId) : null
     const total = calcSelectionTotal()
@@ -526,7 +525,7 @@ export default function EstimateDetail() {
                 <button onClick={() => { setSelectionOpen(false); setSelPackageId(est.package_id ?? null); setSelAddOnIds(addOns); setSelCustomItems(est.custom_items ?? []); setNewItemLabel(''); setNewItemDescription(''); setNewItemPrice('') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>
                   <X size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />Cancel
                 </button>
-                <button onClick={saveSelection} disabled={saving || (!selPackageId && selAddOnIds.length === 0 && selCustomItems.length === 0)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
+                <button onClick={saveSelection} disabled={saving} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
               </div>
             </div>
           )}
