@@ -88,6 +88,7 @@ export async function sendReceiptEmail(estimateId: string, amountPaid: number, h
     from: `Monica at Blue Luna Events <monica@bluelunaevents.com>`,
     replyTo: SITE_CONFIG.email,
     to: [est.client_email],
+    cc: [SITE_CONFIG.email],
     subject: `Payment Receipt — ${fmt(amountPaid)} — Blue Luna Events`,
     html,
   })
@@ -95,5 +96,13 @@ export async function sendReceiptEmail(estimateId: string, amountPaid: number, h
     console.error('Receipt email failed to send:', error)
     return { ok: false, error: error.message }
   }
+
+  // Non-blocking: a logging failure should never mask a successful send.
+  try {
+    await supabase.from('estimate_activity').insert([{ estimate_id: estimateId, type: 'receipt_sent', recipient: est.client_email }])
+  } catch (err) {
+    console.error('Failed to log receipt activity:', err)
+  }
+
   return { ok: true }
 }

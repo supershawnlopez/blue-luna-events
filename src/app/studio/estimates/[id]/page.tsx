@@ -33,11 +33,23 @@ type Estimate = {
 
 type CustomItem = { label: string; description?: string; price: number }
 
+type ActivityEntry = {
+  id: string
+  type: 'estimate_sent' | 'receipt_sent' | string
+  recipient: string | null
+  created_at: string
+}
+
+function activityLabel(type: string): string {
+  if (type === 'estimate_sent') return 'Estimate emailed'
+  if (type === 'receipt_sent') return 'Receipt emailed'
+  return type
+}
+
 const METHODS = [
   { id: 'zelle', label: 'Zelle' },
   { id: 'cash', label: 'Cash' },
   { id: 'check', label: 'Check' },
-  { id: 'stripe', label: 'Stripe' },
   { id: 'other', label: 'Other' },
 ]
 
@@ -55,6 +67,7 @@ export default function EstimateDetail() {
   const id = params.id as string
   const [est, setEst] = useState<Estimate | null>(null)
   const [payments, setPayments] = useState<EstimatePayment[]>([])
+  const [activity, setActivity] = useState<ActivityEntry[]>([])
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -102,9 +115,10 @@ export default function EstimateDetail() {
   const [newItemPrice, setNewItemPrice] = useState('')
 
   const load = useCallback(async () => {
-    const [estRes, paymentsRes] = await Promise.all([
+    const [estRes, paymentsRes, activityRes] = await Promise.all([
       fetch(`/api/studio/estimates/${id}`),
       fetch(`/api/studio/estimates/${id}/payments`),
+      fetch(`/api/studio/estimates/${id}/activity`),
     ])
     if (estRes.ok) {
       const data = await estRes.json()
@@ -125,6 +139,7 @@ export default function EstimateDetail() {
       setSelCustomItems(Array.isArray(data.custom_items) ? data.custom_items : [])
     }
     if (paymentsRes.ok) setPayments(await paymentsRes.json())
+    if (activityRes.ok) setActivity(await activityRes.json())
     setLoading(false)
   }, [id])
 
@@ -281,6 +296,7 @@ export default function EstimateDetail() {
     if (res.ok) {
       setReceiptSentId(paymentId)
       setTimeout(() => setReceiptSentId(null), 3000)
+      fetch(`/api/studio/estimates/${id}/activity`).then(r => r.ok && r.json()).then(a => a && setActivity(a))
     } else {
       setReceiptErrorId(paymentId)
     }
@@ -291,7 +307,10 @@ export default function EstimateDetail() {
     setEmailSent(null)
     const res = await fetch(`/api/studio/estimates/${id}/email`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
     const data = await res.json()
-    if (res.ok) setEmailSent(data.sentTo)
+    if (res.ok) {
+      setEmailSent(data.sentTo)
+      fetch(`/api/studio/estimates/${id}/activity`).then(r => r.ok && r.json()).then(a => a && setActivity(a))
+    }
     setEmailSending(false)
   }
 
@@ -370,6 +389,25 @@ export default function EstimateDetail() {
           {emailSent && (
             <p style={{ fontSize: '0.75rem', color: '#5BBFBF', textAlign: 'center', marginTop: '8px' }}>✓ Sent to {emailSent}</p>
           )}
+        </div>
+
+        {/* Sent history — proof of what's actually gone out, no need to ask or check email logs by hand */}
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px', marginBottom: '16px' }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Sent History</p>
+          {activity.length === 0 && (
+            <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Nothing sent yet.</p>
+          )}
+          {activity.map(a => (
+            <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div>
+                <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'white', margin: 0 }}>{activityLabel(a.type)}</p>
+                {a.recipient && <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>to {a.recipient}</p>}
+              </div>
+              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0, flexShrink: 0, marginLeft: '10px' }}>
+                {new Date(a.created_at).toLocaleDateString()} {new Date(a.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+              </p>
+            </div>
+          ))}
         </div>
 
         {/* Event details */}

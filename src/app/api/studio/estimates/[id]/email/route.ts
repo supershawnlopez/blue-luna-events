@@ -110,5 +110,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: sendError.message }, { status: 500 })
   }
 
+  try {
+    await supabase.from('estimate_activity').insert([{ estimate_id: params.id, type: 'estimate_sent', recipient }])
+  } catch (err) {
+    console.error('Failed to log estimate-email activity:', err)
+  }
+
   return NextResponse.json({ ok: true, sentTo: recipient, resendId: data?.id })
 }
