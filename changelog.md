@@ -13,6 +13,16 @@
 
 ---
 
+## Session: August 4, 2026, continued — stuck add-on removal fixed + Stripe payment receipt email
+**AI:** Claude Code
+**Worked on:** Shawn reported he couldn't remove an add-on from an estimate — it "stuck." Same message asked to confirm Stripe checkout stays in sync with edits made in Studio, and that customers get a real receipt email after paying.
+
+### Completed This Session
+- **Root-caused the stuck add-on bug:** `saveSelection()` in `src/app/studio/estimates/[id]/page.tsx` had a guard — `if (!selPackageId && selAddOnIds.length === 0 && selCustomItems.length === 0) return` — originally meant to stop an accidental fully-blank save. It also silently blocked the legitimate case of removing the very last item when nothing else was selected, which is exactly the state right after clearing a premade package (shipped earlier this session). The toggle button updated local state fine, but Save quietly no-op'd, so the removal never persisted and reverted on next load — reading as permanently "stuck." Removed the guard from both `saveSelection()` and the Save button's `disabled` condition. Commit `5d48709e`.
+- **Verified Stripe checkout needed no fix:** read `src/app/api/stripe/estimate-checkout/route.ts` directly — it re-fetches the estimate and calls `computeBalance()` fresh at checkout time, so the deposit/balance charged always reflects whatever's currently saved (package, add-ons, custom items, discount), never a stale cached number.
+- **Found and fixed a real gap in the Stripe webhook** (`src/app/api/stripe/webhook/route.ts`): on `checkout.session.completed`, the payment was correctly inserted into `estimate_payments`, but nothing was ever emailed to the client — no receipt, no confirmation of any kind. Added `sendReceiptEmail()` — re-fetches the estimate + all payments, computes the post-payment balance, and sends a branded Blue Luna Events receipt (amount paid, date, remaining balance or "Paid in Full," link back to `/q/[token]`) via Resend, matching the visual style of the existing estimate email. Wrapped the call in try/catch so a failed send can't return a non-200 to Stripe (which would trigger a retry and double-insert the payment row).
+- Verified: clean `tsc`/`npm run build`, pushed, Vercel confirmed `READY`, production confirmed 200.
+
 ## Session: August 4, 2026 — estimate-form confusion fix, real estimate editing, custom/freeform items, lead-source question
 **AI:** Claude Code
 **Worked on:** Urgent, in stages — Shawn reported a real lead (Daniella Zepeda) came in and Monica couldn't complete an estimate for her in Studio, describing the "+ New" flow as looking pre-filled with someone else's info. Once that was fixed, Shawn was mid-phone-call with a real client and needed to change her already-created estimate — surfaced that existing estimates had no editing at all. Then, still on the same thread, flagged that a client might abandon the premade packages entirely and need a fully custom quote. Also asked for a "where did you hear about us?" question on the public form now that real leads are starting to arrive.

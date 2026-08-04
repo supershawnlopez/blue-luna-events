@@ -59,6 +59,12 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-04, continued — stuck add-on fix + Stripe payment receipt email)
+
+- ✅ **Fixed a real bug: removing an add-on could get permanently stuck.** The Save guard in the Selection editor blocked saving whenever the result would be a completely empty selection (no package, no add-ons, no custom items) — exactly the state right after clearing the premade package. The checkbox toggled visually but Save silently no-op'd, reverting on reload. Removed the guard entirely; an empty selection mid-edit is valid. Commit `5d48709e`.
+- ✅ **Confirmed Stripe checkout was already correct** (no bug) — `/api/stripe/estimate-checkout` recomputes the live deposit/balance from the estimate at the moment of checkout, so it always reflects the latest package/add-ons/custom-items/discount edits.
+- ✅ **Added a missing customer payment receipt email.** The Stripe webhook recorded successful payments into `estimate_payments` correctly, but never emailed the client anything. Added a branded Blue Luna Events receipt (amount, date, remaining balance/paid-in-full, link to their estimate) sent automatically on `checkout.session.completed`, wrapped in try/catch so a failed send can't cause Stripe to retry and double-record the payment. Commit `5d48709e`.
+
 ## DONE (2026-08-04 — estimate-form confusion fix, editing, custom items, lead-source question)
 
 - ✅ **Fixed the bug blocking a real payment.** Monica had a real lead (Daniella Zepeda) and reported the "+ New" estimate tool "wasn't working" — believed it opened with someone else's info already filled in. Traced directly: the estimate had actually saved correctly (real row, $650, Essential package, real share link) — the real issue was the Client Info step's placeholder text ("Maria Hernandez", "maria@email.com") reading as real content instead of an example, since inline `style` props can't target `::placeholder` and the browser default wasn't distinct enough. Reworded placeholders to explicit instructions + added real dimmed/italic `::placeholder` CSS. Confirmed live against production before fixing. Commit `885495ff`.

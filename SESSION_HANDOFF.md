@@ -2,7 +2,21 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 4, 2026 — Claude Code*
 
-## 2026-08-04, continued: estimates can now go fully custom, not just premade packages
+## 2026-08-04, continued: fixed stuck add-on removal + customers now get a real payment receipt email
+
+You reported you couldn't remove an add-on — it looked like it unchecked but wouldn't actually save, leaving you stuck. Real bug: once an estimate has nothing left but that one item (no package, no other add-ons, no custom items), a safety check meant to stop an accidental blank save was also blocking the legitimate case of clearing everything down to the last item — which is exactly the situation right after switching an estimate to "No Package — Custom Only." Save was silently failing. Fixed — Save now always works, including clearing a selection down to zero while you rebuild it.
+
+You also asked to confirm Stripe stays in sync with edits, and that the customer gets a receipt. Checked Stripe directly: it was already correct — the checkout amount is calculated fresh from the estimate at the moment the client clicks pay, so any edit you make (package, add-ons, custom items, discount) is always reflected in what they're charged, never a stale number. What was genuinely missing: **no receipt email existed at all** — a successful payment recorded correctly in Studio, but the client got nothing. Added one: the moment a Stripe payment completes, the client automatically gets a branded Blue Luna Events receipt email — amount paid, date, remaining balance (or "Paid in Full"), and a link back to their estimate.
+
+**Shawn, test this:**
+1. Studio → any estimate → Selection → Edit → remove add-ons/custom items down to nothing → Save → confirm it actually saves (reload the page, it should stay empty, not revert).
+2. Run the real live $1 Stripe test you've had pending — confirm you (as the test client) receive a "Payment Receipt — Blue Luna Events" email right after paying.
+
+Commit `5d48709e`, pushed and confirmed live.
+
+---
+
+## Prior: 2026-08-04, continued: estimates can now go fully custom, not just premade packages
 
 Right after the estimate-editing fix below shipped, you flagged the real next gap: on a call, a client might want to change their mind entirely and go custom instead of one of the premade packages (which are still a work in progress anyway) — and there was no way to clear the package or add something that isn't in the catalog.
 
@@ -357,7 +371,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `47c035fb` — custom/freeform line items on estimates, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `83f63511` (real editing added to existing estimates — package/add-ons/client info), `300ad340` ("where did you hear about us?" lead-source question), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
+- Latest `main` commit: `5d48709e` — fixed stuck add-on removal + added a real Stripe payment receipt email, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
 - **Schema note:** `estimates.custom_items` (jsonb, default `[]`) added 2026-08-04 via Supabase Management API — array of `{label, price}`.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
