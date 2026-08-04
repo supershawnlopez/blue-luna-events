@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const supabase = serverClient()
   const { data: est, error } = await supabase
     .from('estimates')
-    .select('id, client_name, client_email, event_type, package_name, quoted_total, discount_type, discount_value, share_token')
+    .select('id, client_name, client_email, event_type, package_name, quoted_total, discount_type, discount_value, deposit_type, deposit_value, share_token')
     .eq('id', estimateId)
     .single()
 

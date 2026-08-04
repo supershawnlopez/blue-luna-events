@@ -22,6 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     'client_name', 'client_email', 'client_phone',
     'event_type', 'event_date', 'venue',
     'package_id', 'package_name', 'add_ons', 'custom_items', 'quoted_total',
+    'deposit_type', 'deposit_value',
   ]
   const update: Record<string, unknown> = {}
   for (const key of allowed) {

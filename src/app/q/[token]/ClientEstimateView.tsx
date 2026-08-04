@@ -18,6 +18,8 @@ type Estimate = {
   discount_type?: string | null
   discount_value?: number | null
   discount_note?: string | null
+  deposit_type?: string | null
+  deposit_value?: number | null
   payments: EstimatePayment[]
 }
 

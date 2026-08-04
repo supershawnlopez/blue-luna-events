@@ -28,7 +28,7 @@ export default function Nav() {
   const [open, setOpen] = useState(false)
   const [eventsOpen, setEventsOpen] = useState(false)
 
-  if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/')) return null
+  if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/') || pathname?.startsWith('/q/')) return null
 
   // Homepage hero is full-bleed video — let it show through the nav until scrolled past it.
   // Forced opaque while the mobile menu is open so the nav's own logo/close button don't

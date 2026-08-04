@@ -27,6 +27,8 @@ type Estimate = {
   discount_type?: string | null
   discount_value?: number | null
   discount_note?: string | null
+  deposit_type?: string | null
+  deposit_value?: number | null
 }
 
 type CustomItem = { label: string; description?: string; price: number }
@@ -61,6 +63,11 @@ export default function EstimateDetail() {
   const [discountType, setDiscountType] = useState<'percent' | 'flat'>('percent')
   const [discountValue, setDiscountValue] = useState('')
   const [discountNote, setDiscountNote] = useState('')
+
+  // Deposit editor
+  const [depositOpen, setDepositOpen] = useState(false)
+  const [depositType, setDepositType] = useState<'percent' | 'flat'>('percent')
+  const [depositValue, setDepositValue] = useState('50')
 
   // Add payment
   const [paymentOpen, setPaymentOpen] = useState(false)
@@ -101,6 +108,8 @@ export default function EstimateDetail() {
       setDiscountType(data.discount_type === 'flat' ? 'flat' : 'percent')
       setDiscountValue(data.discount_value ? String(data.discount_value) : '')
       setDiscountNote(data.discount_note ?? '')
+      setDepositType(data.deposit_type === 'flat' ? 'flat' : 'percent')
+      setDepositValue(data.deposit_value != null ? String(data.deposit_value) : '50')
       setDName(data.client_name ?? '')
       setDEmail(data.client_email ?? '')
       setDPhone(data.client_phone ?? '')
@@ -144,6 +153,35 @@ export default function EstimateDetail() {
     setDiscountType('percent'); setDiscountValue(''); setDiscountNote('')
     await load()
     setSaving(false)
+  }
+
+  async function saveDeposit() {
+    setSaving(true)
+    const value = parseFloat(depositValue)
+    await fetch(`/api/studio/estimates/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        deposit_type: value > 0 ? depositType : null,
+        deposit_value: value > 0 ? value : null,
+      }),
+    })
+    await load()
+    setSaving(false)
+    setDepositOpen(false)
+  }
+
+  async function resetDepositToDefault() {
+    setSaving(true)
+    await fetch(`/api/studio/estimates/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deposit_type: null, deposit_value: null }),
+    })
+    setDepositType('percent'); setDepositValue('50')
+    await load()
+    setSaving(false)
+    setDepositOpen(false)
   }
 
   async function saveDetails() {
@@ -596,6 +634,43 @@ export default function EstimateDetail() {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={() => setDiscountOpen(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>Cancel</button>
                 <button onClick={saveDiscount} disabled={saving} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
+              </div>
+            </div>
+          )}
+
+          {!depositOpen && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 18px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                Deposit due at checkout: <strong style={{ color: 'rgba(255,255,255,0.7)' }}>{fmt(balance.suggestedDeposit)}</strong>
+                {(!est.deposit_type || !est.deposit_value) ? ' (default 50%)' : est.deposit_type === 'percent' ? ` (${est.deposit_value}%)` : ' (custom amount)'}
+              </p>
+              <button onClick={() => setDepositOpen(true)} style={{ background: 'none', border: 'none', color: '#5BBFBF', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 700, flexShrink: 0, marginLeft: '10px' }}>
+                Edit
+              </button>
+            </div>
+          )}
+
+          {depositOpen && (
+            <div style={{ padding: '16px 18px', borderTop: '1px solid rgba(255,255,255,0.08)', background: 'rgba(0,0,0,0.15)' }}>
+              <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Deposit — defaults to 50%</p>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                <button onClick={() => setDepositType('percent')} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: depositType === 'percent' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.12)', background: depositType === 'percent' ? 'rgba(91,191,191,0.1)' : 'transparent', color: depositType === 'percent' ? '#5BBFBF' : 'rgba(255,255,255,0.6)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>%</button>
+                <button onClick={() => setDepositType('flat')} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: depositType === 'flat' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.12)', background: depositType === 'flat' ? 'rgba(91,191,191,0.1)' : 'transparent', color: depositType === 'flat' ? '#5BBFBF' : 'rgba(255,255,255,0.6)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>$</button>
+              </div>
+              <input
+                type="number" inputMode="decimal" placeholder={depositType === 'percent' ? 'e.g. 30' : 'e.g. 200'} value={depositValue}
+                onChange={e => setDepositValue(e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '16px', color: 'white', marginBottom: '10px', boxSizing: 'border-box' }}
+              />
+              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', marginBottom: '10px' }}>
+                Deposit would be: <strong style={{ color: 'white' }}>
+                  {fmt(Math.round((depositType === 'flat' ? Math.min(parseFloat(depositValue) || 0, balance.finalTotal) : balance.finalTotal * ((parseFloat(depositValue) || 0) / 100)) * 100) / 100)}
+                </strong>
+              </p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => { setDepositOpen(false); setDepositType(est.deposit_type === 'flat' ? 'flat' : 'percent'); setDepositValue(est.deposit_value != null ? String(est.deposit_value) : '50') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={resetDepositToDefault} disabled={saving} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>Reset to 50%</button>
+                <button onClick={saveDeposit} disabled={saving} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
               </div>
             </div>
           )}

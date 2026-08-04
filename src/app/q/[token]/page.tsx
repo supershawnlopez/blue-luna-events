@@ -41,6 +41,8 @@ async function getEstimate(token: string) {
     discount_type: data.discount_type,
     discount_value: data.discount_value,
     discount_note: data.discount_note,
+    deposit_type: data.deposit_type,
+    deposit_value: data.deposit_value,
     payments: payments ?? [],
   }
 }

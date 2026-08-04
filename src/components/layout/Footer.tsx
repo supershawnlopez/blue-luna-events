@@ -8,7 +8,7 @@ import { SITE_CONFIG } from '@/lib/config'
 
 export default function Footer() {
   const pathname = usePathname()
-  if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/')) return null
+  if (pathname?.startsWith('/studio') || pathname?.startsWith('/gallery/') || pathname?.startsWith('/q/')) return null
   return (
     <footer style={{ background: '#FDFCFA', borderTop: '1px solid #E5E7EB' }}>
       <div className="container">
