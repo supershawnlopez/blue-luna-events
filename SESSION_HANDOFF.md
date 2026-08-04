@@ -2,7 +2,17 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 4, 2026 — Claude Code*
 
-## 2026-08-04, continued: fixed stuck add-on removal + customers now get a real payment receipt email
+## 2026-08-04, continued: added a "No Add-Ons" clear-all option
+
+You clarified the earlier fix missed the actual ask — you didn't want a bug hunted down, you wanted a direct "no add-ons" clear option, same as the "No Package — Custom Only" one already sitting above it. Added it: a "No Add-Ons" link next to the Add-Ons header in the Selection editor that clears every selected add-on in one tap.
+
+**Shawn, test this:** Studio → any estimate → Selection → Edit → with any add-ons checked, you should see a "No Add-Ons" link next to the Add-Ons header — tap it, confirm everything unchecks at once, then Save.
+
+Commit `baad4fd6`, pushed and confirmed live.
+
+---
+
+## Prior: 2026-08-04, continued: fixed stuck add-on removal + customers now get a real payment receipt email
 
 You reported you couldn't remove an add-on — it looked like it unchecked but wouldn't actually save, leaving you stuck. Real bug: once an estimate has nothing left but that one item (no package, no other add-ons, no custom items), a safety check meant to stop an accidental blank save was also blocking the legitimate case of clearing everything down to the last item — which is exactly the situation right after switching an estimate to "No Package — Custom Only." Save was silently failing. Fixed — Save now always works, including clearing a selection down to zero while you rebuild it.
 
@@ -371,7 +381,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `5d48709e` — fixed stuck add-on removal + added a real Stripe payment receipt email, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
+- Latest `main` commit: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
 - **Schema note:** `estimates.custom_items` (jsonb, default `[]`) added 2026-08-04 via Supabase Management API — array of `{label, price}`.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.

@@ -59,6 +59,10 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-04, continued — "No Add-Ons" clear-all option)
+
+- ✅ **Added a direct "No Add-Ons" clear-all option** to the estimate Selection editor, next to the Add-Ons header — clears every selected add-on in one tap, same pattern as the existing "No Package — Custom Only" option. This was the actual ask behind the "stuck add-on" report; the earlier same-day fix addressed a real but different bug (a Save guard) that turned out not to be what Shawn meant. Commit `baad4fd6`.
+
 ## DONE (2026-08-04, continued — stuck add-on fix + Stripe payment receipt email)
 
 - ✅ **Fixed a real bug: removing an add-on could get permanently stuck.** The Save guard in the Selection editor blocked saving whenever the result would be a completely empty selection (no package, no add-ons, no custom items) — exactly the state right after clearing the premade package. The checkbox toggled visually but Save silently no-op'd, reverting on reload. Removed the guard entirely; an empty selection mid-edit is valid. Commit `5d48709e`.

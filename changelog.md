@@ -13,6 +13,14 @@
 
 ---
 
+## Session: August 4, 2026, continued — "No Add-Ons" clear-all option
+**AI:** Claude Code
+**Worked on:** Shawn clarified the prior fix in this session missed the actual ask — he wasn't reporting a toggle bug, he wanted a direct "no add-ons" clear control, parallel to the "No Package — Custom Only" option already shipped.
+
+### Completed This Session
+- Added a "No Add-Ons" link next to the Add-Ons header in the estimate Selection editor (`src/app/studio/estimates/[id]/page.tsx`) that clears `selAddOnIds` to `[]` in one tap, only shown when at least one add-on is selected. Commit `baad4fd6`.
+- Verified: clean `tsc`/`npm run build`, pushed, Vercel confirmed `READY`, production confirmed 200.
+
 ## Session: August 4, 2026, continued — stuck add-on removal fixed + Stripe payment receipt email
 **AI:** Claude Code
 **Worked on:** Shawn reported he couldn't remove an add-on from an estimate — it "stuck." Same message asked to confirm Stripe checkout stays in sync with edits made in Studio, and that customers get a real receipt email after paying.
