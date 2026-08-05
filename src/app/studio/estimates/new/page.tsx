@@ -3,11 +3,11 @@
 import { useState, useReducer, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ArrowRight, Check, Copy, ExternalLink } from 'lucide-react'
-import { PACKAGE_CATALOG, ADD_ONS, CONFIGURATOR_EVENT_TYPES, getPackagesForEvent, type EventTypeId } from '@/lib/config'
-import { computeTotal, computeCustomTotal, formatPrice, type CustomBuild, emptyCustomBuild } from '@/lib/pricing'
+import { ChevronLeft, ArrowRight, Check, Copy, ExternalLink, Plus, Trash2, Pencil } from 'lucide-react'
+import { CONFIGURATOR_EVENT_TYPES, type EventTypeId } from '@/lib/config'
+import { formatPrice } from '@/lib/pricing'
 
-type Step = 'client' | 'event' | 'package' | 'addons' | 'review'
+type Step = 'client' | 'event' | 'items'
 
 type ClientInfo = {
   name: string
@@ -18,34 +18,31 @@ type ClientInfo = {
   notes: string
 }
 
+type LineItem = { label: string; description?: string; price: number }
+
 type State = {
   step: Step
   client: ClientInfo
   eventTypeId: EventTypeId | null
-  packageId: string | null
-  addOnIds: string[]
+  items: LineItem[]
 }
 
 type Action =
   | { type: 'SET_STEP'; step: Step }
   | { type: 'SET_CLIENT'; client: Partial<ClientInfo> }
   | { type: 'SET_EVENT'; eventTypeId: EventTypeId }
-  | { type: 'SET_PACKAGE'; packageId: string }
-  | { type: 'TOGGLE_ADDON'; addonId: string }
+  | { type: 'ADD_ITEM'; item: LineItem }
+  | { type: 'UPDATE_ITEM'; index: number; item: LineItem }
+  | { type: 'REMOVE_ITEM'; index: number }
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'SET_STEP': return { ...state, step: action.step }
     case 'SET_CLIENT': return { ...state, client: { ...state.client, ...action.client } }
-    case 'SET_EVENT': return { ...state, eventTypeId: action.eventTypeId, packageId: null, addOnIds: [] }
-    case 'SET_PACKAGE': return { ...state, packageId: action.packageId }
-    case 'TOGGLE_ADDON':
-      return {
-        ...state,
-        addOnIds: state.addOnIds.includes(action.addonId)
-          ? state.addOnIds.filter(id => id !== action.addonId)
-          : [...state.addOnIds, action.addonId],
-      }
+    case 'SET_EVENT': return { ...state, eventTypeId: action.eventTypeId, items: [] }
+    case 'ADD_ITEM': return { ...state, items: [...state.items, action.item] }
+    case 'UPDATE_ITEM': return { ...state, items: state.items.map((it, i) => i === action.index ? action.item : it) }
+    case 'REMOVE_ITEM': return { ...state, items: state.items.filter((_, i) => i !== action.index) }
     default: return state
   }
 }
@@ -54,8 +51,16 @@ const INITIAL: State = {
   step: 'client',
   client: { name: '', email: '', phone: '', event_date: '', venue: '', notes: '' },
   eventTypeId: null,
-  packageId: null,
-  addOnIds: [],
+  items: [],
+}
+
+type CatalogItem = {
+  id: string
+  label: string
+  description: string | null
+  pricing_type: 'flat' | 'per_unit'
+  price: number
+  unit: string | null
 }
 
 export default function NewEstimate() {
@@ -74,6 +79,18 @@ function NewEstimateInner() {
   const [saved, setSaved] = useState<{ id: string; shareToken: string } | null>(null)
   const [copied, setCopied] = useState(false)
 
+  const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([])
+  const [itemCatalogId, setItemCatalogId] = useState('')
+  const [itemLabel, setItemLabel] = useState('')
+  const [itemDescription, setItemDescription] = useState('')
+  const [itemPrice, setItemPrice] = useState('')
+  const [itemQty, setItemQty] = useState('')
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetch('/api/studio/catalog').then(r => r.ok ? r.json() : []).then(d => setCatalogItems(Array.isArray(d) ? d : []))
+  }, [])
+
   // Pre-fill from a lead-email deep link (?name=&email=&phone=&event_date=&venue=)
   useEffect(() => {
     const prefill: Partial<ClientInfo> = {}
@@ -91,15 +108,69 @@ function NewEstimateInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const pkg = state.packageId ? PACKAGE_CATALOG.find(p => p.id === state.packageId) : null
-  const pricing = pkg ? computeTotal(state.packageId!, state.addOnIds) : null
-  const total = pricing?.total ?? 0
+  const total = state.items.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
   const deposit = Math.round(total * 0.5)
   const balance = total - deposit
-  const packages = getPackagesForEvent(state.eventTypeId)
-  const filteredAddOns = ADD_ONS.filter(a =>
-    a.eventTypes === 'all' || (state.eventTypeId && a.eventTypes.includes(state.eventTypeId))
-  )
+  const selectedCatalogItem = catalogItems.find(c => c.id === itemCatalogId)
+
+  function resetItemForm() {
+    setItemCatalogId('')
+    setItemLabel('')
+    setItemDescription('')
+    setItemPrice('')
+    setItemQty('')
+    setEditingIndex(null)
+  }
+
+  function selectCatalogItem(catalogId: string) {
+    setItemCatalogId(catalogId)
+    const item = catalogItems.find(c => c.id === catalogId)
+    if (!item) { setItemLabel(''); setItemDescription(''); setItemPrice(''); setItemQty(''); return }
+    setItemLabel(item.label)
+    setItemDescription(item.description ?? '')
+    if (item.pricing_type === 'per_unit') {
+      setItemQty('')
+      setItemPrice('')
+    } else {
+      setItemPrice(String(item.price))
+    }
+  }
+
+  function updateQty(qty: string) {
+    setItemQty(qty)
+    const item = catalogItems.find(c => c.id === itemCatalogId)
+    if (item && item.pricing_type === 'per_unit') {
+      const n = parseFloat(qty)
+      setItemPrice(n > 0 ? String(Math.round(item.price * n * 100) / 100) : '')
+    }
+  }
+
+  function saveItem() {
+    const price = parseFloat(itemPrice)
+    if (!itemLabel.trim() || !price || price <= 0) return
+    const item = { label: itemLabel.trim(), description: itemDescription.trim() || undefined, price }
+    if (editingIndex !== null) {
+      dispatch({ type: 'UPDATE_ITEM', index: editingIndex, item })
+    } else {
+      dispatch({ type: 'ADD_ITEM', item })
+    }
+    resetItemForm()
+  }
+
+  function editItem(index: number) {
+    const it = state.items[index]
+    setItemCatalogId('')
+    setItemLabel(it.label)
+    setItemDescription(it.description ?? '')
+    setItemPrice(String(it.price))
+    setItemQty('')
+    setEditingIndex(index)
+  }
+
+  function removeItem(index: number) {
+    dispatch({ type: 'REMOVE_ITEM', index })
+    if (editingIndex === index) resetItemForm()
+  }
 
   async function handleSave(send: boolean) {
     setSaving(true)
@@ -110,9 +181,7 @@ function NewEstimateInner() {
       event_type: state.eventTypeId,
       event_date: state.client.event_date,
       venue: state.client.venue,
-      package_id: state.packageId,
-      package_name: pkg?.name,
-      add_ons: JSON.stringify(state.addOnIds),
+      custom_items: state.items,
       quoted_total: total,
       deposit_amount: deposit,
       balance_amount: balance,
@@ -184,7 +253,7 @@ function NewEstimateInner() {
               <ChevronLeft size={18} />
             </Link>
             <div>
-              <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Step 1 of 4</p>
+              <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Step 1 of 3</p>
               <h1 style={{ fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>Client Info</h1>
             </div>
           </div>
@@ -251,7 +320,7 @@ function NewEstimateInner() {
               <ChevronLeft size={18} />
             </button>
             <div>
-              <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Step 2 of 4</p>
+              <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Step 2 of 3</p>
               <h1 style={{ fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>Event Type</h1>
             </div>
           </div>
@@ -262,7 +331,7 @@ function NewEstimateInner() {
               key={et.id}
               onClick={() => {
                 dispatch({ type: 'SET_EVENT', eventTypeId: et.id })
-                dispatch({ type: 'SET_STEP', step: 'package' })
+                dispatch({ type: 'SET_STEP', step: 'items' })
               }}
               style={{
                 background: state.eventTypeId === et.id ? 'rgba(91,191,191,0.15)' : 'rgba(255,255,255,0.04)',
@@ -280,98 +349,120 @@ function NewEstimateInner() {
     )
   }
 
-  // ── Package step ──────────────────────────────────────────────────────────────
-  if (state.step === 'package') {
+  // ── Items step ────────────────────────────────────────────────────────────────
+  if (state.step === 'items') {
     return (
-      <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '40px' }}>
+      <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '160px' }}>
         <div style={{ padding: '56px 24px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ maxWidth: '500px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <button onClick={() => dispatch({ type: 'SET_STEP', step: 'event' })} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
               <ChevronLeft size={18} />
             </button>
             <div>
-              <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Step 3 of 4</p>
-              <h1 style={{ fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>Base Package</h1>
+              <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Step 3 of 3</p>
+              <h1 style={{ fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>Items</h1>
             </div>
           </div>
         </div>
-        <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {packages.map(p => (
-            <button
-              key={p.id}
-              onClick={() => {
-                dispatch({ type: 'SET_PACKAGE', packageId: p.id })
-                dispatch({ type: 'SET_STEP', step: 'addons' })
-              }}
-              style={{
-                background: state.packageId === p.id ? 'rgba(91,191,191,0.12)' : 'rgba(255,255,255,0.04)',
-                border: state.packageId === p.id ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '14px', padding: '18px 20px', cursor: 'pointer', textAlign: 'left',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              }}
-            >
-              <div>
-                <p style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', marginBottom: '3px' }}>{p.tier}</p>
-                <p style={{ fontSize: '1rem', fontWeight: 600, color: 'white', marginBottom: '2px' }}>{p.name}</p>
-                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)' }}>{p.tagline}</p>
-              </div>
-              <p style={{ fontSize: '1.3rem', fontWeight: 700, color: '#5BBFBF', flexShrink: 0, marginLeft: '16px' }}>
-                ${p.price.toLocaleString()}
-              </p>
-            </button>
-          ))}
-        </div>
-      </div>
-    )
-  }
 
-  // ── Add-ons step ──────────────────────────────────────────────────────────────
-  if (state.step === 'addons') {
-    return (
-      <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '120px' }}>
-        <div style={{ padding: '56px 24px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ maxWidth: '500px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <button onClick={() => dispatch({ type: 'SET_STEP', step: 'package' })} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }}>
-              <ChevronLeft size={18} />
-            </button>
-            <div>
-              <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase' }}>Step 4 of 4</p>
-              <h1 style={{ fontSize: '1.3rem', fontWeight: 600, color: 'white' }}>Add-Ons</h1>
+        <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px 24px 0' }}>
+          {state.items.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '16px' }}>
+              {state.items.map((it, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: editingIndex === i ? 'rgba(91,191,191,0.08)' : 'rgba(255,255,255,0.04)', border: editingIndex === i ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 14px' }}>
+                  <button onClick={() => editItem(i)} style={{ background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', minWidth: 0, marginRight: '10px', flex: 1 }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 600, color: 'white', margin: 0 }}>{it.label}</p>
+                    {it.description && <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>{it.description}</p>}
+                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                    <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>${Number(it.price).toLocaleString()}</p>
+                    <button onClick={() => editItem(i)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '2px' }}>
+                      <Pencil size={14} />
+                    </button>
+                    <button onClick={() => removeItem(i)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', padding: '2px' }}>
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        </div>
-        <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px 24px 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {filteredAddOns.map(a => {
-            const selected = state.addOnIds.includes(a.id)
-            return (
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
+            {editingIndex !== null && (
+              <p style={{ fontSize: '0.72rem', color: '#5BBFBF', fontWeight: 700, margin: 0 }}>Editing item — Save Changes below, or Cancel to leave it as-is.</p>
+            )}
+            {catalogItems.length > 0 && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Pick from Price List (optional)</label>
+                <select
+                  value={itemCatalogId}
+                  onChange={e => selectCatalogItem(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                >
+                  <option value="">— Type a custom item instead —</option>
+                  {catalogItems.map(c => (
+                    <option key={c.id} value={c.id}>{c.label} — ${c.price}{c.pricing_type === 'per_unit' ? `/${c.unit}` : ''}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Item Name</label>
+              <input
+                type="text" placeholder="e.g. Balloon Garland" value={itemLabel}
+                onChange={e => setItemLabel(e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Description (optional)</label>
+              <input
+                type="text" placeholder="Any detail worth noting" value={itemDescription}
+                onChange={e => setItemDescription(e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+              />
+            </div>
+            {selectedCatalogItem?.pricing_type === 'per_unit' && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>
+                  Quantity ({selectedCatalogItem.unit}) — ${selectedCatalogItem.price}/{selectedCatalogItem.unit}
+                </label>
+                <input
+                  type="number" inputMode="decimal" placeholder="e.g. 12" value={itemQty}
+                  onChange={e => updateQty(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                />
+              </div>
+            )}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Price</label>
+              <input
+                type="number" inputMode="decimal" placeholder="$" value={itemPrice}
+                onChange={e => setItemPrice(e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {editingIndex !== null && (
+                <button onClick={resetItemForm} style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem', cursor: 'pointer' }}>
+                  Cancel
+                </button>
+              )}
               <button
-                key={a.id}
-                onClick={() => dispatch({ type: 'TOGGLE_ADDON', addonId: a.id })}
+                onClick={saveItem}
+                disabled={!itemLabel.trim() || !itemPrice}
                 style={{
-                  background: selected ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.04)',
-                  border: selected ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: '12px', padding: '14px 16px', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: '14px', textAlign: 'left',
+                  flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  background: (!itemLabel.trim() || !itemPrice) ? 'rgba(91,191,191,0.2)' : '#5BBFBF',
+                  border: 'none', borderRadius: '10px', padding: '12px', color: (!itemLabel.trim() || !itemPrice) ? 'rgba(91,191,191,0.4)' : '#0D0F0F',
+                  fontWeight: 700, fontSize: '0.9rem', cursor: (!itemLabel.trim() || !itemPrice) ? 'not-allowed' : 'pointer',
                 }}
               >
-                <div style={{
-                  width: '22px', height: '22px', borderRadius: '6px', flexShrink: 0,
-                  background: selected ? '#5BBFBF' : 'rgba(255,255,255,0.08)',
-                  border: selected ? 'none' : '1.5px solid rgba(255,255,255,0.15)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {selected && <Check size={13} color="#0D0F0F" />}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: '0.88rem', fontWeight: 600, color: 'white', marginBottom: '2px' }}>{a.label}</p>
-                  <p style={{ fontSize: '0.73rem', color: 'rgba(255,255,255,0.4)' }}>{a.description}</p>
-                </div>
-                <p style={{ fontSize: '0.95rem', fontWeight: 700, color: selected ? '#5BBFBF' : 'rgba(255,255,255,0.5)', flexShrink: 0 }}>
-                  +${a.price}
-                </p>
+                {editingIndex !== null ? <><Check size={15} /> Save Changes</> : <><Plus size={15} /> Add Item</>}
               </button>
-            )
-          })}
+            </div>
+          </div>
         </div>
 
         {/* Sticky total + save */}

@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
       package_id: body.package_id ?? null,
       package_name: body.package_name ?? null,
       add_ons: body.add_ons ?? null,
+      custom_items: body.custom_items ?? [],
       quoted_total: body.quoted_total ?? 0,
       deposit_amount: body.deposit_amount ?? 0,
       balance_amount: body.balance_amount ?? 0,
