@@ -75,10 +75,10 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
     <div style={{ minHeight: '100vh', background: '#F7F5F2', fontFamily: 'Inter, -apple-system, sans-serif', WebkitFontSmoothing: 'antialiased' }}>
 
       {/* Header */}
-      <div style={{ background: '#0D0F0F', padding: '28px 24px' }}>
+      <div style={{ background: '#0D0F0F', padding: '36px 24px' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <Image src="/images/logo-white.png" alt="Blue Luna Events" width={112} height={36} style={{ height: '28px', width: 'auto', marginBottom: '4px' }} priority />
+            <Image src="/images/logo-white.png" alt="Blue Luna Events" width={220} height={70} style={{ height: '54px', width: 'auto', objectFit: 'contain', display: 'block', marginBottom: '8px' }} priority />
             <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>Your {docLabel}</p>
           </div>
           <a href={`/api/studio/estimates/${est.id}/pdf`} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 14px', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>
