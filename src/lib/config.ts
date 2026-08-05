@@ -425,6 +425,12 @@ export const BUDGET_RANGES = [
   "Not sure yet — help me figure it out",
 ]
 
+// ─── Catalog (Monica's own price list) ─────────────────────────────────────────
+// Fixed list, not free-text — keeps every catalog item's unit consistent so
+// per-unit math (price × quantity) always means the same thing.
+export const CATALOG_UNITS = ['ft', 'each', 'hr', 'day', 'set'] as const
+export type CatalogUnit = typeof CATALOG_UNITS[number]
+
 // Self-reported source — a real answer to "where did this lead come from,"
 // which the automatic browser-referrer tracking (leads.referrer_channel)
 // can't always tell you: personal referrals, word of mouth, and in-app
