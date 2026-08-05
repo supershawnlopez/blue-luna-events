@@ -120,7 +120,10 @@ function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
         ...payments.map((p, i) =>
           React.createElement(View, { key: `p${i}`, style: styles.row },
             React.createElement(Text, { style: styles.rowLabel },
-              `${new Date(p.created_at).toLocaleDateString()} · ${p.method}${p.note ? ` (${p.note})` : ''}`),
+              // Never print `note` here — it's Monica's own internal record-keeping
+              // (e.g. "webhook failed, confirmed via screenshot"), not something
+              // meant for the client's own copy of this document.
+              `${new Date(p.created_at).toLocaleDateString()} · ${p.method}`),
             React.createElement(Text, { style: styles.rowValue }, fmt(Number(p.amount)))
           )
         )

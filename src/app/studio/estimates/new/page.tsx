@@ -150,7 +150,7 @@ function NewEstimateInner() {
           </div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white', marginBottom: '8px' }}>Estimate Created</h2>
           <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.4)', marginBottom: '32px' }}>
-            Share this link with {state.client.name} so they can view their quote and pay the deposit.
+            Share this link with {state.client.name} so they can view their estimate and pay the deposit.
           </p>
 
           <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>

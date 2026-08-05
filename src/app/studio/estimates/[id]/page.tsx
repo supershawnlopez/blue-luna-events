@@ -388,7 +388,7 @@ export default function EstimateDetail() {
               border: 'none', borderRadius: '10px', padding: '10px', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer',
             }}
           >
-            <Mail size={13} /> {emailSending ? 'Sending…' : 'Email Estimate to Client'}
+            <Mail size={13} /> {emailSending ? 'Sending…' : `Email ${docLabel} to Client`}
           </button>
           {emailSent && (
             <p style={{ fontSize: '0.75rem', color: '#5BBFBF', textAlign: 'center', marginTop: '8px' }}>✓ Sent to {emailSent}</p>
@@ -500,7 +500,7 @@ export default function EstimateDetail() {
           {selectionOpen && (
             <div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Package (optional — leave off for a fully custom quote)</p>
+                <p style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Package (optional — leave off for a fully custom {docLabel.toLowerCase()})</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                 <button

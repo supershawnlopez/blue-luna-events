@@ -232,7 +232,7 @@ export default function StudioHome() {
           {[
             { href: '/studio/media',         Icon: Camera,     label: 'Upload Photos',      sub: 'Add new work to your library' },
             { href: '/studio/galleries',      Icon: FolderOpen, label: 'New Client Gallery', sub: 'Share an event with your client' },
-            { href: '/studio/estimates/new',  Icon: FileText,   label: 'New Estimate',       sub: 'Build a quote for an event' },
+            { href: '/studio/estimates/new',  Icon: FileText,   label: 'New Estimate',       sub: 'Build an estimate for an event' },
           ].map(({ href, Icon, label, sub }) => (
             <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px', textDecoration: 'none' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '11px', background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

@@ -179,7 +179,7 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
             ))}
             {!est.package_name && addOns.length === 0 && customItems.length === 0 && (
               <div style={{ padding: '14px 20px' }}>
-                <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>Custom quote — see pricing below.</p>
+                <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>Custom {docLabel.toLowerCase()} — see pricing below.</p>
               </div>
             )}
           </div>
@@ -260,7 +260,7 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
             fontSize: '0.9rem', fontWeight: 600, color: '#374151', textDecoration: 'none', marginBottom: '24px',
           }}
         >
-          <Download size={16} /> Download Quote as PDF
+          <Download size={16} /> Download {docLabel} as PDF
         </a>
 
         {/* Monica contact */}
