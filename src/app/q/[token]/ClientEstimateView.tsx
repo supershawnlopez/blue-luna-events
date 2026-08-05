@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
-import { Check, CreditCard, Download, Phone } from 'lucide-react'
+import { Check, CreditCard, Download, Phone, PartyPopper } from 'lucide-react'
 import { SITE_CONFIG, labelForAddOn, labelForEventType } from '@/lib/config'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
+import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
 type Estimate = {
   id: string
@@ -20,6 +21,7 @@ type Estimate = {
   discount_note?: string | null
   deposit_type?: string | null
   deposit_value?: number | null
+  accepted_at?: string | null
   payments: EstimatePayment[]
 }
 
@@ -36,13 +38,25 @@ function parseAddOns(raw?: string): string[] {
   try { return JSON.parse(raw) } catch { return [] }
 }
 
-export default function ClientEstimateView({ estimate: est }: { estimate: Estimate }) {
+export default function ClientEstimateView({ estimate: initialEstimate, token }: { estimate: Estimate; token: string }) {
+  const [est, setEst] = useState(initialEstimate)
   const [paying, setPaying] = useState(false)
+  const [accepting, setAccepting] = useState(false)
   const first = firstName(est.client_name)
   const addOns = parseAddOns(est.add_ons)
   const customItems = est.custom_items ?? []
   const balance = computeBalance(est, est.payments)
   const hasPaidAnything = balance.totalPaid > 0
+  const accepted = isAccepted(est, balance.totalPaid)
+  const docLabel = getDocumentLabel(accepted, balance)
+
+  async function handleAccept() {
+    setAccepting(true)
+    const res = await fetch(`/api/q/${token}/accept`, { method: 'POST' })
+    const data = await res.json()
+    setAccepting(false)
+    if (res.ok && data.accepted_at) setEst(prev => ({ ...prev, accepted_at: data.accepted_at }))
+  }
 
   async function handlePay() {
     setPaying(true)
@@ -64,7 +78,7 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
         <div style={{ maxWidth: '560px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.18em', color: '#5BBFBF', textTransform: 'uppercase', margin: 0 }}>Blue Luna Events</p>
-            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>Your Estimate</p>
+            <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>Your {docLabel}</p>
           </div>
           <a href={`/api/studio/estimates/${est.id}/pdf`} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '8px 14px', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>
             <Download size={14} /> PDF
@@ -77,14 +91,18 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
         {/* Greeting */}
         <div style={{ marginBottom: '24px' }}>
           <h1 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#0D0F0F', marginBottom: '6px', fontFamily: 'Cormorant Garamond, Georgia, serif' }}>
-            Hi {first}! Here&apos;s your estimate. ✨
+            {balance.isPaidInFull
+              ? <>Hi {first}! Here&apos;s your receipt. ✨</>
+              : accepted
+                ? <>Hi {first}! Here&apos;s your invoice. ✨</>
+                : <>Hi {first}! Here&apos;s your estimate. ✨</>}
           </h1>
           <p style={{ fontSize: '0.88rem', color: '#6B7280', lineHeight: 1.6, margin: 0 }}>
             {balance.isPaidInFull
               ? "You're all paid up — thank you!"
-              : hasPaidAnything
+              : accepted
                 ? 'Review your remaining balance below. Monica will confirm final details as your date approaches.'
-                : "Review your selections below. When you're ready, pay the deposit to lock in your date — Monica will confirm within 2 hours."}
+                : "Review your selections below. When you're ready, accept your estimate to lock in your date."}
           </p>
         </div>
 
@@ -99,6 +117,12 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
           <div style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.25)', borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Check size={18} color="#5BBFBF" />
             <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>{fmt(balance.totalPaid)} received so far. {fmt(balance.amountOwed)} remaining.</p>
+          </div>
+        )}
+        {accepted && !hasPaidAnything && (
+          <div style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.25)', borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <PartyPopper size={18} color="#5BBFBF" />
+            <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>You&apos;re all set! Ready to lock in your date? Pay your deposit below.</p>
           </div>
         )}
 
@@ -191,8 +215,25 @@ export default function ClientEstimateView({ estimate: est }: { estimate: Estima
           </div>
         </div>
 
-        {/* Payment CTA */}
-        {!balance.isPaidInFull && (
+        {/* Accept / Payment CTA */}
+        {!accepted && (
+          <button
+            onClick={handleAccept}
+            disabled={accepting}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+              background: accepting ? '#9CA3AF' : '#5BBFBF', color: '#0D0F0F',
+              border: 'none', borderRadius: '14px', padding: '18px',
+              fontSize: '1rem', fontWeight: 700, cursor: accepting ? 'not-allowed' : 'pointer',
+              boxShadow: accepting ? 'none' : '0 6px 24px rgba(91,191,191,0.35)',
+              marginBottom: '12px',
+            }}
+          >
+            <Check size={18} />
+            {accepting ? 'One sec…' : 'Accept This Estimate'}
+          </button>
+        )}
+        {accepted && !balance.isPaidInFull && (
           <button
             onClick={handlePay}
             disabled={paying}

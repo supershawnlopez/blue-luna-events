@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { serverClient } from '@/lib/supabase'
 import { SITE_CONFIG } from '@/lib/config'
 import { computeBalance } from '@/lib/estimateBalance'
+import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
 function fmt(n: number) {
   return `$${n.toLocaleString()}`
@@ -25,6 +26,7 @@ export async function sendReceiptEmail(estimateId: string, amountPaid: number, h
   if (!est || !est.client_email) return { ok: false, error: 'Estimate or client email not found' }
 
   const balance = computeBalance(est, (payments ?? []).map(p => ({ id: '', method: '', created_at: '', amount: p.amount })))
+  const docLabel = getDocumentLabel(isAccepted(est, balance.totalPaid), balance)
 
   const protocol = host.includes('localhost') ? 'http' : 'https'
   const shareUrl = `${protocol}://${host}/q/${est.share_token}`
@@ -69,7 +71,7 @@ export async function sendReceiptEmail(estimateId: string, amountPaid: number, h
 
   <tr><td style="background:#FFFFFF;padding:0 32px 28px">
     <a href="${shareUrl}" style="display:block;text-align:center;background:#5BBFBF;color:#0D0F0F;font-size:14px;font-weight:700;padding:16px;border-radius:999px;text-decoration:none">
-      View Your Estimate
+      View Your ${docLabel}
     </a>
   </td></tr>
 

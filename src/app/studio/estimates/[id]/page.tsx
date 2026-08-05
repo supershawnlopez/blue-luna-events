@@ -7,6 +7,7 @@ import { ChevronLeft, Copy, Check, ExternalLink, Download, Mail, Plus, Trash2, T
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
 import { labelForAddOn, labelForEventType, PACKAGE_CATALOG, ADD_ONS, getPackagesForEvent, type EventTypeId } from '@/lib/config'
+import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
 type Estimate = {
   id: string
@@ -29,6 +30,7 @@ type Estimate = {
   discount_note?: string | null
   deposit_type?: string | null
   deposit_value?: number | null
+  accepted_at?: string | null
 }
 
 type CustomItem = { label: string; description?: string; price: number }
@@ -340,6 +342,8 @@ export default function EstimateDetail() {
 
   const addOns = parseAddOns(est.add_ons)
   const balance = computeBalance(est, payments)
+  const accepted = isAccepted(est, balance.totalPaid)
+  const docLabel = getDocumentLabel(accepted, balance)
   const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/q/${est.share_token}`
 
   return (
@@ -350,7 +354,7 @@ export default function EstimateDetail() {
             <ChevronLeft size={18} />
           </Link>
           <div>
-            <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.15em', color: '#5BBFBF', textTransform: 'uppercase', margin: '0 0 2px' }}>Estimate</p>
+            <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.15em', color: '#5BBFBF', textTransform: 'uppercase', margin: '0 0 2px' }}>{docLabel}</p>
             <h1 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'white', margin: 0 }}>{est.client_name}</h1>
           </div>
         </div>

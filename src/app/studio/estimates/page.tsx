@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Plus, ChevronRight, FileText } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance } from '@/lib/estimateBalance'
+import { isAccepted } from '@/lib/documentLabel'
 
 function paidLine(totalPaid: number, amountOwed: number, isPaidInFull: boolean) {
   if (isPaidInFull) return 'Paid in full'
@@ -25,24 +26,25 @@ type Estimate = {
   share_token: string
   discount_type?: string | null
   discount_value?: number | null
+  accepted_at?: string | null
   total_paid: number
 }
 
-type DisplayStatus = 'draft' | 'sent' | 'partial_paid' | 'paid_full' | 'declined'
+type DisplayStatus = 'draft' | 'sent' | 'partial_paid' | 'paid_full' | 'declined' | 'owing'
 
 const STATUS_STYLES: Record<DisplayStatus, { label: string; bg: string; color: string }> = {
   draft:        { label: 'Draft',       bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' },
   sent:         { label: 'Sent',        bg: 'rgba(91,191,191,0.12)',  color: '#5BBFBF' },
+  owing:        { label: 'Owing',       bg: 'rgba(201,169,110,0.15)', color: '#C9A96E' },
   partial_paid: { label: 'Partial',     bg: 'rgba(91,191,191,0.2)',   color: '#8DD4D4' },
   paid_full:    { label: 'Paid in Full', bg: 'rgba(34,197,94,0.15)',  color: '#4ade80' },
   declined:     { label: 'Declined',    bg: 'rgba(239,68,68,0.1)',    color: 'rgba(239,68,68,0.7)' },
 }
 
-function displayStatus(est: Estimate): DisplayStatus {
+function displayStatus(est: Estimate, accepted: boolean, balance: ReturnType<typeof computeBalance>): DisplayStatus {
   if (est.status === 'declined') return 'declined'
-  const balance = computeBalance(est, [{ id: '', method: '', created_at: '', amount: est.total_paid }])
   if (balance.isPaidInFull) return 'paid_full'
-  if (balance.totalPaid > 0) return 'partial_paid'
+  if (accepted) return balance.totalPaid > 0 ? 'partial_paid' : 'owing'
   if (est.status === 'sent') return 'sent'
   return 'draft'
 }
@@ -54,6 +56,7 @@ function fmt(n: number) {
 export default function EstimatesList() {
   const [estimates, setEstimates] = useState<Estimate[]>([])
   const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<'pending' | 'invoices'>('pending')
 
   useEffect(() => {
     fetch('/api/studio/estimates')
@@ -61,6 +64,14 @@ export default function EstimatesList() {
       .then(data => setEstimates(Array.isArray(data) ? data : []))
       .finally(() => setLoading(false))
   }, [])
+
+  const withMeta = estimates.map(est => {
+    const balance = computeBalance(est, [{ id: '', method: '', created_at: '', amount: est.total_paid }])
+    return { est, balance, accepted: isAccepted(est, balance.totalPaid) }
+  })
+  const pending = withMeta.filter(x => !x.accepted)
+  const invoices = withMeta.filter(x => x.accepted)
+  const visible = tab === 'pending' ? pending : invoices
 
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
@@ -83,6 +94,34 @@ export default function EstimatesList() {
       </div>
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 24px 0' }}>
+        {/* Pending Estimates / Invoices tabs */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '18px' }}>
+          <button
+            onClick={() => setTab('pending')}
+            style={{
+              flex: 1, padding: '10px', borderRadius: '10px', cursor: 'pointer',
+              border: tab === 'pending' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)',
+              background: tab === 'pending' ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.03)',
+              color: tab === 'pending' ? '#5BBFBF' : 'rgba(255,255,255,0.5)',
+              fontSize: '0.82rem', fontWeight: 700,
+            }}
+          >
+            Pending Estimates ({pending.length})
+          </button>
+          <button
+            onClick={() => setTab('invoices')}
+            style={{
+              flex: 1, padding: '10px', borderRadius: '10px', cursor: 'pointer',
+              border: tab === 'invoices' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)',
+              background: tab === 'invoices' ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.03)',
+              color: tab === 'invoices' ? '#5BBFBF' : 'rgba(255,255,255,0.5)',
+              fontSize: '0.82rem', fontWeight: 700,
+            }}
+          >
+            Invoices ({invoices.length})
+          </button>
+        </div>
+
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.3)' }}>Loading…</p>
@@ -101,11 +140,16 @@ export default function EstimatesList() {
               <Plus size={16} /> Create First Estimate
             </Link>
           </div>
+        ) : visible.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 0' }}>
+            <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.3)' }}>
+              {tab === 'pending' ? 'Nothing pending — everything sent has been accepted.' : 'No invoices yet — nothing has been accepted.'}
+            </p>
+          </div>
         ) : (
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', overflow: 'hidden' }}>
-            {estimates.map((est, i) => {
-              const s = STATUS_STYLES[displayStatus(est)]
-              const balance = computeBalance(est, [{ id: '', method: '', created_at: '', amount: est.total_paid }])
+            {visible.map(({ est, balance, accepted }, i) => {
+              const s = STATUS_STYLES[displayStatus(est, accepted, balance)]
               const hasDiscount = balance.discountAmount > 0
               return (
                 <Link key={est.id} href={`/studio/estimates/${est.id}`} style={{

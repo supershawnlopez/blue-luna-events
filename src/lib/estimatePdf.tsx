@@ -2,6 +2,7 @@ import React from 'react'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { SITE_CONFIG, labelForAddOn, labelForEventType } from '@/lib/config'
 import { computeBalance, type EstimateForBalance, type EstimatePayment } from '@/lib/estimateBalance'
+import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
 const styles = StyleSheet.create({
   page: { padding: 40, fontFamily: 'Helvetica', fontSize: 10, color: '#0D0F0F' },
@@ -34,6 +35,7 @@ export type EstimateRow = EstimateForBalance & {
   add_ons?: string | null
   custom_items?: { label: string; description?: string; price: number }[] | null
   discount_note?: string | null
+  accepted_at?: string | null
   created_at: string
 }
 
@@ -50,6 +52,7 @@ function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
   const addOns = parseAddOns(est.add_ons)
   const customItems = est.custom_items ?? []
   const balance = computeBalance(est, payments)
+  const docLabel = getDocumentLabel(isAccepted(est, balance.totalPaid), balance)
   const detailRows: [string, string][] = [
     ['Client', est.client_name],
     ['Email', est.client_email],
@@ -62,7 +65,7 @@ function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
   return React.createElement(Document, {},
     React.createElement(Page, { size: 'A4', style: styles.page },
       React.createElement(Text, { style: styles.brand }, 'Blue Luna Events'),
-      React.createElement(Text, { style: styles.title }, 'Event Estimate'),
+      React.createElement(Text, { style: styles.title }, `Event ${docLabel}`),
       React.createElement(Text, { style: styles.subtitle }, `Issued ${new Date(est.created_at).toLocaleDateString()}`),
 
       React.createElement(Text, { style: styles.sectionLabel }, 'Event Details'),

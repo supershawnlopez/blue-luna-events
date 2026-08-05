@@ -3,6 +3,7 @@ import { Resend } from 'resend'
 import { serverClient } from '@/lib/supabase'
 import { SITE_CONFIG } from '@/lib/config'
 import { computeBalance } from '@/lib/estimateBalance'
+import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 import { renderEstimatePdf, type EstimateRow } from '@/lib/estimatePdf'
 
 function firstName(name: string) {
@@ -36,6 +37,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   const balance = computeBalance(est, payments ?? [])
+  const docLabel = getDocumentLabel(isAccepted(est, balance.totalPaid), balance)
   const pdfBuffer = await renderEstimatePdf(est as EstimateRow, payments ?? [])
 
   const host = req.headers.get('host') ?? 'bluelunaevents.com'
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Your Blue Luna Events Estimate</title>
+<title>Your Blue Luna Events ${docLabel}</title>
 </head>
 <body style="margin:0;padding:0;background:#F3F4F6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;-webkit-font-smoothing:antialiased">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F3F4F6;padding:32px 16px">
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   <tr><td style="background:#0D0F0F;border-radius:16px 16px 0 0;padding:36px 32px;text-align:center">
     <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:#5BBFBF">Blue Luna Events</p>
-    <h1 style="margin:0;font-size:24px;font-weight:700;color:#FFFFFF">Hi ${first}, here's your estimate ✨</h1>
+    <h1 style="margin:0;font-size:24px;font-weight:700;color:#FFFFFF">Hi ${first}, here's your ${docLabel.toLowerCase()} ✨</h1>
   </td></tr>
 
   <tr><td style="background:#FFFFFF;padding:28px 32px 0">
@@ -97,7 +99,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     from: `Monica at Blue Luna Events <monica@bluelunaevents.com>`,
     replyTo: SITE_CONFIG.email,
     to: [recipient],
-    subject: `Your Blue Luna Events Estimate — ${fmt(balance.finalTotal)}`,
+    subject: `Your Blue Luna Events ${docLabel} — ${fmt(balance.finalTotal)}`,
     html,
     attachments: [{
       filename: `blue-luna-estimate-${est.client_name.replace(/\s+/g, '-').toLowerCase()}.pdf`,

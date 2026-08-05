@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
 import { serverClient } from '@/lib/supabase'
+import { computeBalance } from '@/lib/estimateBalance'
+import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 import type { Metadata } from 'next'
 import ClientEstimateView from './ClientEstimateView'
 
@@ -43,6 +45,7 @@ async function getEstimate(token: string) {
     discount_note: data.discount_note,
     deposit_type: data.deposit_type,
     deposit_value: data.deposit_value,
+    accepted_at: data.accepted_at,
     payments: payments ?? [],
   }
 }
@@ -50,8 +53,10 @@ async function getEstimate(token: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const est = await getEstimate(params.token)
   if (!est) return { title: 'Estimate Not Found' }
+  const balance = computeBalance(est, est.payments)
+  const label = getDocumentLabel(isAccepted(est, balance.totalPaid), balance)
   return {
-    title: `Your Blue Luna Events Estimate — ${est.client_name}`,
+    title: `Your Blue Luna Events ${label} — ${est.client_name}`,
     robots: { index: false, follow: false },
   }
 }
@@ -59,5 +64,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function EstimatePage({ params }: Props) {
   const est = await getEstimate(params.token)
   if (!est) notFound()
-  return <ClientEstimateView estimate={est} />
+  return <ClientEstimateView estimate={est} token={params.token} />
 }
