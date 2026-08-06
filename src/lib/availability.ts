@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-export type BookedDate = { date: string; clientName: string; eventType: string | null; estimateId: string }
+export type BookedDate = { date: string; clientName: string; eventType: string | null; venue: string | null; estimateId: string }
 export type BlockedDate = { id: string; startDate: string; endDate: string; reason: string | null }
 
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -28,14 +28,14 @@ export async function getBookedDates(db: SupabaseClient, monthsAhead = 8): Promi
 
   const { data } = await db
     .from('estimates')
-    .select('id, client_name, event_type, event_date, status')
+    .select('id, client_name, event_type, event_date, venue, status')
     .not('event_date', 'is', null)
     .gte('event_date', today)
     .lte('event_date', toDateOnly(horizon))
 
   return (data ?? [])
     .filter(e => !NOT_OCCUPYING_STATUSES.includes(e.status))
-    .map(e => ({ date: e.event_date, clientName: e.client_name, eventType: e.event_type, estimateId: e.id }))
+    .map(e => ({ date: e.event_date, clientName: e.client_name, eventType: e.event_type, venue: e.venue ?? null, estimateId: e.id }))
 }
 
 export async function getBlockedDates(db: SupabaseClient): Promise<BlockedDate[]> {

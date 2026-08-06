@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, X, Ban } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, Ban, CalendarDays, MapPin } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 
-type Booked = { date: string; clientName: string; eventType: string | null; estimateId: string }
+type Booked = { date: string; clientName: string; eventType: string | null; venue: string | null; estimateId: string }
 type Blocked = { id: string; startDate: string; endDate: string; reason: string | null }
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
@@ -78,6 +78,13 @@ export default function StudioSchedule() {
     ...Array(firstDayOfWeek).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => toDateOnly(new Date(year, month, i + 1))),
   ]
+
+  // Whatever month is currently on screen — updates automatically as she
+  // pages the calendar, same idea as iOS Calendar's agenda list under the grid.
+  const cursorMonthKey = `${year}-${String(month + 1).padStart(2, '0')}`
+  const bookingsThisMonth = booked
+    .filter(b => b.date.slice(0, 7) === cursorMonthKey)
+    .sort((a, b) => a.date.localeCompare(b.date))
 
   async function submitBlock() {
     if (!selectedDate) return
@@ -169,6 +176,35 @@ export default function StudioSchedule() {
             return <button key={dateStr} onClick={() => setSelectedDate(dateStr)} style={{ background: 'none', border: 'none', padding: 0, width: '100%' }}>{content}</button>
           })}
         </div>
+
+        {/* Bookings this month — mirrors the calendar's current page, same
+            idea as iOS Calendar's agenda list under the month grid. */}
+        {!loading && bookingsThisMonth.length > 0 && (
+          <>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 14px' }}>
+              Bookings — {MONTH_NAMES[month]}
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
+              {bookingsThisMonth.map(b => (
+                <Link key={b.estimateId} href={`/studio/estimates/${b.estimateId}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(91,191,191,0.06)', border: '1px solid rgba(91,191,191,0.2)', borderRadius: '14px', padding: '14px 16px', textDecoration: 'none' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(91,191,191,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <CalendarDays size={16} color="#5BBFBF" />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.86rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>{formatShort(b.date)} — {b.clientName}</p>
+                    {b.venue ? (
+                      <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.4)', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <MapPin size={11} /> {b.venue}
+                      </p>
+                    ) : (
+                      <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>No venue on file</p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
 
         {/* Upcoming blocks list */}
         {!loading && blocked.length > 0 && (
