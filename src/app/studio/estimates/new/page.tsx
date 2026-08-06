@@ -3,7 +3,7 @@
 import { useState, useReducer, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ArrowRight, Check, Copy, ExternalLink, Plus, Trash2, Pencil } from 'lucide-react'
+import { ChevronLeft, ChevronDown, ArrowRight, Check, Copy, ExternalLink, Plus, Trash2, Pencil } from 'lucide-react'
 import { CONFIGURATOR_EVENT_TYPES, type EventTypeId } from '@/lib/config'
 import { formatPrice } from '@/lib/pricing'
 
@@ -87,6 +87,7 @@ function NewEstimateInner() {
   const [itemQty, setItemQty] = useState('')
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [itemSheetOpen, setItemSheetOpen] = useState(false)
+  const [catalogPickerOpen, setCatalogPickerOpen] = useState(false)
 
   useEffect(() => {
     fetch('/api/studio/catalog').then(r => r.ok ? r.json() : []).then(d => setCatalogItems(Array.isArray(d) ? d : []))
@@ -465,16 +466,15 @@ function NewEstimateInner() {
                 {catalogItems.length > 0 && (
                   <div>
                     <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Pick from Price List (optional)</label>
-                    <select
-                      value={itemCatalogId}
-                      onChange={e => selectCatalogItem(e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                    <button
+                      type="button" onClick={() => setCatalogPickerOpen(true)}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: selectedCatalogItem ? 'white' : 'rgba(255,255,255,0.4)', textAlign: 'left', cursor: 'pointer' }}
                     >
-                      <option value="">— Type a custom item instead —</option>
-                      {catalogItems.map(c => (
-                        <option key={c.id} value={c.id}>{c.label} — ${c.price}{c.pricing_type === 'per_unit' ? `/${c.unit}` : ''}</option>
-                      ))}
-                    </select>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {selectedCatalogItem ? `${selectedCatalogItem.label} — $${selectedCatalogItem.price}${selectedCatalogItem.pricing_type === 'per_unit' ? `/${selectedCatalogItem.unit}` : ''}` : 'Type a custom item instead'}
+                      </span>
+                      <ChevronDown size={16} color="rgba(255,255,255,0.4)" style={{ flexShrink: 0 }} />
+                    </button>
                   </div>
                 )}
                 <div>
@@ -531,6 +531,48 @@ function NewEstimateInner() {
                 >
                   {editingIndex !== null ? 'Save Changes' : 'Add Item'}
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Price List picker — same branded sheet as the estimate detail page,
+            replacing the native <select>'s squished default OS dropdown. */}
+        {catalogPickerOpen && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 70 }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => setCatalogPickerOpen(false)} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, maxHeight: '75vh', display: 'flex', flexDirection: 'column', background: '#161616', borderTop: '2px solid #5BBFBF', boxShadow: '0 -8px 32px rgba(0,0,0,0.5)', borderRadius: '24px 24px 0 0' }}>
+              <div style={{ padding: '20px 20px 0', flexShrink: 0 }}>
+                <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 20px' }} />
+                <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 16px' }}>Price List</p>
+              </div>
+              <div style={{ overflowY: 'auto', padding: '0 20px calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
+                <button
+                  onClick={() => { selectCatalogItem(''); setCatalogPickerOpen(false) }}
+                  style={{ width: '100%', textAlign: 'left', background: !itemCatalogId ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.04)', border: !itemCatalogId ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '13px 16px', marginBottom: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <span style={{ fontSize: '0.88rem', fontWeight: 600, color: !itemCatalogId ? '#5BBFBF' : 'rgba(255,255,255,0.6)' }}>Type a custom item instead</span>
+                  {!itemCatalogId && <Check size={16} color="#5BBFBF" />}
+                </button>
+                {catalogItems.map(c => {
+                  const selected = itemCatalogId === c.id
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => { selectCatalogItem(c.id); setCatalogPickerOpen(false) }}
+                      style={{ width: '100%', textAlign: 'left', background: selected ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.04)', border: selected ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '13px 16px', marginBottom: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: '0.88rem', fontWeight: 600, color: 'white', margin: 0 }}>{c.label}</p>
+                        {c.description && <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>{c.description}</p>}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                        <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#5BBFBF', margin: 0, whiteSpace: 'nowrap' }}>${c.price}{c.pricing_type === 'per_unit' ? `/${c.unit}` : ''}</p>
+                        {selected && <Check size={16} color="#5BBFBF" />}
+                      </div>
+                    </button>
+                  )
+                })}
               </div>
             </div>
           </div>
