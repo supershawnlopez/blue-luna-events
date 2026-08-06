@@ -196,6 +196,7 @@ function NewEstimateInner() {
       balance_amount: balance,
       notes: state.client.notes,
       status: send ? 'sent' : 'draft',
+      lead_id: searchParams.get('lead_id') || null,
     }
     const res = await fetch('/api/studio/estimates', {
       method: 'POST',

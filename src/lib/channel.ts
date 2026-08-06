@@ -13,8 +13,12 @@ export function channelFor(referrer: string | null | undefined): string {
     return 'Other'
   }
   if (host.includes('instagram.com')) return 'Instagram'
-  if (host.includes('facebook.com')) return 'Facebook'
+  if (host.includes('facebook.com') || host.includes('fb.com')) return 'Facebook'
   if (host.includes('google.')) return 'Google'
+  if (host.includes('yelp.com')) return 'Yelp'
+  if (host.includes('bing.com')) return 'Bing'
+  if (host.includes('nextdoor.com')) return 'Nextdoor'
+  if (host.includes('apple.com') || host.includes('maps.apple.com')) return 'Apple Maps'
   if (host.includes('bluelunaevents.com')) return 'Direct'
   return 'Other'
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
+import { syncLeadOnEstimateCreated } from '@/lib/leadSync'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,10 +44,18 @@ export async function POST(req: NextRequest) {
       balance_amount: body.balance_amount ?? 0,
       notes: body.notes ?? null,
       status: body.status ?? 'draft',
+      lead_id: body.lead_id ?? null,
     }])
-    .select('id, share_token')
+    .select('id, share_token, lead_id')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  try {
+    await syncLeadOnEstimateCreated(supabase, data.lead_id)
+  } catch (err) {
+    console.error('Lead status sync failed:', err)
+  }
+
   return NextResponse.json(data)
 }

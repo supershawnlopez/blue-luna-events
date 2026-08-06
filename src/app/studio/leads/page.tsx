@@ -93,6 +93,7 @@ export default function StudioLeads() {
     if (l.phone) params.set('phone', l.phone)
     if (l.event_date) params.set('event_date', l.event_date)
     if (l.venue) params.set('venue', l.venue)
+    params.set('lead_id', l.id)
     return `/studio/estimates/new?${params.toString()}`
   }
 
