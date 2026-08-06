@@ -136,10 +136,10 @@ export default function StudioCatalog() {
 
             <div style={{ marginBottom: '12px' }}>
               <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Description (optional)</label>
-              <input
-                type="text" placeholder="What this includes" value={form.description}
+              <textarea
+                placeholder="What this includes" value={form.description} rows={3}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }}
               />
             </div>
 

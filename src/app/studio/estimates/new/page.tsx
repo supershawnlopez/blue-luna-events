@@ -487,10 +487,10 @@ function NewEstimateInner() {
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Description (optional)</label>
-                  <input
-                    type="text" placeholder="Any detail worth noting" value={itemDescription}
+                  <textarea
+                    placeholder="Any detail worth noting" value={itemDescription} rows={3}
                     onChange={e => setItemDescription(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' }}
                   />
                 </div>
                 {selectedCatalogItem?.pricing_type === 'per_unit' && (
