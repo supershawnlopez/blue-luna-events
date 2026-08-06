@@ -24,18 +24,28 @@ export async function GET() {
 
   const { data } = await db
     .from('leads')
-    .select('referrer_channel')
+    .select('referrer_channel, referral_source, created_at')
     .gte('created_at', monthStart)
 
   const rows = data ?? []
   const counts: Record<string, number> = {}
   for (const r of rows) {
-    const ch = r.referrer_channel || 'Direct'
+    // The client's own answer to "where did you hear about us" beats a
+    // guessed referrer every time — referrers get stripped constantly by
+    // in-app browsers (Instagram/Facebook), which is exactly the traffic a
+    // balloon-decor business is most likely to actually get.
+    const ch = r.referral_source || r.referrer_channel || 'Direct/Unknown'
     counts[ch] = (counts[ch] ?? 0) + 1
   }
   const channels = Object.entries(counts)
     .map(([channel, count]) => ({ channel, count }))
     .sort((a, b) => b.count - a.count)
 
-  return NextResponse.json({ total: rows.length, channels })
+  // Rolling 7 days, same window the site-visits card already uses — a
+  // calendar-week boundary would need the same Arizona-anchoring as above
+  // for no real benefit here.
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const totalThisWeek = rows.filter(r => r.created_at >= weekAgo).length
+
+  return NextResponse.json({ total: rows.length, totalThisWeek, channels })
 }

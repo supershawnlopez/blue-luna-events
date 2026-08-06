@@ -21,3 +21,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json(data)
 }
+
+// A real delete, not a soft one — a mistaken test submission or a clearly
+// non-lead entry has no downstream record depending on it (unlike an
+// estimate, which has payments/PDFs/emails tied to it), so there's nothing
+// worth preserving by hiding it instead of removing it.
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  const db = serverClient()
+  const { error } = await db.from('leads').delete().eq('id', params.id)
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ ok: true })
+}

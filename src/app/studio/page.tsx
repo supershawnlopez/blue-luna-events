@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type MouseEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Camera, FolderOpen, FileText, LogOut, Phone, CalendarClock, CircleDollarSign, CheckCircle2, TrendingUp, TrendingDown } from 'lucide-react'
+import { Camera, FolderOpen, FileText, LogOut, Phone, CalendarClock, CircleDollarSign, CheckCircle2, TrendingUp, TrendingDown, X } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 
 type Stats = { totalPhotos: number; onWebsite: number; galleries: number; estimates: number }
@@ -16,6 +16,7 @@ type AnalyticsData = {
 
 type LeadSourceData = {
   total: number
+  totalThisWeek: number
   channels: { channel: string; count: number }[]
 }
 
@@ -34,6 +35,7 @@ type TodayItem = {
   sub: string
   href: string
   priority: number
+  leadId?: string
 }
 
 function buildTodayItems(data: TodayData): TodayItem[] {
@@ -61,6 +63,7 @@ function buildTodayItems(data: TodayData): TodayItem[] {
       sub: `${l.eventType || 'Event'} · waiting ${l.daysWaiting === 0 ? 'since today' : l.daysWaiting === 1 ? '1 day' : `${l.daysWaiting} days`}`,
       href: `tel:${l.phone}`,
       priority: l.daysWaiting >= 2 ? 1 : 4,
+      leadId: l.id,
     })
   }
 
@@ -92,6 +95,7 @@ export default function StudioHome() {
   const [today, setToday] = useState<TodayData | null>(null)
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null)
   const [leadSources, setLeadSources] = useState<LeadSourceData | null>(null)
+  const [dismissedLeadIds, setDismissedLeadIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetch('/api/studio/stats')
@@ -108,11 +112,23 @@ export default function StudioHome() {
       .then(d => d && setLeadSources(d))
   }, [])
 
-  const todayItems = today ? buildTodayItems(today) : []
+  const todayItems = today
+    ? buildTodayItems(today).filter(i => !i.leadId || !dismissedLeadIds.has(i.leadId))
+    : []
 
   async function handleLogout() {
     await fetch('/api/studio/auth', { method: 'DELETE' })
     router.push('/studio/login')
+  }
+
+  // Fast, no-confirm dismissal on purpose — this surface is meant for quick
+  // triage (mistaken test submissions, obvious non-leads), not deliberate
+  // record management. The Leads page itself still confirms before deleting.
+  async function dismissLead(id: string, e: MouseEvent) {
+    e.preventDefault()
+    e.stopPropagation()
+    setDismissedLeadIds(prev => new Set(prev).add(id))
+    await fetch(`/api/studio/leads/${id}`, { method: 'DELETE' })
   }
 
   const hour = new Date().getHours()
@@ -141,9 +157,10 @@ export default function StudioHome() {
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '28px 24px 0' }}>
 
-        {/* Today */}
+        {/* Needs Your Attention — deliberately not called "Today": items here
+            can be waiting days, and the heading shouldn't imply otherwise. */}
         <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 14px' }}>
-          Today
+          Needs Your Attention
         </p>
         {today === null ? null : todayItems.length === 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(91,191,191,0.06)', border: '1px solid rgba(91,191,191,0.16)', borderRadius: '14px', padding: '18px', marginBottom: '36px' }}>
@@ -164,6 +181,11 @@ export default function StudioHome() {
                     <p style={{ fontSize: '0.86rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>{item.title}</p>
                     <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{item.sub}</p>
                   </div>
+                  {item.leadId && (
+                    <button onClick={e => dismissLead(item.leadId!, e)} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '8px', padding: '7px', cursor: 'pointer', display: 'flex', flexShrink: 0 }}>
+                      <X size={13} color="rgba(255,255,255,0.4)" />
+                    </button>
+                  )}
                 </Link>
               )
             })}
@@ -171,9 +193,16 @@ export default function StudioHome() {
         )}
 
         {/* This Month — where leads actually come from */}
-        <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 14px' }}>
-          This Month
-        </p>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', margin: '0 0 14px' }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: 0 }}>
+            This Month
+          </p>
+          {leadSources && leadSources.totalThisWeek > 0 && (
+            <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+              {leadSources.totalThisWeek} this week
+            </p>
+          )}
+        </div>
         <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', marginBottom: '36px' }}>
           {leadSources === null ? (
             <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Loading...</p>
@@ -186,22 +215,35 @@ export default function StudioHome() {
               {leadSources.channels.map((c, i) => (
                 <span key={c.channel}>
                   {i > 0 && (i === leadSources.channels.length - 1 ? ', and ' : ', ')}
-                  {c.count} from {c.channel === 'Direct' ? 'direct/unknown' : c.channel}
+                  {c.count} from {c.channel === 'Direct/Unknown' ? 'direct/unknown' : c.channel}
                 </span>
               ))}
               .
             </p>
           )}
 
-          {/* Site traffic — secondary, smaller */}
+          {/* Site traffic — secondary, smaller, but now with the channel
+              breakdown that was already being computed and just never shown. */}
           {analytics && !(analytics.visitsThisWeek === 0 && analytics.visitsPrevWeek === 0) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-              {analytics.visitsPrevWeek > 0 && (analytics.visitsThisWeek >= analytics.visitsPrevWeek
-                ? <TrendingUp size={12} color="rgba(255,255,255,0.3)" />
-                : <TrendingDown size={12} color="rgba(255,255,255,0.3)" />)}
-              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0 }}>
-                {analytics.visitsThisWeek} site visits this week
-              </p>
+            <div style={{ marginTop: '14px', paddingTop: '14px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: analytics.channels.length > 0 ? '6px' : 0 }}>
+                {analytics.visitsPrevWeek > 0 && (analytics.visitsThisWeek >= analytics.visitsPrevWeek
+                  ? <TrendingUp size={12} color="rgba(255,255,255,0.3)" />
+                  : <TrendingDown size={12} color="rgba(255,255,255,0.3)" />)}
+                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0 }}>
+                  {analytics.visitsThisWeek} site visits this week
+                </p>
+              </div>
+              {analytics.channels.length > 0 && (
+                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
+                  {analytics.channels.map((c, i) => (
+                    <span key={c.channel}>
+                      {i > 0 && ', '}
+                      {c.count} {c.channel === 'Direct' ? 'direct/unknown' : c.channel}
+                    </span>
+                  ))}
+                </p>
+              )}
             </div>
           )}
         </div>

@@ -46,6 +46,8 @@ export default function StudioLeads() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all')
   const [activeLead, setActiveLead] = useState<Lead | null>(null)
+  const [confirmDeleteLead, setConfirmDeleteLead] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     fetch('/api/studio/leads')
@@ -73,6 +75,15 @@ export default function StudioLeads() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
     })
+  }
+
+  async function deleteLead(id: string) {
+    setDeleting(true)
+    await fetch(`/api/studio/leads/${id}`, { method: 'DELETE' })
+    setLeads(prev => prev.filter(l => l.id !== id))
+    setDeleting(false)
+    setConfirmDeleteLead(false)
+    setActiveLead(null)
   }
 
   function estimateHref(l: Lead) {
@@ -146,14 +157,14 @@ export default function StudioLeads() {
       {/* Lead detail sheet */}
       {activeLead && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => setActiveLead(null)} />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => { setActiveLead(null); setConfirmDeleteLead(false) }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxHeight: '88vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
                 <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>{activeLead.name}</p>
                 <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{activeLead.event_type || 'Event'}{activeLead.event_date ? ` · ${activeLead.event_date}` : ''}</p>
               </div>
-              <button onClick={() => setActiveLead(null)} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex' }}>
+              <button onClick={() => { setActiveLead(null); setConfirmDeleteLead(false) }} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex' }}>
                 <X size={16} color="rgba(255,255,255,0.5)" />
               </button>
             </div>
@@ -214,9 +225,23 @@ export default function StudioLeads() {
               })}
             </div>
 
-            <Link href={estimateHref(activeLead)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#5BBFBF', color: '#0D0F0F', borderRadius: '12px', padding: '15px', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none' }}>
+            <Link href={estimateHref(activeLead)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#5BBFBF', color: '#0D0F0F', borderRadius: '12px', padding: '15px', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', marginBottom: '12px' }}>
               <FileText size={16} /> Create Estimate
             </Link>
+
+            {!confirmDeleteLead ? (
+              <button onClick={() => setConfirmDeleteLead(true)} style={{ width: '100%', background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', padding: '6px' }}>
+                Delete Lead
+              </button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', background: 'rgba(239,68,68,0.08)', borderRadius: '10px' }}>
+                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', margin: 0, flex: 1 }}>Delete this lead? This can&apos;t be undone.</p>
+                <button onClick={() => setConfirmDeleteLead(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                <button onClick={() => deleteLead(activeLead.id)} disabled={deleting} style={{ background: 'rgba(239,68,68,0.15)', border: 'none', color: '#f87171', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer', padding: '6px 10px', borderRadius: '6px' }}>
+                  {deleting ? 'Deleting…' : 'Delete'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
