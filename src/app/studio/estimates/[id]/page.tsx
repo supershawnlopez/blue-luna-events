@@ -126,6 +126,7 @@ export default function EstimateDetail() {
   const [newItemPrice, setNewItemPrice] = useState('')
   const [newItemQty, setNewItemQty] = useState('')
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null)
+  const [itemSheetOpen, setItemSheetOpen] = useState(false)
 
   const load = useCallback(async () => {
     const [estRes, paymentsRes, activityRes, catalogRes] = await Promise.all([
@@ -266,6 +267,12 @@ export default function EstimateDetail() {
     setNewItemPrice('')
     setNewItemQty('')
     setEditingItemIndex(null)
+    setItemSheetOpen(false)
+  }
+
+  function openAddItemSheet() {
+    resetItemForm()
+    setItemSheetOpen(true)
   }
 
   function selectCatalogItem(catalogId: string) {
@@ -311,6 +318,7 @@ export default function EstimateDetail() {
     setNewItemPrice(String(it.price))
     setNewItemQty('')
     setEditingItemIndex(index)
+    setItemSheetOpen(true)
   }
 
   function removeCustomItem(index: number) {
@@ -580,81 +588,12 @@ export default function EstimateDetail() {
                 ))}
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px', background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px' }}>
-                {editingItemIndex !== null && (
-                  <p style={{ fontSize: '0.72rem', color: '#5BBFBF', fontWeight: 700, margin: 0 }}>Editing item — Save Changes below, or Cancel to leave it as-is.</p>
-                )}
-                {catalogItems.length > 0 && (
-                  <div>
-                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Pick from Price List (optional)</label>
-                    <select
-                      value={newItemCatalogId}
-                      onChange={e => selectCatalogItem(e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-                    >
-                      <option value="">— Type a custom item instead —</option>
-                      {catalogItems.map(c => (
-                        <option key={c.id} value={c.id}>{c.label} — ${c.price}{c.pricing_type === 'per_unit' ? `/${c.unit}` : ''}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-                <div>
-                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Item Name</label>
-                  <input
-                    type="text" placeholder="e.g. Extra floral arrangement" value={newItemLabel}
-                    onChange={e => setNewItemLabel(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Description (optional)</label>
-                  <input
-                    type="text" placeholder="Any detail worth noting" value={newItemDescription}
-                    onChange={e => setNewItemDescription(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-                  />
-                </div>
-                {selectedCatalogItem?.pricing_type === 'per_unit' && (
-                  <div>
-                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>
-                      Quantity ({selectedCatalogItem.unit}) — ${selectedCatalogItem.price}/{selectedCatalogItem.unit}
-                    </label>
-                    <input
-                      type="number" inputMode="decimal" placeholder={`e.g. 12`} value={newItemQty}
-                      onChange={e => updateQty(e.target.value)}
-                      style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-                    />
-                  </div>
-                )}
-                <div>
-                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>Price</label>
-                  <input
-                    type="number" inputMode="decimal" placeholder="$" value={newItemPrice}
-                    onChange={e => setNewItemPrice(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '11px 12px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {editingItemIndex !== null && (
-                    <button onClick={resetItemForm} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '8px', padding: '11px', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', cursor: 'pointer' }}>
-                      Cancel
-                    </button>
-                  )}
-                  <button
-                    onClick={saveItem}
-                    disabled={!newItemLabel.trim() || !newItemPrice}
-                    style={{
-                      flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                      background: (!newItemLabel.trim() || !newItemPrice) ? 'rgba(91,191,191,0.2)' : '#5BBFBF',
-                      border: 'none', borderRadius: '8px', padding: '11px', color: (!newItemLabel.trim() || !newItemPrice) ? 'rgba(91,191,191,0.4)' : '#0D0F0F',
-                      fontWeight: 700, fontSize: '0.85rem', cursor: (!newItemLabel.trim() || !newItemPrice) ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {editingItemIndex !== null ? <><Check size={15} /> Save Changes</> : <><Plus size={15} /> Add Item</>}
-                  </button>
-                </div>
-              </div>
+              <button
+                onClick={openAddItemSheet}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(91,191,191,0.1)', border: '1.5px dashed rgba(91,191,191,0.4)', borderRadius: '10px', padding: '12px', color: '#5BBFBF', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', marginBottom: '16px' }}
+              >
+                <Plus size={15} /> Add Item
+              </button>
 
               <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>
                 New total: <strong style={{ color: 'white' }}>${calcSelectionTotal().toLocaleString()}</strong>
@@ -846,6 +785,93 @@ export default function EstimateDetail() {
           "Add" payments for Zelle, check, or cash Monica takes directly. Card payments through the client link record automatically.
         </p>
       </div>
+
+      {/* Add/Edit Item sheet — anchored to the viewport, not the page, so it can
+          never open scrolled out of view no matter where in a long items list
+          Monica taps Edit (the bug this replaced: the old inline form). */}
+      {itemSheetOpen && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={resetItemForm} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, maxHeight: '85vh', overflowY: 'auto', background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
+            <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 20px' }} />
+            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 20px' }}>
+              {editingItemIndex !== null ? 'Edit Item' : 'Add Item'}
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {catalogItems.length > 0 && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Pick from Price List (optional)</label>
+                  <select
+                    value={newItemCatalogId}
+                    onChange={e => selectCatalogItem(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  >
+                    <option value="">— Type a custom item instead —</option>
+                    {catalogItems.map(c => (
+                      <option key={c.id} value={c.id}>{c.label} — ${c.price}{c.pricing_type === 'per_unit' ? `/${c.unit}` : ''}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Item Name</label>
+                <input
+                  type="text" placeholder="e.g. Extra floral arrangement" value={newItemLabel}
+                  onChange={e => setNewItemLabel(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                />
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Description (optional)</label>
+                <input
+                  type="text" placeholder="Any detail worth noting" value={newItemDescription}
+                  onChange={e => setNewItemDescription(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                />
+              </div>
+              {selectedCatalogItem?.pricing_type === 'per_unit' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                    Quantity ({selectedCatalogItem.unit}) — ${selectedCatalogItem.price}/{selectedCatalogItem.unit}
+                  </label>
+                  <input
+                    type="number" inputMode="decimal" placeholder="e.g. 12" value={newItemQty}
+                    onChange={e => updateQty(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  />
+                </div>
+              )}
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Price</label>
+                <input
+                  type="number" inputMode="decimal" placeholder="$" value={newItemPrice}
+                  onChange={e => setNewItemPrice(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button onClick={resetItemForm} style={{ flex: 1, padding: '15px 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+                Cancel
+              </button>
+              <button
+                onClick={saveItem}
+                disabled={!newItemLabel.trim() || !newItemPrice}
+                style={{
+                  flex: 1, padding: '15px 0', borderRadius: '12px', border: 'none',
+                  background: (!newItemLabel.trim() || !newItemPrice) ? 'rgba(91,191,191,0.3)' : '#5BBFBF',
+                  color: '#0D0F0F', fontSize: '0.9rem', fontWeight: 700,
+                  cursor: (!newItemLabel.trim() || !newItemPrice) ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {editingItemIndex !== null ? 'Save Changes' : 'Add Item'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <StudioNav />
     </div>

@@ -86,6 +86,7 @@ function NewEstimateInner() {
   const [itemPrice, setItemPrice] = useState('')
   const [itemQty, setItemQty] = useState('')
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [itemSheetOpen, setItemSheetOpen] = useState(false)
 
   useEffect(() => {
     fetch('/api/studio/catalog').then(r => r.ok ? r.json() : []).then(d => setCatalogItems(Array.isArray(d) ? d : []))
@@ -120,6 +121,12 @@ function NewEstimateInner() {
     setItemPrice('')
     setItemQty('')
     setEditingIndex(null)
+    setItemSheetOpen(false)
+  }
+
+  function openAddItemSheet() {
+    resetItemForm()
+    setItemSheetOpen(true)
   }
 
   function selectCatalogItem(catalogId: string) {
@@ -165,6 +172,7 @@ function NewEstimateInner() {
     setItemPrice(String(it.price))
     setItemQty('')
     setEditingIndex(index)
+    setItemSheetOpen(true)
   }
 
   function removeItem(index: number) {
@@ -388,81 +396,12 @@ function NewEstimateInner() {
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px' }}>
-            {editingIndex !== null && (
-              <p style={{ fontSize: '0.72rem', color: '#5BBFBF', fontWeight: 700, margin: 0 }}>Editing item — Save Changes below, or Cancel to leave it as-is.</p>
-            )}
-            {catalogItems.length > 0 && (
-              <div>
-                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Pick from Price List (optional)</label>
-                <select
-                  value={itemCatalogId}
-                  onChange={e => selectCatalogItem(e.target.value)}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-                >
-                  <option value="">— Type a custom item instead —</option>
-                  {catalogItems.map(c => (
-                    <option key={c.id} value={c.id}>{c.label} — ${c.price}{c.pricing_type === 'per_unit' ? `/${c.unit}` : ''}</option>
-                  ))}
-                </select>
-              </div>
-            )}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Item Name</label>
-              <input
-                type="text" placeholder="e.g. Balloon Garland" value={itemLabel}
-                onChange={e => setItemLabel(e.target.value)}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-              />
-            </div>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Description (optional)</label>
-              <input
-                type="text" placeholder="Any detail worth noting" value={itemDescription}
-                onChange={e => setItemDescription(e.target.value)}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-              />
-            </div>
-            {selectedCatalogItem?.pricing_type === 'per_unit' && (
-              <div>
-                <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>
-                  Quantity ({selectedCatalogItem.unit}) — ${selectedCatalogItem.price}/{selectedCatalogItem.unit}
-                </label>
-                <input
-                  type="number" inputMode="decimal" placeholder="e.g. 12" value={itemQty}
-                  onChange={e => updateQty(e.target.value)}
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-                />
-              </div>
-            )}
-            <div>
-              <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '6px' }}>Price</label>
-              <input
-                type="number" inputMode="decimal" placeholder="$" value={itemPrice}
-                onChange={e => setItemPrice(e.target.value)}
-                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
-              />
-            </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {editingIndex !== null && (
-                <button onClick={resetItemForm} style={{ flex: 1, padding: '12px', borderRadius: '10px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.88rem', cursor: 'pointer' }}>
-                  Cancel
-                </button>
-              )}
-              <button
-                onClick={saveItem}
-                disabled={!itemLabel.trim() || !itemPrice}
-                style={{
-                  flex: 2, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-                  background: (!itemLabel.trim() || !itemPrice) ? 'rgba(91,191,191,0.2)' : '#5BBFBF',
-                  border: 'none', borderRadius: '10px', padding: '12px', color: (!itemLabel.trim() || !itemPrice) ? 'rgba(91,191,191,0.4)' : '#0D0F0F',
-                  fontWeight: 700, fontSize: '0.9rem', cursor: (!itemLabel.trim() || !itemPrice) ? 'not-allowed' : 'pointer',
-                }}
-              >
-                {editingIndex !== null ? <><Check size={15} /> Save Changes</> : <><Plus size={15} /> Add Item</>}
-              </button>
-            </div>
-          </div>
+          <button
+            onClick={openAddItemSheet}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(91,191,191,0.1)', border: '1.5px dashed rgba(91,191,191,0.4)', borderRadius: '10px', padding: '13px', color: '#5BBFBF', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer' }}
+          >
+            <Plus size={15} /> Add Item
+          </button>
         </div>
 
         {/* Sticky total + save */}
@@ -509,6 +448,93 @@ function NewEstimateInner() {
             </div>
           </div>
         </div>
+
+        {/* Add/Edit Item sheet — anchored to the viewport, same pattern as the
+            estimate detail page's item editor, so a long items list can never
+            open the form somewhere scrolled out of view. */}
+        {itemSheetOpen && (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={resetItemForm} />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, maxHeight: '85vh', overflowY: 'auto', background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)' }}>
+              <div style={{ width: '36px', height: '4px', background: 'rgba(255,255,255,0.12)', borderRadius: '2px', margin: '0 auto 20px' }} />
+              <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', textAlign: 'center', margin: '0 0 20px' }}>
+                {editingIndex !== null ? 'Edit Item' : 'Add Item'}
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {catalogItems.length > 0 && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Pick from Price List (optional)</label>
+                    <select
+                      value={itemCatalogId}
+                      onChange={e => selectCatalogItem(e.target.value)}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                    >
+                      <option value="">— Type a custom item instead —</option>
+                      {catalogItems.map(c => (
+                        <option key={c.id} value={c.id}>{c.label} — ${c.price}{c.pricing_type === 'per_unit' ? `/${c.unit}` : ''}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Item Name</label>
+                  <input
+                    type="text" placeholder="e.g. Balloon Garland" value={itemLabel}
+                    onChange={e => setItemLabel(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Description (optional)</label>
+                  <input
+                    type="text" placeholder="Any detail worth noting" value={itemDescription}
+                    onChange={e => setItemDescription(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  />
+                </div>
+                {selectedCatalogItem?.pricing_type === 'per_unit' && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                      Quantity ({selectedCatalogItem.unit}) — ${selectedCatalogItem.price}/{selectedCatalogItem.unit}
+                    </label>
+                    <input
+                      type="number" inputMode="decimal" placeholder="e.g. 12" value={itemQty}
+                      onChange={e => updateQty(e.target.value)}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                )}
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Price</label>
+                  <input
+                    type="number" inputMode="decimal" placeholder="$" value={itemPrice}
+                    onChange={e => setItemPrice(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                <button onClick={resetItemForm} style={{ flex: 1, padding: '15px 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>
+                  Cancel
+                </button>
+                <button
+                  onClick={saveItem}
+                  disabled={!itemLabel.trim() || !itemPrice}
+                  style={{
+                    flex: 1, padding: '15px 0', borderRadius: '12px', border: 'none',
+                    background: (!itemLabel.trim() || !itemPrice) ? 'rgba(91,191,191,0.3)' : '#5BBFBF',
+                    color: '#0D0F0F', fontSize: '0.9rem', fontWeight: 700,
+                    cursor: (!itemLabel.trim() || !itemPrice) ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {editingIndex !== null ? 'Save Changes' : 'Add Item'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     )
   }
