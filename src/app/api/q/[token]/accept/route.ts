@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
 import { syncLeadOnEstimateAccepted } from '@/lib/leadSync'
+import { sendPush } from '@/lib/push'
 
 // Public on purpose, same trust model as the /q/[token] page itself — gated
 // entirely by knowing the share_token, not a Studio login. Outside
@@ -9,7 +10,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const supabase = serverClient()
   const { data: est, error: findError } = await supabase
     .from('estimates')
-    .select('id, accepted_at, lead_id')
+    .select('id, accepted_at, lead_id, client_name')
     .eq('share_token', params.token)
     .single()
 
@@ -30,6 +31,12 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
     await syncLeadOnEstimateAccepted(supabase, est.lead_id)
   } catch (err) {
     console.error('Lead status sync failed:', err)
+  }
+
+  try {
+    await sendPush('✨ Estimate Accepted', `${est.client_name} just accepted their estimate`, `/studio/estimates/${est.id}`)
+  } catch (err) {
+    console.error('Push notification error:', err)
   }
 
   return NextResponse.json(data)

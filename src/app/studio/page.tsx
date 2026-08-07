@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Camera, FolderOpen, FileText, LogOut, Phone, CalendarClock, CircleDollarSign, CheckCircle2, TrendingUp, TrendingDown, X } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
+import NotificationSetup from '@/components/studio/NotificationSetup'
 
 type Stats = { totalPhotos: number; onWebsite: number; galleries: number; estimates: number }
 
@@ -156,6 +157,8 @@ export default function StudioHome() {
       </div>
 
       <div style={{ maxWidth: '600px', margin: '0 auto', padding: '28px 24px 0' }}>
+
+        <NotificationSetup />
 
         {/* Needs Your Attention — deliberately not called "Today": items here
             can be waiting days, and the heading shouldn't imply otherwise. */}

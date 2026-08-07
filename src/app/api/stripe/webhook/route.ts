@@ -2,6 +2,7 @@ import Stripe from 'stripe'
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
 import { sendReceiptEmail } from '@/lib/receiptEmail'
+import { sendPush } from '@/lib/push'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -56,6 +57,13 @@ export async function POST(req: NextRequest) {
         await sendReceiptEmail(estimateId, Number(estimateAmount), host)
       } catch (err) {
         console.error('Receipt email failed:', err)
+      }
+
+      try {
+        const { data: est } = await supabase.from('estimates').select('client_name').eq('id', estimateId).single()
+        await sendPush('💰 Payment Received', `$${Number(estimateAmount).toLocaleString()} from ${est?.client_name ?? 'a client'}`, `/studio/estimates/${estimateId}`)
+      } catch (err) {
+        console.error('Push notification error:', err)
       }
     }
   }

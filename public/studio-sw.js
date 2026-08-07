@@ -16,3 +16,30 @@ self.addEventListener('fetch', () => {
   // No respondWith() call — the browser handles every request exactly as
   // if this service worker didn't exist. Presence alone is what counts.
 })
+
+self.addEventListener('push', (event) => {
+  let data = {}
+  try { data = event.data ? event.data.json() : {} } catch { /* ignore malformed payloads */ }
+  const title = data.title || 'Blue Luna Studio'
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || '',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      data: { url: data.url || '/studio' },
+    })
+  )
+})
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = event.notification.data?.url || '/studio'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes('/studio') && 'focus' in client) return client.focus()
+      }
+      return self.clients.openWindow(url)
+    })
+  )
+})

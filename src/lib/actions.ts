@@ -4,6 +4,7 @@ import { Resend } from 'resend'
 import { Lead, serverClient } from './supabase'
 import { SITE_CONFIG } from './config'
 import { channelFor } from './channel'
+import { sendPush } from './push'
 
 export async function submitLead(data: Lead) {
   const supabase = serverClient()
@@ -56,15 +57,18 @@ export async function submitLead(data: Lead) {
   // Awaited (not fire-and-forget) — on Vercel, an unawaited promise can get cut off
   // mid-request when the function's response returns and the runtime freezes it.
   // Errors are still caught per-call so a failed send never fails the submission itself.
+  const pushBody = `${data.event_type || 'Event'} inquiry from ${data.name}`
   if (data.source === 'inquiry') {
     await Promise.all([
       sendMonicaInquiryNotification(data, vision).catch(err => console.error('Monica notification error:', err)),
       sendClientInquiryConfirmation(data, vision).catch(err => console.error('Client confirmation error:', err)),
+      sendPush('🎈 New Lead', pushBody, '/studio/leads').catch(err => console.error('Push notification error:', err)),
     ])
   } else {
     await Promise.all([
       sendMonicaNotification(data, vision).catch(err => console.error('Monica notification error:', err)),
       sendClientConfirmation(data).catch(err => console.error('Client confirmation error:', err)),
+      sendPush('🎈 New Lead', pushBody, '/studio/leads').catch(err => console.error('Push notification error:', err)),
     ])
   }
 
