@@ -58,17 +58,18 @@ export async function submitLead(data: Lead) {
   // mid-request when the function's response returns and the runtime freezes it.
   // Errors are still caught per-call so a failed send never fails the submission itself.
   const pushBody = `${data.event_type || 'Event'} inquiry from ${data.name}`
+  const pushUrl = `/studio/leads?open=${inserted.id}`
   if (data.source === 'inquiry') {
     await Promise.all([
       sendMonicaInquiryNotification(data, vision).catch(err => console.error('Monica notification error:', err)),
       sendClientInquiryConfirmation(data, vision).catch(err => console.error('Client confirmation error:', err)),
-      sendPush('🎈 New Lead', pushBody, '/studio/leads').catch(err => console.error('Push notification error:', err)),
+      sendPush('🎈 New Lead', pushBody, pushUrl).catch(err => console.error('Push notification error:', err)),
     ])
   } else {
     await Promise.all([
       sendMonicaNotification(data, vision).catch(err => console.error('Monica notification error:', err)),
       sendClientConfirmation(data).catch(err => console.error('Client confirmation error:', err)),
-      sendPush('🎈 New Lead', pushBody, '/studio/leads').catch(err => console.error('Push notification error:', err)),
+      sendPush('🎈 New Lead', pushBody, pushUrl).catch(err => console.error('Push notification error:', err)),
     ])
   }
 

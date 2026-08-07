@@ -62,7 +62,7 @@ function buildTodayItems(data: TodayData): TodayItem[] {
       icon: Phone,
       title: `New inquiry — ${l.name}`,
       sub: `${l.eventType || 'Event'} · waiting ${l.daysWaiting === 0 ? 'since today' : l.daysWaiting === 1 ? '1 day' : `${l.daysWaiting} days`}`,
-      href: `tel:${l.phone}`,
+      href: `/studio/leads?open=${l.id}`,
       priority: l.daysWaiting >= 2 ? 1 : 4,
       leadId: l.id,
     })

@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, Suspense } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Phone, Mail, MessageSquare, Flame, Sun, Snowflake, X, FileText, ChevronRight, BookUser } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 
@@ -42,6 +43,15 @@ function daysAgo(iso: string) {
 }
 
 export default function StudioLeads() {
+  return (
+    <Suspense fallback={null}>
+      <StudioLeadsInner />
+    </Suspense>
+  )
+}
+
+function StudioLeadsInner() {
+  const searchParams = useSearchParams()
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all')
@@ -52,8 +62,21 @@ export default function StudioLeads() {
   useEffect(() => {
     fetch('/api/studio/leads')
       .then(r => r.ok ? r.json() : [])
-      .then(d => { setLeads(Array.isArray(d) ? d : []); setLoading(false) })
+      .then(d => {
+        const list: Lead[] = Array.isArray(d) ? d : []
+        setLeads(list)
+        setLoading(false)
+        // Deep-link support — a push notification or Home's "Needs Your
+        // Attention" row links straight to /studio/leads?open=<id> so
+        // tapping it opens that exact customer's card, not just the list.
+        const openId = searchParams.get('open')
+        if (openId) {
+          const match = list.find(l => l.id === openId)
+          if (match) setActiveLead(match)
+        }
+      })
       .catch(() => setLoading(false))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const filtered = useMemo(
