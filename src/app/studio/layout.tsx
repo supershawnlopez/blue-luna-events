@@ -28,7 +28,7 @@ export const viewport: Viewport = {
 
 export default function StudioLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
+    <div id="studio-root" style={{
       minHeight: '100vh',
       background: '#0D0F0F',
       color: 'white',

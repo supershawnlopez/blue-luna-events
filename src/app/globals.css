@@ -42,6 +42,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Studio's own dark background is only on an inner wrapper div, but iOS's
+   elastic overscroll bounce at the top/bottom of the screen reveals the
+   body's own background underneath the scrolling content — without this,
+   that bounce flashes the public site's cream background (--warm) even on
+   Studio pages. Scoped via :has() so this never touches the public site. */
+body:has(#studio-root) {
+  background: #0D0F0F;
+}
+
 .font-display {
   font-family: 'Cormorant Garamond', Georgia, serif;
 }
