@@ -2,7 +2,25 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 10, 2026 — Claude Code*
 
-## 2026-08-10: the lead detail sheet now shows the full Event Questionnaire
+## 2026-08-10, continued: a real Traffic Report — Leads by Channel, not raw visit counts
+
+You asked whether "This Month" could open a more detailed report so Monica can see where traffic comes from. Team meeting held (Phil leading) — then you gave the real framing that changed the design: **"the goal is not fluffy numbers. the goal is to increase business. we need data to know where to spend our focus for ads, promos, posts etc."**
+
+**What that meant concretely:** the report leads with **Leads by Channel** (real business, ranked, with an up/down arrow vs. the prior period), not visit counts. Two real findings shaped this, both written up in `DECISIONS.md` under "FULL TRAFFIC REPORT":
+1. Instagram/Facebook's in-app browsers routinely hide where a visitor came from, so real Instagram/Facebook *visits* quietly undercount into "Direct" — but a lead's own self-reported answer doesn't have that problem. Computing "conversion rate" from those two together would've been exactly the fluffy, misleading number you were rejecting — deliberately left it out.
+2. Found and fixed a real accuracy bug: visit-channel counts were computed per pageview, so one Instagram visitor browsing 5 pages counted as 1 Instagram + 4 "Direct." Fixed with a session ID so each visit's real entry channel is captured once and reused.
+
+**Shipped:** tap the "This Month" card on Studio Home → a new Traffic Report screen (This Month / Last 3 Months / All Time). Leads by Channel first (the number that should drive where you and Monica spend effort), then "What They're Looking At" (top pages — tells you what content is pulling people in), then Site Visits by Channel last, clearly labeled as the less-reliable secondary number.
+
+**Still open:** Google Search Console search-query data (what people actually type to find her) remains the one genuinely bigger, higher-value addition — unchanged from 2026-08-03, still needs its own session.
+
+**Shawn, test this:** Studio → Home → tap the "This Month" card → confirm it opens a Traffic Report with a Leads by Channel list at the top (ranked, with a trend arrow), a "What They're Looking At" page list, and Site Visits by Channel underneath with a note explaining why it's less trustworthy. Try the This Month / Last 3 Months / All Time toggle.
+
+Commit `8bd7df81`, pushed and confirmed `READY` on Vercel.
+
+---
+
+## Prior: 2026-08-10: the lead detail sheet now shows the full Event Questionnaire
 
 Monica told Shawn directly: a lead's slide-up opens in Studio, but there was nowhere to tap to see what they actually submitted — she had no way to get from the lead card to the info she needed to build a quote.
 
@@ -395,7 +413,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `41076d02` — lead detail sheet now shows the full Event Questionnaire (venue, guests, budget, setup time, looking-for, inspo photos), confirmed `READY` on Vercel 2026-08-10. Preceding: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
+- Latest `main` commit: `8bd7df81` — real Traffic Report (Leads by Channel as the primary decision metric, `/studio/analytics`), confirmed `READY` on Vercel 2026-08-10. Preceding: `41076d02` — lead detail sheet now shows the full Event Questionnaire (venue, guests, budget, setup time, looking-for, inspo photos), confirmed `READY` on Vercel 2026-08-10. Preceding: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
 - **Schema note:** `estimates.custom_items` (jsonb, default `[]`) added 2026-08-04 via Supabase Management API — array of `{label, price}`.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.

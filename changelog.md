@@ -13,6 +13,19 @@
 
 ---
 
+## Session: August 10, 2026, continued — real Traffic Report (Leads by Channel)
+**AI:** Claude Code
+**Worked on:** Shawn asked for a detailed report behind Studio Home's "This Month" card. Team meeting (Phil leading) proposed a channel-performance view; Shawn's own framing reshaped it: "the goal is not fluffy numbers... we need data to know where to spend our focus for ads, promos, posts etc."
+
+### Completed This Session
+- **Real finding (Priya):** `leads.referral_source`/`referrer_channel` is reliable (self-reported or captured at submission); `site_visits.referrer` (`document.referrer`) is not — Instagram/Facebook in-app browsers routinely strip it, so real Instagram/Facebook visits quietly undercount into "Direct." A per-channel conversion-rate metric (leads ÷ visits) would combine a trustworthy numerator with a denominator skewed worst on exactly the channels that matter most — deliberately not shipped. Leads by Channel is the primary, ranked metric instead.
+- **Real bug found and fixed (Craig):** `site_visits` channel counts were computed per pageview — a visitor landing from Instagram and browsing 5 pages counted as 1 Instagram + 4 "Direct" (every page after the first has `bluelunaevents.com` as `document.referrer`). Fixed: `VisitTracker.tsx` now generates a `session_id` (sessionStorage-scoped) and captures the entry referrer once per tab session, reusing it for every pageview in that session. `site_visits.session_id` column + indexes added via Supabase Management API. `/api/track` and `/api/studio/analytics-detail` updated to dedupe by session. Legacy rows (before this shipped) have no `session_id` and are each counted individually, same as the old behavior — acceptable seam in historical data only.
+- New `/api/studio/analytics-detail` (`src/app/api/studio/analytics-detail/route.ts`) — accepts `?window=month|3months|all`, returns Leads by Channel (with trend vs. the immediately-preceding equal-length period), Site Visits by Channel, and top pages.
+- New `/studio/analytics` (`src/app/studio/analytics/page.tsx`) — dedicated Traffic Report screen, reached by tapping the "This Month" card on Studio Home (not a 7th bottom-nav tab, same pattern as Contacts opening from Leads). Plain-English summary line up top, Leads by Channel table, "What They're Looking At" (top pages), Site Visits by Channel last with an explicit reliability caveat.
+- `src/app/studio/page.tsx`: "This Month" card is now a `<Link href="/studio/analytics">` with a "Full traffic report →" affordance.
+- Full decision record: `DECISIONS.md` "FULL TRAFFIC REPORT (2026-08-10)".
+- Verified: clean `npm run build` (`/api/studio/analytics-detail` confirmed `ƒ` dynamic, not statically cached — same caching-bug class fixed 2026-08-03), pushed, Vercel confirmed `READY`. Commit `8bd7df81`.
+
 ## Session: August 10, 2026 — lead detail sheet shows the full Event Questionnaire
 **AI:** Claude Code
 **Worked on:** Shawn relayed a real gap from Monica — a lead's slide-up opens in Studio, but there's nowhere to tap through to what the customer actually submitted on the Event Questionnaire, so she can't work from it toward a quote.
