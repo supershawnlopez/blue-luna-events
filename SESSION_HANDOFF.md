@@ -2,7 +2,21 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 10, 2026 — Claude Code*
 
-## 2026-08-10, continued: a real Traffic Report — Leads by Channel, not raw visit counts
+## 2026-08-10, continued: Traffic Report cleanup — you caught real issues live
+
+Right after the Traffic Report shipped, you looked at it live and flagged two things: "What They're Looking At" showed some rows as unreadable strings of characters instead of real page names, and you asked what "Direct/Unknown" actually means.
+
+**Checked the real data instead of guessing:** the unreadable rows were genuine pages — each real client's private estimate/payment link (`/q/<their-own-token>`) and individual gallery photos each have their own unique URL, and the report was listing every single one as its own row instead of grouping them. Now bucketed into one "Client Estimate / Payment Pages" row and one "Gallery — Individual Photos" row.
+
+**"Direct/Unknown" explained:** it means no identifiable source — either the visitor's browser sent no referrer at all (common for links opened from Instagram/Facebook DMs or text messages, not just someone typing the URL) or it's a lead from before this tracking existed, combined with them skipping the optional "how did you hear about us?" question. Also found and fixed a real bug while checking this: it could show up as two separate rows in the same report that both read "Direct/Unknown" instead of one merged, honest count.
+
+**Shawn, test this:** Studio → Home → tap "This Month" → confirm "What They're Looking At" now shows readable page names (including a grouped "Client Estimate / Payment Pages" row, not individual codes), and that "Direct/Unknown" appears as a single row, not duplicated.
+
+Commit `6d360e7a`, pushed and confirmed `READY` on Vercel.
+
+---
+
+## Prior: 2026-08-10, continued: a real Traffic Report — Leads by Channel, not raw visit counts
 
 You asked whether "This Month" could open a more detailed report so Monica can see where traffic comes from. Team meeting held (Phil leading) — then you gave the real framing that changed the design: **"the goal is not fluffy numbers. the goal is to increase business. we need data to know where to spend our focus for ads, promos, posts etc."**
 
@@ -413,7 +427,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `8bd7df81` — real Traffic Report (Leads by Channel as the primary decision metric, `/studio/analytics`), confirmed `READY` on Vercel 2026-08-10. Preceding: `41076d02` — lead detail sheet now shows the full Event Questionnaire (venue, guests, budget, setup time, looking-for, inspo photos), confirmed `READY` on Vercel 2026-08-10. Preceding: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
+- Latest `main` commit: `6d360e7a` — Traffic Report fix: grouped per-client dynamic pages (`/q/<token>`, `/gallery/<slug>`) into readable buckets, merged duplicate "Direct/Unknown" rows — real issues Shawn caught live. Confirmed `READY` on Vercel 2026-08-10. Preceding: `8bd7df81` — real Traffic Report (Leads by Channel as the primary decision metric, `/studio/analytics`), confirmed `READY` on Vercel 2026-08-10. Preceding: `41076d02` — lead detail sheet now shows the full Event Questionnaire (venue, guests, budget, setup time, looking-for, inspo photos), confirmed `READY` on Vercel 2026-08-10. Preceding: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
 - **Schema note:** `estimates.custom_items` (jsonb, default `[]`) added 2026-08-04 via Supabase Management API — array of `{label, price}`.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.

@@ -13,6 +13,16 @@
 
 ---
 
+## Session: August 10, 2026, continued — Traffic Report cleanup (real issues Shawn caught live)
+**AI:** Claude Code
+**Worked on:** Minutes after the Traffic Report shipped, Shawn read the live numbers back and flagged two things: several "What They're Looking At" rows were unreadable strings of characters, and he asked what "Direct/Unknown" means, doubting it really meant "no information."
+
+### Completed This Session
+- Pulled the real `site_visits` rows directly (Supabase SQL) instead of guessing — confirmed the unreadable rows were real pages: each client's own `/q/<token>` estimate/payment link and individual `/gallery/<slug>` photos, each counted as its own separate unlabeled row. Fixed at the aggregation level in `src/app/api/studio/analytics-detail/route.ts` — `pageBucket()` now groups all `/q/*` paths and all `/gallery/*` paths before counting, not after. `src/app/studio/analytics/page.tsx` labels them "Client Estimate / Payment Pages" and "Gallery — Individual Photos."
+- Pulled the real `leads` rows for the month to answer the "Direct/Unknown" question concretely — it means no self-reported answer to "how did you hear about us" *and* no usable referrer signal (common for links opened from in-app browsers/DMs/texts, not just a typed URL, or a lead from before tracking existed).
+- **Real bug found while checking that:** `leadChannel()` could produce two separate rows in the same window that both display as "Direct/Unknown" — one from a lead with a technically-blank referrer (`referrer_channel = 'Direct'`), one from a lead predating referrer tracking entirely (`referrer_channel = null`). Merged into a single bucket.
+- Verified: clean `npm run build`, pushed, Vercel confirmed `READY`. Commit `6d360e7a`.
+
 ## Session: August 10, 2026, continued — real Traffic Report (Leads by Channel)
 **AI:** Claude Code
 **Worked on:** Shawn asked for a detailed report behind Studio Home's "This Month" card. Team meeting (Phil leading) proposed a channel-performance view; Shawn's own framing reshaped it: "the goal is not fluffy numbers... we need data to know where to spend our focus for ads, promos, posts etc."
