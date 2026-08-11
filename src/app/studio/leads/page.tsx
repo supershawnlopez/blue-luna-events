@@ -21,6 +21,10 @@ type Lead = {
   temperature: 'hot' | 'warm' | 'cold' | null
   source: string | null
   referral_source: string | null
+  setup_time: string | null
+  guest_count: string | null
+  looking_for: string[] | null
+  inspo_photos: string[] | null
 }
 
 const STATUSES: { id: Lead['status']; label: string }[] = [
@@ -206,10 +210,52 @@ function StudioLeadsInner() {
               </a>
             </div>
 
+            {/* Event Questionnaire — venue/budget/guests/setup, exactly what Monica already gets in her lead email, now visible in Studio too */}
+            {(activeLead.venue || activeLead.budget_range || activeLead.guest_count || activeLead.setup_time) && (
+              <div style={{ marginBottom: '20px', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden' }}>
+                {[
+                  ['Venue', activeLead.venue],
+                  ['Guests', activeLead.guest_count],
+                  ['Budget', activeLead.budget_range],
+                  ['Setup Time', activeLead.setup_time],
+                ].filter(([, v]) => v).map(([label, value], i) => (
+                  <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
+                    <span style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.4)' }}>{label}</span>
+                    <span style={{ fontSize: '0.8rem', color: 'white', fontWeight: 600 }}>{value}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeLead.looking_for && activeLead.looking_for.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>What They&apos;re Looking For</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {activeLead.looking_for.map(item => (
+                    <span key={item} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '999px', padding: '5px 12px', fontSize: '0.76rem', color: 'rgba(255,255,255,0.7)' }}>{item}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {activeLead.vision && (
               <div style={{ marginBottom: '20px' }}>
-                <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Vision</p>
+                <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Vibe, Theme & Colors</p>
                 <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.5, margin: 0 }}>{activeLead.vision}</p>
+              </div>
+            )}
+
+            {activeLead.inspo_photos && activeLead.inspo_photos.length > 0 && (
+              <div style={{ marginBottom: '20px' }}>
+                <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Inspiration Photos ({activeLead.inspo_photos.length})</p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                  {activeLead.inspo_photos.map(url => (
+                    <a key={url} href={url} target="_blank" rel="noopener noreferrer" style={{ display: 'block', aspectRatio: '1', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt="Inspiration" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    </a>
+                  ))}
+                </div>
               </div>
             )}
 
