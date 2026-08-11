@@ -3,7 +3,7 @@
 import { useState, useEffect, type MouseEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Camera, FolderOpen, FileText, LogOut, Phone, CalendarClock, CircleDollarSign, CheckCircle2, TrendingUp, TrendingDown, X } from 'lucide-react'
+import { Camera, FolderOpen, FileText, LogOut, Phone, CalendarClock, CircleDollarSign, CheckCircle2, TrendingUp, TrendingDown, X, ChevronRight } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import NotificationSetup from '@/components/studio/NotificationSetup'
 
@@ -206,7 +206,7 @@ export default function StudioHome() {
             </p>
           )}
         </div>
-        <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', marginBottom: '36px' }}>
+        <Link href="/studio/analytics" style={{ display: 'block', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '20px', marginBottom: '36px', textDecoration: 'none' }}>
           {leadSources === null ? (
             <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Loading...</p>
           ) : leadSources.total === 0 ? (
@@ -249,7 +249,12 @@ export default function StudioHome() {
               )}
             </div>
           )}
-        </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: '14px' }}>
+            <span style={{ fontSize: '0.72rem', color: '#5BBFBF', fontWeight: 600 }}>Full traffic report</span>
+            <ChevronRight size={13} color="#5BBFBF" />
+          </div>
+        </Link>
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px', marginBottom: '36px' }}>
