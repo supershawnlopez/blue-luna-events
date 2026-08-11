@@ -13,6 +13,16 @@
 
 ---
 
+## Session: August 10, 2026 — lead detail sheet shows the full Event Questionnaire
+**AI:** Claude Code
+**Worked on:** Shawn relayed a real gap from Monica — a lead's slide-up opens in Studio, but there's nowhere to tap through to what the customer actually submitted on the Event Questionnaire, so she can't work from it toward a quote.
+
+### Completed This Session
+- **Root cause:** `GET /api/studio/leads` (`src/app/api/studio/leads/route.ts`) hard-coded a `select()` column list that never included `setup_time`, `guest_count`, `looking_for`, or `inspo_photos` — all real columns already populated by `submitLead()` (`src/lib/actions.ts`) and already shown in Monica's lead notification email. The Studio Leads UI simply never received them.
+- Added those four columns to the API select.
+- Extended the `Lead` type and the lead detail sheet (`src/app/studio/leads/page.tsx`) to render them: a Venue/Guests/Budget/Setup Time details block, a "What They're Looking For" tag list, and an Inspiration Photos thumbnail grid (tap opens full-size in a new tab) — placed alongside the existing Vibe/Theme/Colors (`vision`) and Heard About Us Via (`referral_source`) sections, each conditionally rendered only when that lead has the data.
+- Verified: clean `npm run build`, pushed, Vercel confirmed `READY`. Commit `41076d02`.
+
 ## Session: August 4, 2026, continued — "No Add-Ons" clear-all option
 **AI:** Claude Code
 **Worked on:** Shawn clarified the prior fix in this session missed the actual ask — he wasn't reporting a toggle bug, he wanted a direct "no add-ons" clear control, parallel to the "No Package — Custom Only" option already shipped.

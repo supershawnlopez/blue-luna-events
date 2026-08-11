@@ -1,8 +1,22 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 4, 2026 — Claude Code*
+*Last updated: August 10, 2026 — Claude Code*
 
-## 2026-08-04, continued: added a "No Add-Ons" clear-all option
+## 2026-08-10: the lead detail sheet now shows the full Event Questionnaire
+
+Monica told Shawn directly: a lead's slide-up opens in Studio, but there was nowhere to tap to see what they actually submitted — she had no way to get from the lead card to the info she needed to build a quote.
+
+**Real root cause:** the Event Questionnaire already captures venue, guest count, budget, setup time, "what they're looking for," and inspiration photos — all of it gets emailed to Monica — but `/api/studio/leads` was hard-coding a short column list that dropped most of those fields before they ever reached Studio. The lead detail sheet only ever had `vision` and `referral_source` to show, because that's all the API gave it.
+
+**Shipped:** the API now returns the full set, and the lead detail sheet displays it — Venue/Guests/Budget/Setup Time as a details block, "What They're Looking For" as tags, the existing Vibe/Theme/Colors notes, and Inspiration Photos as a tappable thumbnail grid (opens full-size in a new tab). Everything only shows if that lead actually filled it in, same pattern as the existing Vision/Referral Source sections.
+
+**Shawn, test this:** Studio → Leads → tap a real lead that came in through the Event Questionnaire → confirm you now see their venue, guest count, budget, and setup time, any "looking for" tags they picked, their theme/colors notes, and — if they uploaded any — their inspiration photos as thumbnails you can tap to view full-size.
+
+Commit `41076d02`, pushed and confirmed `READY` on Vercel.
+
+---
+
+## Prior: 2026-08-04, continued: added a "No Add-Ons" clear-all option
 
 You clarified the earlier fix missed the actual ask — you didn't want a bug hunted down, you wanted a direct "no add-ons" clear option, same as the "No Package — Custom Only" one already sitting above it. Added it: a "No Add-Ons" link next to the Add-Ons header in the Selection editor that clears every selected add-on in one tap.
 
@@ -381,7 +395,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
+- Latest `main` commit: `41076d02` — lead detail sheet now shows the full Event Questionnaire (venue, guests, budget, setup time, looking-for, inspo photos), confirmed `READY` on Vercel 2026-08-10. Preceding: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
 - **Schema note:** `estimates.custom_items` (jsonb, default `[]`) added 2026-08-04 via Supabase Management API — array of `{label, price}`.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.
