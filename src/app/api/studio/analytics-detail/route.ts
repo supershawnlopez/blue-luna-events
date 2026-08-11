@@ -34,7 +34,13 @@ function windowBounds(window: Window): { since: Date | null; prevSince: Date | n
 // constantly, exactly the traffic this business is most likely to get.
 // Same fallback /api/studio/lead-sources already uses.
 function leadChannel(referral_source: string | null, referrer_channel: string | null): string {
-  return referral_source || referrer_channel || 'Direct/Unknown'
+  // referrer_channel is itself already a fallback (computed as channelFor(referrer_raw)
+  // at submission time) — a blank/unrecognized referrer becomes the literal string
+  // 'Direct' there, same practical meaning as no referrer_channel at all (a lead from
+  // before this tracking existed). Both collapse into one honest bucket here instead
+  // of showing as two separate "Direct/Unknown"-looking rows.
+  const channel = referral_source || referrer_channel
+  return !channel || channel === 'Direct' ? 'Direct/Unknown' : channel
 }
 
 function countByChannel(rows: { channel: string }[]): Record<string, number> {
@@ -102,9 +108,18 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => b.count - a.count)
 
   // ── Top pages — raw pageview counts (content interest, not visitor
-  // counting, so no dedup needed here). ───────────────────────────────────
+  // counting, so no dedup needed here). Dynamic per-client routes (each
+  // client's own /q/<token> estimate link, each gallery photo's own slug)
+  // are grouped under one bucket each — otherwise every individual client's
+  // estimate page shows up as its own unlabeled row of what just reads as
+  // random code, which tells Monica nothing useful about her content. ────
+  function pageBucket(path: string): string {
+    if (path.startsWith('/q/')) return '/q/*'
+    if (path.startsWith('/gallery/')) return '/gallery/*'
+    return path
+  }
   const pageCounts: Record<string, number> = {}
-  for (const v of visits) pageCounts[v.path] = (pageCounts[v.path] ?? 0) + 1
+  for (const v of visits) { const key = pageBucket(v.path); pageCounts[key] = (pageCounts[key] ?? 0) + 1 }
   const topPages = Object.entries(pageCounts)
     .map(([path, count]) => ({ path, count }))
     .sort((a, b) => b.count - a.count)

@@ -25,6 +25,7 @@ const WINDOWS: { id: Detail['window']; label: string }[] = [
 const PAGE_LABELS: Record<string, string> = {
   '/': 'Homepage',
   '/gallery': 'Gallery',
+  '/gallery/*': 'Gallery — Individual Photos',
   '/event-questionnaire': 'Event Questionnaire',
   '/quinceaneras': 'Quinceañeras',
   '/graduations': 'Graduations',
@@ -32,11 +33,11 @@ const PAGE_LABELS: Record<string, string> = {
   '/birthdays': 'Birthdays',
   '/baby-showers': 'Baby Showers',
   '/corporate-events': 'Corporate Events',
+  '/q/*': 'Client Estimate / Payment Pages',
 }
 
 function pageLabel(path: string): string {
   if (PAGE_LABELS[path]) return PAGE_LABELS[path]
-  if (path.startsWith('/gallery/')) return 'Gallery — Photo'
   return path
 }
 
