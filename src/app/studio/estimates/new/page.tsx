@@ -34,6 +34,7 @@ type Action =
   | { type: 'ADD_ITEM'; item: LineItem }
   | { type: 'UPDATE_ITEM'; index: number; item: LineItem }
   | { type: 'REMOVE_ITEM'; index: number }
+  | { type: 'RESET' }
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -43,6 +44,7 @@ function reducer(state: State, action: Action): State {
     case 'ADD_ITEM': return { ...state, items: [...state.items, action.item] }
     case 'UPDATE_ITEM': return { ...state, items: state.items.map((it, i) => i === action.index ? action.item : it) }
     case 'REMOVE_ITEM': return { ...state, items: state.items.filter((_, i) => i !== action.index) }
+    case 'RESET': return INITIAL
     default: return state
   }
 }
@@ -52,6 +54,49 @@ const INITIAL: State = {
   client: { name: '', email: '', phone: '', event_date: '', venue: '', notes: '' },
   eventTypeId: null,
   items: [],
+}
+
+// Autosaved locally so an in-progress estimate survives Monica navigating to
+// another Studio tab or losing signal mid-venue — nothing was persisted to
+// the server until the final "Save Draft"/"Get Share Link" tap, so anything
+// typed before that was silently lost on nav-away.
+const DRAFT_KEY = 'bl_new_estimate_draft'
+
+function isBlankState(s: State): boolean {
+  return !s.client.name && !s.client.email && !s.client.phone && !s.client.event_date &&
+    !s.client.venue && !s.client.notes && !s.eventTypeId && s.items.length === 0
+}
+
+function loadDraft(): State | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (!parsed || typeof parsed !== 'object') return null
+    const step: Step = ['client', 'event', 'items'].includes(parsed.step) ? parsed.step : 'client'
+    return {
+      step,
+      client: { ...INITIAL.client, ...parsed.client },
+      eventTypeId: parsed.eventTypeId ?? null,
+      items: Array.isArray(parsed.items) ? parsed.items : [],
+    }
+  } catch {
+    return null
+  }
+}
+
+function DraftRestoredBanner({ onDiscard }: { onDiscard: () => void }) {
+  return (
+    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '16px 24px 0' }}>
+      <div style={{ background: 'rgba(91,191,191,0.08)', border: '1px solid rgba(91,191,191,0.25)', borderRadius: '12px', padding: '12px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+        <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', margin: 0 }}>Picked up where you left off — nothing was lost.</p>
+        <button onClick={onDiscard} style={{ background: 'none', border: 'none', color: '#5BBFBF', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', flexShrink: 0, whiteSpace: 'nowrap' }}>
+          Start Over
+        </button>
+      </div>
+    </div>
+  )
 }
 
 type CatalogItem = {
@@ -74,7 +119,21 @@ export default function NewEstimate() {
 function NewEstimateInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [state, dispatch] = useReducer(reducer, INITIAL)
+
+  // A deep link from a lead (?name=&email=...) means Monica explicitly chose
+  // to start a fresh estimate for that person — never resurrect an unrelated
+  // stale draft over that.
+  const [initial] = useState(() => {
+    const hasPrefillParams = ['name', 'email', 'phone', 'event_date', 'venue'].some(k => searchParams.get(k))
+    if (!hasPrefillParams) {
+      const draft = loadDraft()
+      if (draft && !isBlankState(draft)) return { state: draft, restored: true }
+    }
+    return { state: INITIAL, restored: false }
+  })
+
+  const [state, dispatch] = useReducer(reducer, initial.state)
+  const [draftRestored, setDraftRestored] = useState(initial.restored)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState<{ id: string; shareToken: string } | null>(null)
   const [copied, setCopied] = useState(false)
@@ -109,6 +168,22 @@ function NewEstimateInner() {
     if (Object.keys(prefill).length > 0) dispatch({ type: 'SET_CLIENT', client: prefill })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Autosave — runs on every edit so nothing is lost if Monica taps away
+  // mid-estimate (another Studio tab, a call coming in, low signal at a venue).
+  useEffect(() => {
+    if (isBlankState(state)) {
+      window.localStorage.removeItem(DRAFT_KEY)
+      return
+    }
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(state))
+  }, [state])
+
+  function discardDraft() {
+    window.localStorage.removeItem(DRAFT_KEY)
+    dispatch({ type: 'RESET' })
+    setDraftRestored(false)
+  }
 
   const total = state.items.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
   const deposit = Math.round(total * 0.5)
@@ -205,6 +280,7 @@ function NewEstimateInner() {
     })
     if (res.ok) {
       const data = await res.json()
+      window.localStorage.removeItem(DRAFT_KEY)
       setSaved({ id: data.id, shareToken: data.share_token })
     }
     setSaving(false)
@@ -268,6 +344,7 @@ function NewEstimateInner() {
             </div>
           </div>
         </div>
+        {draftRestored && <DraftRestoredBanner onDiscard={discardDraft} />}
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '28px 24px 0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {[
@@ -335,6 +412,7 @@ function NewEstimateInner() {
             </div>
           </div>
         </div>
+        {draftRestored && <DraftRestoredBanner onDiscard={discardDraft} />}
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '28px 24px 0', display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px' }}>
           {CONFIGURATOR_EVENT_TYPES.map(et => (
             <button
@@ -374,6 +452,7 @@ function NewEstimateInner() {
             </div>
           </div>
         </div>
+        {draftRestored && <DraftRestoredBanner onDiscard={discardDraft} />}
 
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px 24px 0' }}>
           {state.items.length > 0 && (
@@ -448,6 +527,9 @@ function NewEstimateInner() {
                 {saving ? 'Saving…' : <><span>Get Share Link</span><ArrowRight size={15} /></>}
               </button>
             </div>
+            <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', textAlign: 'center', marginTop: '10px' }}>
+              Autosaved on this device as you go
+            </p>
           </div>
         </div>
 
