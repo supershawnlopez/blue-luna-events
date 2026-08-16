@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, ChevronDown, Copy, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag, Pencil, X } from 'lucide-react'
+import { ChevronLeft, ChevronDown, Copy, Files, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag, Pencil, X } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
 import { labelForAddOn, labelForEventType } from '@/lib/config'
@@ -75,6 +75,7 @@ function parseAddOns(raw?: string | null): string[] {
 
 export default function EstimateDetail() {
   const params = useParams()
+  const router = useRouter()
   const id = params.id as string
   const [est, setEst] = useState<Estimate | null>(null)
   const [payments, setPayments] = useState<EstimatePayment[]>([])
@@ -82,6 +83,7 @@ export default function EstimateDetail() {
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [duplicating, setDuplicating] = useState(false)
 
   // Discount editor
   const [discountOpen, setDiscountOpen] = useState(false)
@@ -384,6 +386,19 @@ export default function EstimateDetail() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  // Lets Monica offer the same client a different mix of items (more/less)
+  // without touching the original estimate she may have already sent.
+  async function duplicateEstimate() {
+    setDuplicating(true)
+    const res = await fetch(`/api/studio/estimates/${id}/duplicate`, { method: 'POST' })
+    if (res.ok) {
+      const data = await res.json()
+      router.push(`/studio/estimates/${data.id}`)
+    } else {
+      setDuplicating(false)
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#0D0F0F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -454,6 +469,18 @@ export default function EstimateDetail() {
           {emailSent && (
             <p style={{ fontSize: '0.75rem', color: '#5BBFBF', textAlign: 'center', marginTop: '8px' }}>✓ Sent to {emailSent}</p>
           )}
+          <button
+            onClick={duplicateEstimate}
+            disabled={duplicating}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+              background: 'none', color: 'rgba(255,255,255,0.5)',
+              border: 'none', borderTop: '1px solid rgba(91,191,191,0.15)', padding: '12px 0 0', marginTop: '10px',
+              fontWeight: 600, fontSize: '0.78rem', cursor: 'pointer',
+            }}
+          >
+            <Files size={13} /> {duplicating ? 'Duplicating…' : 'Duplicate as a New Estimate'}
+          </button>
         </div>
 
         {/* Sent history — proof of what's actually gone out, no need to ask or check email logs by hand */}
