@@ -4,10 +4,14 @@ import { syncLeadOnEstimateCreated } from '@/lib/leadSync'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const supabase = serverClient()
+  const trash = req.nextUrl.searchParams.get('trash') === '1'
+  const estimatesQuery = trash
+    ? supabase.from('estimates').select('*').not('deleted_at', 'is', null).order('deleted_at', { ascending: false })
+    : supabase.from('estimates').select('*').is('deleted_at', null).order('created_at', { ascending: false })
   const [{ data, error }, { data: payments }] = await Promise.all([
-    supabase.from('estimates').select('*').order('created_at', { ascending: false }),
+    estimatesQuery,
     supabase.from('estimate_payments').select('estimate_id, amount'),
   ])
 

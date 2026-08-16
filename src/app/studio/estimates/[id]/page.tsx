@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback, Suspense } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ChevronDown, Copy, Files, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag, Pencil, X } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
@@ -74,9 +74,19 @@ function parseAddOns(raw?: string | null): string[] {
 }
 
 export default function EstimateDetail() {
+  return (
+    <Suspense fallback={null}>
+      <EstimateDetailInner />
+    </Suspense>
+  )
+}
+
+function EstimateDetailInner() {
   const params = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const id = params.id as string
+  const [showDuplicatedBanner, setShowDuplicatedBanner] = useState(() => searchParams.get('duplicated') === '1')
   const [est, setEst] = useState<Estimate | null>(null)
   const [payments, setPayments] = useState<EstimatePayment[]>([])
   const [activity, setActivity] = useState<ActivityEntry[]>([])
@@ -84,6 +94,9 @@ export default function EstimateDetail() {
   const [copied, setCopied] = useState(false)
   const [saving, setSaving] = useState(false)
   const [duplicating, setDuplicating] = useState(false)
+  const [deleteConfirming, setDeleteConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   // Discount editor
   const [discountOpen, setDiscountOpen] = useState(false)
@@ -247,20 +260,25 @@ export default function EstimateDetail() {
   // 2026-08-04) — deliberately NOT included in this PATCH body, so package_id/
   // package_name/add_ons stay whatever they already are on older estimates
   // rather than getting silently wiped by an editor that no longer offers them.
-  async function saveSelection() {
+  //
+  // Every add/edit/remove persists to the server immediately (2026-08-16,
+  // Shawn's real feedback: a separate "Save" step made it look like items
+  // weren't actually being added) — this just pushes whatever item list is
+  // passed in, right when it changes. No more discard-on-Cancel; there's
+  // nothing local left to discard once every change is already saved.
+  async function persistItems(items: CustomItem[]) {
     setSaving(true)
-    const total = calcSelectionTotal()
-    await fetch(`/api/studio/estimates/${id}`, {
+    const total = items.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
+    const res = await fetch(`/api/studio/estimates/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        custom_items: selCustomItems,
-        quoted_total: total,
-      }),
+      body: JSON.stringify({ custom_items: items, quoted_total: total }),
     })
-    await load()
+    if (res.ok) {
+      const data = await res.json()
+      setEst(data)
+    }
     setSaving(false)
-    setSelectionOpen(false)
   }
 
   function resetItemForm() {
@@ -305,12 +323,12 @@ export default function EstimateDetail() {
     const price = parseFloat(newItemPrice)
     if (!newItemLabel.trim() || !price || price <= 0) return
     const item = { label: newItemLabel.trim(), description: newItemDescription.trim() || undefined, price }
-    if (editingItemIndex !== null) {
-      setSelCustomItems(items => items.map((it, i) => i === editingItemIndex ? item : it))
-    } else {
-      setSelCustomItems(items => [...items, item])
-    }
+    const next = editingItemIndex !== null
+      ? selCustomItems.map((it, i) => i === editingItemIndex ? item : it)
+      : [...selCustomItems, item]
+    setSelCustomItems(next)
     resetItemForm()
+    persistItems(next)
   }
 
   function editCustomItem(index: number) {
@@ -325,8 +343,10 @@ export default function EstimateDetail() {
   }
 
   function removeCustomItem(index: number) {
-    setSelCustomItems(items => items.filter((_, i) => i !== index))
+    const next = selCustomItems.filter((_, i) => i !== index)
+    setSelCustomItems(next)
     if (editingItemIndex === index) resetItemForm()
+    persistItems(next)
   }
 
   const selectedCatalogItem = catalogItems.find(c => c.id === newItemCatalogId)
@@ -393,10 +413,24 @@ export default function EstimateDetail() {
     const res = await fetch(`/api/studio/estimates/${id}/duplicate`, { method: 'POST' })
     if (res.ok) {
       const data = await res.json()
-      router.push(`/studio/estimates/${data.id}`)
+      router.push(`/studio/estimates/${data.id}?duplicated=1`)
     } else {
       setDuplicating(false)
     }
+  }
+
+  async function deleteEstimate() {
+    setDeleting(true)
+    setDeleteError(null)
+    const res = await fetch(`/api/studio/estimates/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      router.push('/studio/estimates')
+      return
+    }
+    const data = await res.json().catch(() => null)
+    setDeleteError(data?.error || "Couldn't delete this estimate.")
+    setDeleting(false)
+    setDeleteConfirming(false)
   }
 
   if (loading) {
@@ -437,6 +471,17 @@ export default function EstimateDetail() {
       </div>
 
       <div style={{ maxWidth: '560px', margin: '0 auto', padding: '24px' }}>
+
+        {showDuplicatedBanner && (
+          <div style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.3)', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', display: 'flex', alignItems: 'flex-start', gap: '10px', justifyContent: 'space-between' }}>
+            <p style={{ fontSize: '0.8rem', color: 'white', margin: 0, lineHeight: 1.4 }}>
+              <strong>This is a new, separate copy.</strong> The original estimate is untouched — edit this one freely.
+            </p>
+            <button onClick={() => setShowDuplicatedBanner(false)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', padding: '2px', flexShrink: 0 }}>
+              <X size={14} />
+            </button>
+          </div>
+        )}
 
         {/* Share link + actions */}
         <div style={{ background: 'rgba(91,191,191,0.06)', border: '1px solid rgba(91,191,191,0.2)', borderRadius: '14px', padding: '16px 18px', marginBottom: '20px' }}>
@@ -623,16 +668,14 @@ export default function EstimateDetail() {
                 <Plus size={15} /> Add Item
               </button>
 
-              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '12px' }}>
-                New total: <strong style={{ color: 'white' }}>${calcSelectionTotal().toLocaleString()}</strong>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', marginBottom: '4px' }}>
+                Total: <strong style={{ color: 'white' }}>${calcSelectionTotal().toLocaleString()}</strong>
+              </p>
+              <p style={{ fontSize: '0.72rem', color: saving ? '#5BBFBF' : 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>
+                {saving ? 'Saving…' : 'Each change saves automatically'}
               </p>
 
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => { setSelectionOpen(false); setSelCustomItems(est.custom_items ?? []); resetItemForm() }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>
-                  <X size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />Cancel
-                </button>
-                <button onClick={saveSelection} disabled={saving} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
-              </div>
+              <button onClick={() => { setSelectionOpen(false); resetItemForm() }} style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Done</button>
             </div>
           )}
         </div>
@@ -809,9 +852,37 @@ export default function EstimateDetail() {
           )}
         </div>
 
-        <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.25)', textAlign: 'center' }}>
+        <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.25)', textAlign: 'center', marginBottom: '28px' }}>
           "Add" payments for Zelle, check, or cash Monica takes directly. Card payments through the client link record automatically.
         </p>
+
+        {/* Delete — deliberately placed last, low-emphasis, and gated behind
+            a confirm step since this destroys a real client record. The API
+            itself also refuses to delete anything with recorded payments. */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '20px' }}>
+          {!deleteConfirming ? (
+            <button onClick={() => { setDeleteConfirming(true); setDeleteError(null) }} style={{ width: '100%', background: 'none', border: 'none', color: 'rgba(239,68,68,0.6)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', padding: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <Trash2 size={13} /> Delete Estimate
+            </button>
+          ) : (
+            <div style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '12px', padding: '16px' }}>
+              <p style={{ fontSize: '0.82rem', color: 'white', marginBottom: '12px', textAlign: 'center' }}>
+                Delete this estimate for {est.client_name}? This can't be undone.
+              </p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => setDeleteConfirming(false)} disabled={deleting} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>
+                  Cancel
+                </button>
+                <button onClick={deleteEstimate} disabled={deleting} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#ef4444', border: 'none', color: 'white', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>
+                  {deleting ? 'Deleting…' : 'Delete Estimate'}
+                </button>
+              </div>
+            </div>
+          )}
+          {deleteError && (
+            <p style={{ fontSize: '0.78rem', color: '#f87171', textAlign: 'center', marginTop: '10px' }}>{deleteError}</p>
+          )}
+        </div>
       </div>
 
       {/* Add/Edit Item sheet — anchored to the viewport, not the page, so it can

@@ -28,6 +28,7 @@ type Estimate = {
   discount_value?: number | null
   accepted_at?: string | null
   total_paid: number
+  deleted_at?: string | null
 }
 
 type DisplayStatus = 'in_progress' | 'draft' | 'sent' | 'partial_paid' | 'paid_full' | 'declined' | 'owing'
@@ -62,21 +63,69 @@ function fmt(n: number) {
   return `$${n.toLocaleString()}`
 }
 
+// Two drafts for the same client (e.g. after Duplicate) look identical
+// otherwise — this is the one permanent way to tell them apart on the list.
+function shortDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
 export default function EstimatesList() {
   const [estimates, setEstimates] = useState<Estimate[]>([])
+  const [trashed, setTrashed] = useState<Estimate[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'pending' | 'invoices'>('pending')
+  const [tab, setTab] = useState<'pending' | 'invoices' | 'trash'>('pending')
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [restoringId, setRestoringId] = useState<string | null>(null)
+  const [rowError, setRowError] = useState<{ id: string; message: string } | null>(null)
 
   useEffect(() => {
-    fetch('/api/studio/estimates')
-      .then(res => res.json())
-      .then(data => setEstimates(Array.isArray(data) ? data : []))
+    Promise.all([
+      fetch('/api/studio/estimates').then(r => r.json()),
+      fetch('/api/studio/estimates?trash=1').then(r => r.json()),
+    ])
+      .then(([active, trash]) => {
+        setEstimates(Array.isArray(active) ? active : [])
+        setTrashed(Array.isArray(trash) ? trash : [])
+      })
       .finally(() => setLoading(false))
   }, [])
 
-  function discardInProgress(id: string) {
-    setEstimates(prev => prev.filter(e => e.id !== id))
-    fetch(`/api/studio/estimates/${id}`, { method: 'DELETE' }).catch(() => {})
+  // Every row gets a delete option (Shawn's ask, 2026-08-16) — gated behind
+  // an inline confirm since a real client estimate isn't as disposable as an
+  // abandoned $0 draft. This is a soft-delete (see the API route) so it can
+  // always be undone from the Trash tab — the API also refuses to delete
+  // anything with recorded payments, surfaced here instead of silently
+  // doing nothing.
+  async function confirmDelete(id: string) {
+    setDeletingId(id)
+    setRowError(null)
+    const res = await fetch(`/api/studio/estimates/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      const moved = estimates.find(e => e.id === id)
+      setEstimates(prev => prev.filter(e => e.id !== id))
+      if (moved) setTrashed(prev => [{ ...moved, deleted_at: new Date().toISOString() }, ...prev])
+    } else {
+      const data = await res.json().catch(() => null)
+      setRowError({ id, message: data?.error || "Couldn't delete this estimate." })
+    }
+    setDeletingId(null)
+    setConfirmingId(null)
+  }
+
+  async function restoreEstimate(id: string) {
+    setRestoringId(id)
+    const res = await fetch(`/api/studio/estimates/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deleted_at: null }),
+    })
+    if (res.ok) {
+      const data = await res.json()
+      setTrashed(prev => prev.filter(e => e.id !== id))
+      setEstimates(prev => [data, ...prev])
+    }
+    setRestoringId(null)
   }
 
   const withMeta = estimates.map(est => {
@@ -134,9 +183,55 @@ export default function EstimatesList() {
           >
             Invoices ({invoices.length})
           </button>
+          <button
+            onClick={() => setTab('trash')}
+            style={{
+              padding: '10px 14px', borderRadius: '10px', cursor: 'pointer',
+              border: tab === 'trash' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)',
+              background: tab === 'trash' ? 'rgba(91,191,191,0.1)' : 'rgba(255,255,255,0.03)',
+              color: tab === 'trash' ? '#5BBFBF' : 'rgba(255,255,255,0.5)',
+              fontSize: '0.82rem', fontWeight: 700, flexShrink: 0,
+            }}
+          >
+            <Trash2 size={14} style={{ verticalAlign: 'middle', marginRight: '4px' }} />{trashed.length}
+          </button>
         </div>
 
-        {loading ? (
+        {tab === 'trash' ? (
+          loading ? (
+            <div style={{ textAlign: 'center', padding: '60px 0' }}>
+              <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.3)' }}>Loading…</p>
+            </div>
+          ) : trashed.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 0' }}>
+              <p style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.3)' }}>Nothing in Trash.</p>
+            </div>
+          ) : (
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', overflow: 'hidden' }}>
+              {trashed.map((est, i) => (
+                <div key={est.id} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px',
+                  padding: '16px 18px',
+                  borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)',
+                }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>{est.client_name || 'Untitled'}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                      {fmt(Number(est.quoted_total))} · Deleted {est.deleted_at ? shortDate(est.deleted_at) : ''}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => restoreEstimate(est.id)}
+                    disabled={restoringId === est.id}
+                    style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.3)', borderRadius: '8px', padding: '8px 14px', color: '#5BBFBF', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer', flexShrink: 0 }}
+                  >
+                    {restoringId === est.id ? 'Restoring…' : 'Restore'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )
+        ) : loading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
             <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.3)' }}>Loading…</p>
           </div>
@@ -167,6 +262,30 @@ export default function EstimatesList() {
               const s = STATUS_STYLES[displayStatus(est, accepted, balance)]
               const hasDiscount = balance.discountAmount > 0
               const href = inProgress ? `/studio/estimates/new?draft=${est.id}` : `/studio/estimates/${est.id}`
+              const confirming = confirmingId === est.id
+
+              if (confirming) {
+                return (
+                  <div key={est.id} style={{
+                    padding: '16px 18px',
+                    borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)',
+                    background: 'rgba(239,68,68,0.06)',
+                  }}>
+                    <p style={{ fontSize: '0.85rem', color: 'white', marginBottom: '10px' }}>
+                      Delete {est.client_name || 'this'} estimate? This can't be undone.
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => setConfirmingId(null)} disabled={deletingId === est.id} style={{ flex: 1, padding: '9px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem', cursor: 'pointer' }}>
+                        Cancel
+                      </button>
+                      <button onClick={() => confirmDelete(est.id)} disabled={deletingId === est.id} style={{ flex: 1, padding: '9px', borderRadius: '8px', background: '#ef4444', border: 'none', color: 'white', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}>
+                        {deletingId === est.id ? 'Deleting…' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                )
+              }
+
               return (
                 <div key={est.id} style={{
                   display: 'flex', alignItems: 'center', gap: '10px',
@@ -182,13 +301,14 @@ export default function EstimatesList() {
                         </span>
                       </div>
                       {inProgress ? (
-                        <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Tap to continue</p>
+                        <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Tap to continue · Added {shortDate(est.created_at)}</p>
                       ) : (
-                        <>
-                          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                            {est.event_type}{est.event_date ? ` · ${est.event_date}` : ''}
-                          </p>
-                        </>
+                        <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                          {est.event_type}{est.event_date ? ` · ${est.event_date}` : ''} · Added {shortDate(est.created_at)}
+                        </p>
+                      )}
+                      {rowError?.id === est.id && (
+                        <p style={{ fontSize: '0.72rem', color: '#f87171', margin: '4px 0 0' }}>{rowError.message}</p>
                       )}
                     </div>
                     {!inProgress && (
@@ -208,15 +328,13 @@ export default function EstimatesList() {
                     )}
                     <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
                   </Link>
-                  {inProgress && (
-                    <button
-                      onClick={() => discardInProgress(est.id)}
-                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: '6px', flexShrink: 0 }}
-                      aria-label="Discard"
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => { setConfirmingId(est.id); setRowError(null) }}
+                    style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: '6px', flexShrink: 0 }}
+                    aria-label="Delete"
+                  >
+                    <Trash2 size={15} />
+                  </button>
                 </div>
               )
             })}

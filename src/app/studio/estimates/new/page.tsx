@@ -180,9 +180,11 @@ function SaveStatusLine({ status }: { status: SaveStatus }) {
 // Compact top-of-page indicator for steps 1-2, before the sticky bottom bar
 // (which has its own full SaveStatusLine) exists to show it.
 function TopSaveIndicator({ status }: { status: SaveStatus }) {
-  if (status === 'idle') return null
-  const text = status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : "Couldn't save"
-  const color = status === 'error' ? '#f87171' : '#5BBFBF'
+  const text = status === 'saving' ? 'Saving…'
+    : status === 'saved' ? 'Saved'
+    : status === 'error' ? "Couldn't save"
+    : 'Autosaves as you go'
+  const color = status === 'error' ? '#f87171' : status === 'idle' ? 'rgba(255,255,255,0.3)' : '#5BBFBF'
   return (
     <div style={{ maxWidth: '500px', margin: '0 auto', padding: '10px 24px 0', display: 'flex', justifyContent: 'flex-end' }}>
       <p style={{ fontSize: '0.72rem', fontWeight: 600, color, margin: 0 }}>{text}</p>
