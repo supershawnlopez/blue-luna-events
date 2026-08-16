@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useReducer, useEffect, Suspense } from 'react'
+import { useState, useReducer, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ChevronDown, ArrowRight, Check, Copy, ExternalLink, Plus, Trash2, Pencil } from 'lucide-react'
@@ -35,6 +35,7 @@ type Action =
   | { type: 'UPDATE_ITEM'; index: number; item: LineItem }
   | { type: 'REMOVE_ITEM'; index: number }
   | { type: 'RESET' }
+  | { type: 'HYDRATE'; state: State }
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -45,6 +46,7 @@ function reducer(state: State, action: Action): State {
     case 'UPDATE_ITEM': return { ...state, items: state.items.map((it, i) => i === action.index ? action.item : it) }
     case 'REMOVE_ITEM': return { ...state, items: state.items.filter((_, i) => i !== action.index) }
     case 'RESET': return INITIAL
+    case 'HYDRATE': return action.state
     default: return state
   }
 }
@@ -56,18 +58,21 @@ const INITIAL: State = {
   items: [],
 }
 
-// Autosaved locally so an in-progress estimate survives Monica navigating to
-// another Studio tab or losing signal mid-venue — nothing was persisted to
-// the server until the final "Save Draft"/"Get Share Link" tap, so anything
-// typed before that was silently lost on nav-away.
+// Team decision, 2026-08-16: an in-progress estimate now autosaves to the
+// real `estimates` table (status: 'draft') as soon as name+email are filled,
+// so it's visible in the Estimates list and reachable from any device —
+// not just the phone/browser she started on. Local storage is only a
+// first-line safety net for the moment BEFORE that (e.g. she's typed a name
+// but no email yet, so there isn't enough to save a real row).
 const DRAFT_KEY = 'bl_new_estimate_draft'
+const DRAFT_ID_KEY = 'bl_new_estimate_draft_id'
 
 function isBlankState(s: State): boolean {
   return !s.client.name && !s.client.email && !s.client.phone && !s.client.event_date &&
     !s.client.venue && !s.client.notes && !s.eventTypeId && s.items.length === 0
 }
 
-function loadDraft(): State | null {
+function loadLocalDraft(): State | null {
   if (typeof window === 'undefined') return null
   try {
     const raw = window.localStorage.getItem(DRAFT_KEY)
@@ -86,6 +91,68 @@ function loadDraft(): State | null {
   }
 }
 
+// Server draft record -> wizard State, landing on whichever step she'd
+// actually reached rather than always restarting at step 1.
+function stateFromEstimate(data: {
+  client_name?: string; client_email?: string; client_phone?: string | null
+  event_type?: string | null; event_date?: string | null; venue?: string | null
+  notes?: string | null; custom_items?: LineItem[] | null
+}): State {
+  const eventTypeId = (data.event_type ?? null) as EventTypeId | null
+  const items = Array.isArray(data.custom_items) ? data.custom_items : []
+  const step: Step = eventTypeId ? 'items' : (data.client_name && data.client_email ? 'event' : 'client')
+  return {
+    step,
+    client: {
+      name: data.client_name ?? '',
+      email: data.client_email ?? '',
+      phone: data.client_phone ?? '',
+      event_date: data.event_date ?? '',
+      venue: data.venue ?? '',
+      notes: data.notes ?? '',
+    },
+    eventTypeId,
+    items,
+  }
+}
+
+type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
+
+async function persistDraft(state: State, id: string | null, leadId: string | null): Promise<string | null> {
+  const total = state.items.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
+  const body: Record<string, unknown> = {
+    client_name: state.client.name,
+    client_email: state.client.email,
+    client_phone: state.client.phone || null,
+    event_type: state.eventTypeId,
+    event_date: state.client.event_date || null,
+    venue: state.client.venue || null,
+    custom_items: state.items,
+    quoted_total: total,
+    notes: state.client.notes || null,
+  }
+  try {
+    if (id) {
+      const res = await fetch(`/api/studio/estimates/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+      return res.ok ? id : null
+    }
+    const res = await fetch('/api/studio/estimates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...body, status: 'draft', deposit_amount: Math.round(total * 0.5), balance_amount: total - Math.round(total * 0.5), lead_id: leadId || null }),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data.id ?? null
+  } catch {
+    return null
+  }
+}
+
 function DraftRestoredBanner({ onDiscard }: { onDiscard: () => void }) {
   return (
     <div style={{ maxWidth: '500px', margin: '0 auto', padding: '16px 24px 0' }}>
@@ -95,6 +162,30 @@ function DraftRestoredBanner({ onDiscard }: { onDiscard: () => void }) {
           Start Over
         </button>
       </div>
+    </div>
+  )
+}
+
+function SaveStatusLine({ status }: { status: SaveStatus }) {
+  const text = status === 'saving' ? 'Saving…'
+    : status === 'saved' ? 'Saved — visible in Estimates from any device'
+    : status === 'error' ? "Couldn't save — check your connection"
+    : 'Autosaves as you go'
+  const color = status === 'error' ? 'rgba(248,113,113,0.7)' : 'rgba(255,255,255,0.25)'
+  return (
+    <p style={{ fontSize: '0.68rem', color, textAlign: 'center', marginTop: '10px' }}>{text}</p>
+  )
+}
+
+// Compact top-of-page indicator for steps 1-2, before the sticky bottom bar
+// (which has its own full SaveStatusLine) exists to show it.
+function TopSaveIndicator({ status }: { status: SaveStatus }) {
+  if (status === 'idle') return null
+  const text = status === 'saving' ? 'Saving…' : status === 'saved' ? 'Saved' : "Couldn't save"
+  const color = status === 'error' ? '#f87171' : '#5BBFBF'
+  return (
+    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '10px 24px 0', display: 'flex', justifyContent: 'flex-end' }}>
+      <p style={{ fontSize: '0.72rem', fontWeight: 600, color, margin: 0 }}>{text}</p>
     </div>
   )
 }
@@ -122,18 +213,26 @@ function NewEstimateInner() {
 
   // A deep link from a lead (?name=&email=...) means Monica explicitly chose
   // to start a fresh estimate for that person — never resurrect an unrelated
-  // stale draft over that.
+  // stale draft over that. A `?draft=<id>` link (from the Estimates list'
+  // "In Progress" row) means load that real server draft instead — this is
+  // what makes an in-progress estimate reachable from a different device.
   const [initial] = useState(() => {
     const hasPrefillParams = ['name', 'email', 'phone', 'event_date', 'venue'].some(k => searchParams.get(k))
-    if (!hasPrefillParams) {
-      const draft = loadDraft()
-      if (draft && !isBlankState(draft)) return { state: draft, restored: true }
-    }
-    return { state: INITIAL, restored: false }
+    const urlDraftId = searchParams.get('draft')
+    if (hasPrefillParams) return { state: INITIAL, restored: false, draftId: null as string | null, loadingDraft: false }
+    if (urlDraftId) return { state: INITIAL, restored: false, draftId: urlDraftId, loadingDraft: true }
+    const pointerId = typeof window !== 'undefined' ? window.localStorage.getItem(DRAFT_ID_KEY) : null
+    if (pointerId) return { state: INITIAL, restored: false, draftId: pointerId, loadingDraft: true }
+    const draft = loadLocalDraft()
+    if (draft && !isBlankState(draft)) return { state: draft, restored: true, draftId: null, loadingDraft: false }
+    return { state: INITIAL, restored: false, draftId: null, loadingDraft: false }
   })
 
   const [state, dispatch] = useReducer(reducer, initial.state)
   const [draftRestored, setDraftRestored] = useState(initial.restored)
+  const [draftId, setDraftId] = useState<string | null>(initial.draftId)
+  const [loadingDraft, setLoadingDraft] = useState(initial.loadingDraft)
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState<{ id: string; shareToken: string } | null>(null)
   const [copied, setCopied] = useState(false)
@@ -169,18 +268,77 @@ function NewEstimateInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Autosave — runs on every edit so nothing is lost if Monica taps away
-  // mid-estimate (another Studio tab, a call coming in, low signal at a venue).
+  // Load a real server draft — either she followed a `?draft=<id>` link (from
+  // the Estimates list, works from any device) or this same browser has a
+  // pointer to a draft it already created server-side.
   useEffect(() => {
+    if (!draftId || !loadingDraft) return
+    fetch(`/api/studio/estimates/${draftId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          window.localStorage.removeItem(DRAFT_KEY)
+          window.localStorage.setItem(DRAFT_ID_KEY, draftId)
+          dispatch({ type: 'HYDRATE', state: stateFromEstimate(data) })
+          setDraftRestored(true)
+        } else {
+          // Draft no longer exists (deleted, or a stale pointer) — start clean.
+          window.localStorage.removeItem(DRAFT_ID_KEY)
+          setDraftId(null)
+        }
+        setLoadingDraft(false)
+      })
+      .catch(() => setLoadingDraft(false))
+  }, [draftId, loadingDraft])
+
+  // Local-only safety net for BEFORE there's enough info (name + email) to
+  // save a real draft to the server — see DRAFT_KEY comment above.
+  useEffect(() => {
+    if (loadingDraft || draftId) return
     if (isBlankState(state)) {
       window.localStorage.removeItem(DRAFT_KEY)
       return
     }
     window.localStorage.setItem(DRAFT_KEY, JSON.stringify(state))
-  }, [state])
+  }, [state, loadingDraft, draftId])
 
-  function discardDraft() {
+  // Real server autosave, debounced, once she's typed enough to save a real
+  // row — this is what makes the draft show up in the Estimates list and
+  // reachable from any device, per the team decision on 2026-08-16.
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const draftIdRef = useRef<string | null>(draftId)
+  useEffect(() => { draftIdRef.current = draftId }, [draftId])
+
+  useEffect(() => {
+    if (loadingDraft) return
+    if (!state.client.name.trim() || !state.client.email.trim()) return
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current)
+    autosaveTimer.current = setTimeout(async () => {
+      setSaveStatus('saving')
+      const id = await persistDraft(state, draftIdRef.current, searchParams.get('lead_id'))
+      if (id) {
+        if (!draftIdRef.current) {
+          setDraftId(id)
+          window.localStorage.setItem(DRAFT_ID_KEY, id)
+          window.localStorage.removeItem(DRAFT_KEY)
+        }
+        setSaveStatus('saved')
+      } else {
+        setSaveStatus('error')
+      }
+    }, 1200)
+    return () => { if (autosaveTimer.current) clearTimeout(autosaveTimer.current) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, loadingDraft])
+
+  async function discardDraft() {
     window.localStorage.removeItem(DRAFT_KEY)
+    window.localStorage.removeItem(DRAFT_ID_KEY)
+    if (draftId) {
+      fetch(`/api/studio/estimates/${draftId}`, { method: 'DELETE' }).catch(() => {})
+    }
+    setDraftId(null)
+    setSaveStatus('idle')
     dispatch({ type: 'RESET' })
     setDraftRestored(false)
   }
@@ -273,14 +431,23 @@ function NewEstimateInner() {
       status: send ? 'sent' : 'draft',
       lead_id: searchParams.get('lead_id') || null,
     }
-    const res = await fetch('/api/studio/estimates', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    })
+    // Reuse the autosaved draft row if one already exists, instead of
+    // creating a second, duplicate estimate for the same client.
+    const res = draftId
+      ? await fetch(`/api/studio/estimates/${draftId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+      : await fetch('/api/studio/estimates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
     if (res.ok) {
       const data = await res.json()
       window.localStorage.removeItem(DRAFT_KEY)
+      window.localStorage.removeItem(DRAFT_ID_KEY)
       setSaved({ id: data.id, shareToken: data.share_token })
     }
     setSaving(false)
@@ -292,6 +459,15 @@ function NewEstimateInner() {
     navigator.clipboard.writeText(url)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  // ── Loading an existing draft from the server ───────────────────────────────────
+  if (loadingDraft) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#0D0F0F', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.85rem' }}>Loading…</p>
+      </div>
+    )
   }
 
   // ── Saved state ───────────────────────────────────────────────────────────────
@@ -345,6 +521,7 @@ function NewEstimateInner() {
           </div>
         </div>
         {draftRestored && <DraftRestoredBanner onDiscard={discardDraft} />}
+        <TopSaveIndicator status={saveStatus} />
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '28px 24px 0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {[
@@ -413,6 +590,7 @@ function NewEstimateInner() {
           </div>
         </div>
         {draftRestored && <DraftRestoredBanner onDiscard={discardDraft} />}
+        <TopSaveIndicator status={saveStatus} />
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '28px 24px 0', display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px' }}>
           {CONFIGURATOR_EVENT_TYPES.map(et => (
             <button
@@ -527,9 +705,7 @@ function NewEstimateInner() {
                 {saving ? 'Saving…' : <><span>Get Share Link</span><ArrowRight size={15} /></>}
               </button>
             </div>
-            <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.25)', textAlign: 'center', marginTop: '10px' }}>
-              Autosaved on this device as you go
-            </p>
+            <SaveStatusLine status={saveStatus} />
           </div>
         </div>
 

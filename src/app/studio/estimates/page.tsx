@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, ChevronRight, FileText } from 'lucide-react'
+import { Plus, ChevronRight, FileText, Trash2 } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance } from '@/lib/estimateBalance'
 import { isAccepted } from '@/lib/documentLabel'
@@ -30,9 +30,10 @@ type Estimate = {
   total_paid: number
 }
 
-type DisplayStatus = 'draft' | 'sent' | 'partial_paid' | 'paid_full' | 'declined' | 'owing'
+type DisplayStatus = 'in_progress' | 'draft' | 'sent' | 'partial_paid' | 'paid_full' | 'declined' | 'owing'
 
 const STATUS_STYLES: Record<DisplayStatus, { label: string; bg: string; color: string }> = {
+  in_progress:  { label: 'In Progress', bg: 'rgba(201,169,110,0.15)', color: '#C9A96E' },
   draft:        { label: 'Draft',       bg: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' },
   sent:         { label: 'Sent',        bg: 'rgba(91,191,191,0.12)',  color: '#5BBFBF' },
   owing:        { label: 'Owing',       bg: 'rgba(201,169,110,0.15)', color: '#C9A96E' },
@@ -41,11 +42,19 @@ const STATUS_STYLES: Record<DisplayStatus, { label: string; bg: string; color: s
   declined:     { label: 'Declined',    bg: 'rgba(239,68,68,0.1)',    color: 'rgba(239,68,68,0.7)' },
 }
 
+// A "draft" with nothing added yet is still mid-creation (autosaved from the
+// wizard, possibly abandoned partway through) — route back into the wizard
+// to continue it instead of the completed-estimate detail/edit page.
+function isInProgress(est: Estimate): boolean {
+  return est.status === 'draft' && Number(est.quoted_total) === 0
+}
+
 function displayStatus(est: Estimate, accepted: boolean, balance: ReturnType<typeof computeBalance>): DisplayStatus {
   if (est.status === 'declined') return 'declined'
   if (balance.isPaidInFull) return 'paid_full'
   if (accepted) return balance.totalPaid > 0 ? 'partial_paid' : 'owing'
   if (est.status === 'sent') return 'sent'
+  if (isInProgress(est)) return 'in_progress'
   return 'draft'
 }
 
@@ -64,6 +73,11 @@ export default function EstimatesList() {
       .then(data => setEstimates(Array.isArray(data) ? data : []))
       .finally(() => setLoading(false))
   }, [])
+
+  function discardInProgress(id: string) {
+    setEstimates(prev => prev.filter(e => e.id !== id))
+    fetch(`/api/studio/estimates/${id}`, { method: 'DELETE' }).catch(() => {})
+  }
 
   const withMeta = estimates.map(est => {
     const balance = computeBalance(est, [{ id: '', method: '', created_at: '', amount: est.total_paid }])
@@ -149,40 +163,61 @@ export default function EstimatesList() {
         ) : (
           <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', overflow: 'hidden' }}>
             {visible.map(({ est, balance, accepted }, i) => {
+              const inProgress = isInProgress(est)
               const s = STATUS_STYLES[displayStatus(est, accepted, balance)]
               const hasDiscount = balance.discountAmount > 0
+              const href = inProgress ? `/studio/estimates/new?draft=${est.id}` : `/studio/estimates/${est.id}`
               return (
-                <Link key={est.id} href={`/studio/estimates/${est.id}`} style={{
-                  display: 'flex', alignItems: 'center', gap: '14px',
-                  padding: '16px 18px', textDecoration: 'none',
+                <div key={est.id} style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '16px 18px',
                   borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)',
                 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
-                      <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'white', margin: 0 }}>{est.client_name}</p>
-                      <span style={{ padding: '2px 8px', borderRadius: '99px', background: s.bg, color: s.color, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-                        {s.label}
-                      </span>
-                    </div>
-                    <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                      {est.event_type}{est.event_date ? ` · ${est.event_date}` : ''}
-                    </p>
-                  </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    {hasDiscount ? (
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', justifyContent: 'flex-end', marginBottom: '2px' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through' }}>{fmt(balance.subtotal)}</span>
-                        <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white' }}>{fmt(balance.finalTotal)}</span>
+                  <Link href={href} style={{ display: 'flex', alignItems: 'center', gap: '14px', flex: 1, minWidth: 0, textDecoration: 'none' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                        <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'white', margin: 0 }}>{est.client_name || 'Untitled'}</p>
+                        <span style={{ padding: '2px 8px', borderRadius: '99px', background: s.bg, color: s.color, fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
+                          {s.label}
+                        </span>
                       </div>
-                    ) : (
-                      <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{fmt(balance.finalTotal)}</p>
+                      {inProgress ? (
+                        <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Tap to continue</p>
+                      ) : (
+                        <>
+                          <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
+                            {est.event_type}{est.event_date ? ` · ${est.event_date}` : ''}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    {!inProgress && (
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        {hasDiscount ? (
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', justifyContent: 'flex-end', marginBottom: '2px' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through' }}>{fmt(balance.subtotal)}</span>
+                            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white' }}>{fmt(balance.finalTotal)}</span>
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: '1rem', fontWeight: 700, color: 'white', marginBottom: '2px' }}>{fmt(balance.finalTotal)}</p>
+                        )}
+                        <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
+                          {paidLine(balance.totalPaid, balance.amountOwed, balance.isPaidInFull)}
+                        </p>
+                      </div>
                     )}
-                    <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>
-                      {paidLine(balance.totalPaid, balance.amountOwed, balance.isPaidInFull)}
-                    </p>
-                  </div>
-                  <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
-                </Link>
+                    <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
+                  </Link>
+                  {inProgress && (
+                    <button
+                      onClick={() => discardInProgress(est.id)}
+                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: '6px', flexShrink: 0 }}
+                      aria-label="Discard"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+                </div>
               )
             })}
           </div>
