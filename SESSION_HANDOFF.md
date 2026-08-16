@@ -1,8 +1,34 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 10, 2026 — Claude Code*
+*Last updated: August 16, 2026 — Claude Code*
 
-## 2026-08-10, continued: Traffic Report cleanup — you caught real issues live
+## 2026-08-16: Estimate drafts — autosave, cross-device, Duplicate, delete/Trash
+
+Started from a real bug: you reported Monica started an estimate, navigated away, and lost it — the new-estimate wizard only lived in memory until the final "Save Draft" tap. Fixed, then you flagged more, tested live, and kept finding real gaps — this entry covers the whole day.
+
+**Autosave, now server-backed:** In-progress estimates save to a real database row (not just the phone's local storage) once a name + email are filled — visible in the Estimates list with an "In Progress" badge, and reachable from any device via "Continue." Local storage is now only a first-line safety net for the moment before there's enough info to save a real row. Team pass (Marcus/Priya/Jony/Angela) recommended this over a native "leave site?" browser popup — a quiet "Saving…/Saved" line on the page instead.
+
+**Duplicate as a New Estimate:** any estimate's page now has a "Duplicate" action — copies the client, event, and every item into a brand-new estimate with its own share link, so you can offer a client a "more" or "less" version without touching what you already sent them. After you tested it and pointed out there was no way to tell you'd landed on the new copy, added a banner confirming that.
+
+**Real feedback fixes from your testing:**
+- Adding/removing an item on an *existing* estimate used to need a separate "Save" tap — you called this out as looking broken. Every change now saves the instant it happens; the editor is just "Done" now.
+- The autosave status line was invisible until enough info existed to create a real draft — now shows "Autosaves as you go" from the first keystroke, so it's never silent.
+
+**Delete + Trash:** every estimate can now be deleted — from the Estimates list (trash icon → confirm) and from the estimate's own page — but it's a **soft delete**. Nothing is destroyed: a new **Trash tab** on the Estimates list holds anything deleted, with one-tap Restore. Confirmed directly against the database that a duplicate and its original are completely independent records, so deleting one can never affect the other. Anything with a real recorded payment still can't be deleted at all, trash or not.
+
+**Confirmed untouched:** your own real testing — two drafts each for Katie Atkins and Lauren Munsey (from testing Duplicate yourself) — none of this work read or wrote those records.
+
+**Shawn, test this:**
+1. Open an estimate → Selection → Edit → add an item → confirm it appears and the total updates immediately, no Save tap.
+2. Estimates → "+ New" → type just a name → confirm "Autosaves as you go" shows right away.
+3. Open an estimate → "Duplicate as a New Estimate" → confirm the "this is a new, separate copy" banner shows on the new one.
+4. Estimates list → trash icon on any row → confirm → check the Trash tab → Restore → confirm it's back.
+
+Commits `de64b60b`, `09e5bfcc`, `c71432e9`, `b04c3d3f` — all pushed, Vercel confirmed `READY`/`PROMOTED`. Schema change: `estimates.deleted_at` (nullable timestamptz) added via Supabase Management API.
+
+---
+
+## Prior: 2026-08-10, continued: Traffic Report cleanup — you caught real issues live
 
 Right after the Traffic Report shipped, you looked at it live and flagged two things: "What They're Looking At" showed some rows as unreadable strings of characters instead of real page names, and you asked what "Direct/Unknown" actually means.
 
@@ -427,7 +453,7 @@ Locked decisions belong in `DECISIONS.md` and `DESIGN_DECISIONS.md`.
 
 ## Current Status
 
-- Latest `main` commit: `6d360e7a` — Traffic Report fix: grouped per-client dynamic pages (`/q/<token>`, `/gallery/<slug>`) into readable buckets, merged duplicate "Direct/Unknown" rows — real issues Shawn caught live. Confirmed `READY` on Vercel 2026-08-10. Preceding: `8bd7df81` — real Traffic Report (Leads by Channel as the primary decision metric, `/studio/analytics`), confirmed `READY` on Vercel 2026-08-10. Preceding: `41076d02` — lead detail sheet now shows the full Event Questionnaire (venue, guests, budget, setup time, looking-for, inspo photos), confirmed `READY` on Vercel 2026-08-10. Preceding: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
+- Latest `main` commit: `b04c3d3f` — Estimate drafts: server-backed autosave, Duplicate + confirmation banner, instant-save Selection editor, soft-delete + Trash tab. Full detail in the 2026-08-16 entry at the top of this file. Confirmed `READY`/`PROMOTED` on Vercel 2026-08-16. **Schema note:** `estimates.deleted_at` (nullable timestamptz) added 2026-08-16 via Supabase Management API — soft-delete marker, `null` means active. Preceding: `6d360e7a` — Traffic Report fix: grouped per-client dynamic pages (`/q/<token>`, `/gallery/<slug>`) into readable buckets, merged duplicate "Direct/Unknown" rows — real issues Shawn caught live. Confirmed `READY` on Vercel 2026-08-10. Preceding: `8bd7df81` — real Traffic Report (Leads by Channel as the primary decision metric, `/studio/analytics`), confirmed `READY` on Vercel 2026-08-10. Preceding: `41076d02` — lead detail sheet now shows the full Event Questionnaire (venue, guests, budget, setup time, looking-for, inspo photos), confirmed `READY` on Vercel 2026-08-10. Preceding: `baad4fd6` — added a "No Add-Ons" clear-all option to the estimate Selection editor, confirmed `READY` on Vercel 2026-08-04. Preceding same-session commits: `5d48709e` (fixed stuck add-on removal + real Stripe payment receipt email), `e1c01705` (custom-item form layout/iOS-zoom fix), `47c035fb` (custom/freeform line items on estimates), `83f63511` (real editing added to existing estimates), `300ad340` ("where did you hear about us?"), `885495ff` (estimate-form placeholder confusion fix). See the 2026-08-04 entries at the top of this file. Commit `212dc29b` (Studio "Today" surface + traffic analytics) and `96086086` (Studio API auth gap + `/q/[token]` PII exposure fix) remain live underneath.
 - **Schema note:** `estimates.custom_items` (jsonb, default `[]`) added 2026-08-04 via Supabase Management API — array of `{label, price}`.
 - All feature branches from today (`redesign/gallery-twilight`, `redesign/nav-footer-light`, `redesign/light-remaining-pages`, `redesign/orbital-v2`, `redesign/orbital-v3`, `redesign/orbital-v4`) were merged and deleted — further redesign work should branch fresh off `main`.
 - **Run `git status`, `git branch`, and `git log` before trusting anything below as fully current** — this file was assembled from session notes, not guaranteed to be re-verified live at read time. In particular, check which branch you're actually on before assuming `main`'s state is what's checked out.

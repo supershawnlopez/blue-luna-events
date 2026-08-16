@@ -13,6 +13,19 @@
 
 ---
 
+## Session: August 16, 2026 — Estimate drafts: autosave, cross-device, Duplicate, delete/Trash
+**AI:** Claude Code
+**Worked on:** Started from a real Monica bug report — she lost an in-progress estimate navigating away before "Save Draft." Grew into a full round of estimate-workflow fixes, all driven by Shawn's real testing feedback along the way.
+
+### Completed This Session
+- **Local-only autosave first, then upgraded to server-backed after a team pass.** In-progress estimates now save to a real `estimates` row (status: `draft`) once name+email are filled — visible in the Estimates list as "In Progress," reachable from any device via a `?draft=<id>` link. Local storage is now only the safety net for before that point. Discard via "Start Over" (wizard) or the list's trash icon.
+- **Duplicate as a New Estimate** — `POST /api/studio/estimates/[id]/duplicate`, reachable from any estimate's detail page. Copies client/event/items, resets status/discount/deposit/payments. Real feedback fix same day: added a dismissible "this is a new, separate copy" banner after Shawn found there was no way to tell which estimate he'd landed on.
+- **Selection editor now saves instantly.** Adding/editing/removing a line item on an existing estimate used to need a separate "Save" tap — real feedback from Shawn that it looked broken ("it doesn't add to that section until I hit save"). Every change now PATCHes immediately; the editor is just "Done."
+- **Autosave indicator always visible.** The new-estimate wizard's save-status line used to stay hidden until a real server draft existed; now shows "Autosaves as you go" from the first keystroke, per Shawn not seeing any sign it was working.
+- **Delete + Trash.** `estimates.deleted_at` column added (Supabase Management API). Delete is soft — sets `deleted_at`, filtered out of the normal list, recoverable from a new Trash tab (one-tap Restore). Available on every Estimates list row and the estimate detail page, gated behind an inline confirm. Estimates with recorded payments still can't be deleted/trashed at all. Verified directly against the schema that a duplicate and its original are fully independent rows — deleting one can never touch the other.
+- Full decision record: `DECISIONS.md` "ESTIMATE DRAFTS: AUTOSAVE, DUPLICATE, DELETE/TRASH (2026-08-16)".
+- Verified: clean `npm run build` throughout, soft-delete/restore filtering logic tested directly against the schema (hide-from-list / show-in-trash / restore, all confirmed), Selection-editor auto-persist verified live in a real logged-in browser session. Confirmed Monica's own real testing (duplicate drafts for Katie Atkins and Lauren Munsey she created herself) was never touched. Commits `de64b60b`, `09e5bfcc`, `c71432e9`, `b04c3d3f` — all pushed, Vercel confirmed `READY`/`PROMOTED`.
+
 ## Session: August 10, 2026, continued — Traffic Report cleanup (real issues Shawn caught live)
 **AI:** Claude Code
 **Worked on:** Minutes after the Traffic Report shipped, Shawn read the live numbers back and flagged two things: several "What They're Looking At" rows were unreadable strings of characters, and he asked what "Direct/Unknown" means, doubting it really meant "no information."
