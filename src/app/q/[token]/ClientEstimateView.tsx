@@ -49,6 +49,8 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   const [accepting, setAccepting] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'checking' | 'confirmed' | 'processing' | 'error'>('idle')
+  const [paymentStatusMessage, setPaymentStatusMessage] = useState('')
   const first = firstName(est.client_name)
   const addOns = parseAddOns(est.add_ons)
   const customItems = est.custom_items ?? []
@@ -60,6 +62,65 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   const paymentAmount = isFullPaymentDue ? balance.amountOwed : balance.suggestedDeposit
   const paymentMode = isFullPaymentDue ? 'balance' : 'deposit'
   const paymentLabel = isFullPaymentDue ? `Pay Now — ${fmt(paymentAmount)}` : `Pay Deposit — ${fmt(paymentAmount)}`
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const sessionId = params.get('session_id')
+    const checkoutComplete = params.get('checkout') === 'complete'
+    if (!checkoutComplete || !sessionId) return
+
+    let cancelled = false
+    let attempts = 0
+
+    async function checkPayment() {
+      attempts += 1
+      setPaymentStatus('checking')
+      setPaymentStatusMessage('Checking your payment...')
+
+      try {
+        const res = await fetch('/api/stripe/estimate-payment-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId, token }),
+        })
+        const data = await res.json()
+        if (cancelled) return
+
+        if (res.ok && (data.status === 'recorded' || data.status === 'already_recorded')) {
+          setPaymentStatus('confirmed')
+          setPaymentStatusMessage(`Payment received${data.amount ? `: ${fmt(Number(data.amount))}` : ''}. Updating your invoice...`)
+          setTimeout(() => window.location.replace(`/q/${token}`), 1400)
+          return
+        }
+
+        if (res.ok && data.status === 'processing' && attempts < 10) {
+          setPaymentStatus('processing')
+          setPaymentStatusMessage('Your card payment is still processing. This page will keep checking.')
+          setTimeout(checkPayment, 3000)
+          return
+        }
+
+        setPaymentStatus('error')
+        setPaymentStatusMessage('We could not confirm the payment yet. Please text Monica before trying again.')
+      } catch {
+        if (cancelled) return
+        if (attempts < 10) {
+          setPaymentStatus('processing')
+          setPaymentStatusMessage('Still checking your payment. Please keep this page open.')
+          setTimeout(checkPayment, 3000)
+          return
+        }
+        setPaymentStatus('error')
+        setPaymentStatusMessage('We could not confirm the payment yet. Please text Monica before trying again.')
+      }
+    }
+
+    checkPayment()
+
+    return () => {
+      cancelled = true
+    }
+  }, [token])
 
   async function handleAccept() {
     setAccepting(true)
@@ -129,6 +190,12 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
         </div>
 
         {/* Status banner */}
+        {paymentStatus !== 'idle' && !balance.isPaidInFull && (
+          <div style={{ background: paymentStatus === 'error' ? 'rgba(248,113,113,0.1)' : 'rgba(91,191,191,0.1)', border: `1px solid ${paymentStatus === 'error' ? 'rgba(248,113,113,0.25)' : 'rgba(91,191,191,0.25)'}`, borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Check size={18} color={paymentStatus === 'error' ? '#f87171' : '#5BBFBF'} />
+            <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>{paymentStatusMessage}</p>
+          </div>
+        )}
         {balance.isPaidInFull && (
           <div style={{ background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <Check size={18} color="#22c55e" />

@@ -1,8 +1,7 @@
 import Stripe from 'stripe'
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
-import { sendReceiptEmail } from '@/lib/receiptEmail'
-import { sendPush } from '@/lib/push'
+import { recordEstimatePaymentFromCheckoutSession } from '@/lib/stripeEstimatePayments'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
@@ -24,8 +23,6 @@ export async function POST(req: NextRequest) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const leadId = session.metadata?.lead_id
-    const estimateId = session.metadata?.estimate_id
-    const estimateAmount = session.metadata?.amount
 
     const supabase = serverClient()
 
@@ -39,31 +36,20 @@ export async function POST(req: NextRequest) {
         .eq('id', leadId)
     }
 
-    if (estimateId && estimateAmount) {
-      await supabase
-        .from('estimate_payments')
-        .insert([{
-          estimate_id: estimateId,
-          amount: Number(estimateAmount),
-          method: 'stripe',
-          stripe_session_id: session.id,
-          stripe_payment_intent_id: session.payment_intent as string,
-        }])
+    if (session.metadata?.estimate_id) {
+      const host = req.headers.get('host') ?? 'bluelunaevents.com'
+      const result = await recordEstimatePaymentFromCheckoutSession(session, {
+        host,
+        eventId: event.id,
+        eventType: event.type,
+        eventCreated: event.created,
+        livemode: event.livemode,
+        payload: event,
+      })
 
-      // Non-blocking: a failed receipt email should never fail the webhook
-      // itself (Stripe retries on non-200, which would re-insert the payment).
-      try {
-        const host = req.headers.get('host') ?? 'bluelunaevents.com'
-        await sendReceiptEmail(estimateId, Number(estimateAmount), host)
-      } catch (err) {
-        console.error('Receipt email failed:', err)
-      }
-
-      try {
-        const { data: est } = await supabase.from('estimates').select('client_name').eq('id', estimateId).single()
-        await sendPush('💰 Payment Received', `$${Number(estimateAmount).toLocaleString()} from ${est?.client_name ?? 'a client'}`, `/studio/estimates/${estimateId}`)
-      } catch (err) {
-        console.error('Push notification error:', err)
+      if (!result.ok) {
+        console.error('Stripe estimate payment recording failed:', result)
+        return NextResponse.json({ error: result.error ?? 'Payment recording failed' }, { status: 500 })
       }
     }
   }

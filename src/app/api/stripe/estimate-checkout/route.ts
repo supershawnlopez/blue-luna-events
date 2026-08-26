@@ -63,15 +63,18 @@ export async function POST(req: NextRequest) {
       },
       quantity: 1,
     }],
+    wallet_options: {
+      link: { display: 'never' },
+    },
     metadata: { estimate_id: est.id, amount: String(amount) },
   }
 
   if (checkoutUiMode === 'embedded') {
     sessionParams.ui_mode = 'embedded_page'
-    sessionParams.return_url = `${returnUrl}?paid=1`
+    sessionParams.return_url = `${returnUrl}?checkout=complete&session_id={CHECKOUT_SESSION_ID}`
   } else {
     sessionParams.ui_mode = 'hosted_page'
-    sessionParams.success_url = `${returnUrl}?paid=1`
+    sessionParams.success_url = `${returnUrl}?checkout=complete&session_id={CHECKOUT_SESSION_ID}`
     sessionParams.cancel_url = returnUrl
   }
 

@@ -13,6 +13,28 @@
 
 ---
 
+## Session: August 26, 2026 — Ava invoice reconciled and Stripe payment recovery added
+**AI:** Codex + team call
+**Worked on:** Shawn clarified Ava's `$690` Friday invoice already received a successful `$345` Stripe card payment, but Blue Luna did not record it, did not update the invoice balance, and did not send receipt/alert.
+
+### Completed This Session
+- Team call recommendation: payment integrity first, checkout branding second. Do not ask Ava to pay again until Blue Luna shows the first `$345` payment.
+- Corrected Ava's live `$690` invoice record and inserted the existing `$345` Stripe payment row so the invoice computes as `$345` paid and `$345` remaining.
+- Added shared Stripe estimate-payment recording helper used by both webhook and checkout-return recovery.
+- Webhook now records Stripe's actual paid amount (`amount_total`), checks for existing Stripe session/payment intent before inserting, sends receipt/push only after the payment row exists, and returns non-200 if recording fails.
+- Added `/api/stripe/estimate-payment-status` so the public invoice page can reconcile a completed Checkout Session if the webhook is delayed or missed.
+- Updated invoice return URLs to include `{CHECKOUT_SESSION_ID}` and added customer-facing checking/confirmed/error states after checkout return.
+- Disabled Stripe Link display at checkout-session level with `wallet_options.link.display = 'never'`.
+- Created migration `20260826150500_stripe_payment_reliability.sql` for Stripe payment unique indexes and webhook audit logging.
+- Verified: clean `npm run build`.
+
+### Follow-Up
+- Send/resend Ava's `$345` Blue Luna receipt from Studio, because the direct DB backfill fixed the balance but did not send email.
+- Apply `20260826150500_stripe_payment_reliability.sql` in Blue Luna Supabase for audit table + unique indexes.
+- Verify production has `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` so embedded checkout is used instead of hosted fallback.
+
+---
+
 ## Session: August 26, 2026 — embedded invoice checkout for corporate-browser payment issue
 **AI:** Codex
 **Worked on:** Shawn shared Ava's Mimecast Browser Isolation screenshot and asked for a quick fix so the customer can pay now without the checkout handoff looking suspicious or getting blocked.

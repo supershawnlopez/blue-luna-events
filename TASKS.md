@@ -43,23 +43,26 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Verify Vercel has `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` for embedded invoice checkout**
+1. **Send/resend Ava's $345 Blue Luna receipt from Studio**
+- Direct DB backfill fixed the invoice balance but did not send receipt email.
+- Open Ava's $690 estimate (`02b9fc57-089b-4999-b5f7-79c2a1d8adfd`) in Studio, find the $345 payment, tap "Resend Receipt."
+- Confirm Ava receives the Blue Luna receipt and Monica gets the CC.
+- Owner: Shawn / Monica.
+
+2. **Verify Vercel has `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` for embedded invoice checkout**
 - Needed for the Ava/Mimecast fix to keep card checkout on the Blue Luna invoice page.
 - Local `.env.local` only has placeholder Stripe keys, and this repo was not linked to Vercel locally, so Codex could not verify production env names.
 - If missing in Vercel, the app falls back to hosted checkout and corporate-browser friction may remain.
 - Owner: Shawn / whoever has Vercel + Stripe access.
 
-2. **Apply Blue Luna Supabase migration for richer marketing attribution**
-- Migration file exists: `supabase/migrations/20260826010840_marketing_attribution_report_fields.sql`.
-- Needed for UTM storage and full lead-path reporting. Current code is backward-compatible before this migration, but the richest Traffic Report data requires it.
-- Codex could not apply it from this session because the available Supabase Management API token returned `403` for Blue Luna's project (`myumgaqlafbynsgnkdnj`).
+3. **Apply Blue Luna Supabase migrations**
+- Marketing attribution: `supabase/migrations/20260826010840_marketing_attribution_report_fields.sql`.
+- Stripe reliability: `supabase/migrations/20260826150500_stripe_payment_reliability.sql`.
+- Needed for UTM storage/full lead paths, Stripe duplicate protection, and webhook audit visibility.
+- Codex could not apply them from this session because the available Supabase Management API token returned `403` for Blue Luna and `.env.local` has no DB password.
 - Owner: Shawn / whoever has Blue Luna Supabase access.
 
-3. **Cancel the duplicate Google Business Profile Shawn started under his own email**
-- Real profile lives under Monica's Gmail (confirmed 2026-07-30) — the second one Shawn started under his own email is a true duplicate. Steps already given (business.google.com → that profile → Business Profile settings → Remove Business Profile). Not yet confirmed done.
-- Owner: Shawn.
-
-*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: Shawn real-device test Phases 3-6, real live $1 Stripe payment test, Twilio/A2P activation for SMS, "200+ Events Styled" stat verification, Instagram live-feed integration scoping (real Meta Graph API posting — separate, bigger project than the caption-assistance shipped today), Supabase auto-pause watch.)*
+*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: cancel duplicate Google Business Profile, Shawn real-device test Phases 3-6, real live $1 Stripe payment test, Twilio/A2P activation for SMS, "200+ Events Styled" stat verification, Instagram live-feed integration scoping (real Meta Graph API posting — separate, bigger project than the caption-assistance shipped today), Supabase auto-pause watch.)*
 
 **All 6 phases of the originally-scoped Studio Intelligence rebuild are now shipped** (Camera, Calendar/Booking, Leads/Contacts/Email/SMS, Social captions). What's left is real-device confirmation from Shawn, plus whatever he wants to scope next.
 

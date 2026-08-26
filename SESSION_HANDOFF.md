@@ -2,6 +2,22 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 26, 2026 — Codex*
 
+## 2026-08-26: Ava $690 invoice reconciled; Stripe payment reliability patched
+
+Shawn clarified the urgent invoice is the $690 Dunkin'/Alliance Marketing Partners invoice only. The successful Stripe payment was **$345** from corporate cardholder **Kristina Ribaudo** for Ava. The separate $800 invoice is intentionally not part of this immediate reconciliation.
+
+**Live DB correction made:** public token `d533c7ac9e7f1645908c432c8e7e4d63` maps to estimate `02b9fc57-089b-4999-b5f7-79c2a1d8adfd`. Codex corrected that live estimate to `$690` total, 100% due, and inserted a single `$345` Stripe payment row (`769807b4-42be-4745-b309-be370839718a`). The invoice should now compute as **$345 paid / $345 remaining**. The direct DB backfill did **not** send a receipt email; use Studio's **Resend Receipt** button on that payment to send Ava a Blue Luna receipt and CC Monica.
+
+**Important data note:** the live record currently shows `event_date = 2026-09-19`, even though Shawn said the event is this Friday. Codex did not change the date because the payment issue was isolated to total/balance/receipt.
+
+**Global code fix for every future invoice:** estimate checkout now disables Stripe Link at the session level (`wallet_options.link.display = 'never'`), sends customers back with `session_id`, and the invoice page calls a new recovery endpoint after checkout. Webhook and recovery now share one payment-recording helper that uses Stripe's actual `amount_total`, checks for an existing Stripe session/payment intent before inserting, sends the Blue Luna receipt + Monica push only after the payment row is confirmed, and returns non-200 from the webhook if recording fails so Stripe retries.
+
+**Migration created but not applied:** `supabase/migrations/20260826150500_stripe_payment_reliability.sql` adds unique indexes for Stripe session/payment intent and a `stripe_webhook_events` audit table. Codex could not apply it live because `.env.local` has no DB password and Supabase Management API access for Blue Luna previously returned `403`. The runtime code tolerates the audit table missing, but the migration is needed for full audit visibility and DB-level duplicate protection.
+
+Verified locally with `npm run build` clean.
+
+---
+
 ## 2026-08-26: Urgent Ava / Mimecast payment friction fix
 
 Shawn shared Ava's screenshot from Mimecast Browser Isolation: the client invoice was opened inside `*.isolation.mimecastprotect.com`, then card payment tried to hand off to hosted checkout. That corporate browser-isolation layer can block or distrust the external checkout transition.
