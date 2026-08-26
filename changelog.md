@@ -19,7 +19,7 @@
 
 ### Completed This Session
 - Team call recommendation: payment integrity first, checkout branding second. Do not ask Ava to pay again until Blue Luna shows the first `$345` payment.
-- Corrected Ava's live `$690` invoice record and inserted the existing `$345` Stripe payment row so the invoice computes as `$345` paid and `$345` remaining.
+- Corrected Ava's live Friday Tucson `$690` invoice after duplicate-invoice confusion: moved the existing `$345` Stripe payment row onto estimate `93ec3056-8dfb-4fb4-aea4-82051e0d10c8`, restored the Phoenix `$800` invoice to `$0` paid, and removed the wrong Phoenix `receipt_sent` activity marker.
 - Added shared Stripe estimate-payment recording helper used by both webhook and checkout-return recovery.
 - Webhook now records Stripe's actual paid amount (`amount_total`), checks for existing Stripe session/payment intent before inserting, sends receipt/push only after the payment row exists, and returns non-200 if recording fails.
 - Added `/api/stripe/estimate-payment-status` so the public invoice page can reconcile a completed Checkout Session if the webhook is delayed or missed.
@@ -29,7 +29,7 @@
 - Verified: clean `npm run build`.
 
 ### Follow-Up
-- Send/resend Ava's `$345` Blue Luna receipt from Studio, because the direct DB backfill fixed the balance but did not send email.
+- Send/resend Ava's `$345` Blue Luna receipt from the Friday Tucson `$690` estimate in Studio, because the corrected DB move fixed the balance but did not send the correct receipt email.
 - Apply `20260826150500_stripe_payment_reliability.sql` in Blue Luna Supabase for audit table + unique indexes.
 - Verify production has `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` so embedded checkout is used instead of hosted fallback.
 

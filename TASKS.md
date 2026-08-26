@@ -45,7 +45,7 @@ Exit criteria for Phase 1:
 
 1. **Send/resend Ava's $345 Blue Luna receipt from Studio**
 - Direct DB backfill fixed the invoice balance but did not send receipt email.
-- Open Ava's $690 estimate (`02b9fc57-089b-4999-b5f7-79c2a1d8adfd`) in Studio, find the $345 payment, tap "Resend Receipt."
+- Open Ava's Friday Tucson $690 estimate (`93ec3056-8dfb-4fb4-aea4-82051e0d10c8`), find the $345 payment, tap "Resend Receipt."
 - Confirm Ava receives the Blue Luna receipt and Monica gets the CC.
 - Owner: Shawn / Monica.
 
