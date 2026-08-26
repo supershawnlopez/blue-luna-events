@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
-import { Check, CreditCard, Download, Phone, PartyPopper } from 'lucide-react'
+import { loadStripe } from '@stripe/stripe-js'
+import { Check, Copy, CreditCard, Download, MessageCircle, Phone, PartyPopper } from 'lucide-react'
 import { SITE_CONFIG, labelForAddOn, labelForEventType } from '@/lib/config'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
 import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
@@ -39,10 +40,15 @@ function parseAddOns(raw?: string): string[] {
   try { return JSON.parse(raw) } catch { return [] }
 }
 
+const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+const stripePromise = publishableKey?.startsWith('pk_') ? loadStripe(publishableKey) : null
+
 export default function ClientEstimateView({ estimate: initialEstimate, token }: { estimate: Estimate; token: string }) {
   const [est, setEst] = useState(initialEstimate)
   const [paying, setPaying] = useState(false)
   const [accepting, setAccepting] = useState(false)
+  const [linkCopied, setLinkCopied] = useState(false)
+  const [showCheckout, setShowCheckout] = useState(false)
   const first = firstName(est.client_name)
   const addOns = parseAddOns(est.add_ons)
   const customItems = est.custom_items ?? []
@@ -50,6 +56,10 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   const hasPaidAnything = balance.totalPaid > 0
   const accepted = isAccepted(est, balance.totalPaid)
   const docLabel = getDocumentLabel(accepted, balance)
+  const isFullPaymentDue = hasPaidAnything || balance.suggestedDeposit >= balance.amountOwed
+  const paymentAmount = isFullPaymentDue ? balance.amountOwed : balance.suggestedDeposit
+  const paymentMode = isFullPaymentDue ? 'balance' : 'deposit'
+  const paymentLabel = isFullPaymentDue ? `Pay Now — ${fmt(paymentAmount)}` : `Pay Deposit — ${fmt(paymentAmount)}`
 
   async function handleAccept() {
     setAccepting(true)
@@ -60,15 +70,26 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   }
 
   async function handlePay() {
+    if (stripePromise) {
+      setShowCheckout(true)
+      return
+    }
+
     setPaying(true)
     const res = await fetch('/api/stripe/estimate-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ estimateId: est.id, mode: hasPaidAnything ? 'balance' : 'deposit' }),
+      body: JSON.stringify({ estimateId: est.id, mode: paymentMode, uiMode: 'hosted' }),
     })
     const data = await res.json()
-    if (data.url) window.location.href = data.url
+    if (data.url) window.location.assign(data.url)
     else setPaying(false)
+  }
+
+  async function copyInvoiceLink() {
+    await navigator.clipboard.writeText(window.location.href)
+    setLinkCopied(true)
+    setTimeout(() => setLinkCopied(false), 2500)
   }
 
   return (
@@ -123,7 +144,7 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
         {accepted && !hasPaidAnything && (
           <div style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.25)', borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <PartyPopper size={18} color="#5BBFBF" />
-            <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>You&apos;re all set! Ready to lock in your date? Pay your deposit below.</p>
+            <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>{isFullPaymentDue ? `You're all set! Complete your ${fmt(paymentAmount)} payment below.` : 'You&apos;re all set! Ready to lock in your date? Pay your deposit below.'}</p>
           </div>
         )}
 
@@ -248,8 +269,36 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
             }}
           >
             <CreditCard size={18} />
-            {paying ? 'Redirecting to payment…' : hasPaidAnything ? `Pay Remaining Balance — ${fmt(balance.amountOwed)}` : `Pay Deposit — ${fmt(balance.suggestedDeposit)}`}
+            {paying ? 'Opening secure Blue Luna checkout…' : paymentLabel}
           </button>
+        )}
+
+        {showCheckout && (
+          <EmbeddedCheckout
+            estimateId={est.id}
+            mode={paymentMode}
+            onClose={() => setShowCheckout(false)}
+          />
+        )}
+
+        {accepted && !balance.isPaidInFull && (
+          <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '16px', marginBottom: '16px' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: '#0D0F0F', margin: '0 0 4px' }}>Company browser blocking the payment?</p>
+            <p style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.55, margin: '0 0 12px' }}>Some protected work browsers block secure card checkout. Copy this invoice link and open it in regular Chrome or Safari, or text Monica and she&apos;ll help right away.</p>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                onClick={copyInvoiceLink}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#0D0F0F', color: 'white', border: 'none', borderRadius: '10px', padding: '10px 14px', fontWeight: 700, fontSize: '0.78rem', cursor: 'pointer' }}
+              >
+                {linkCopied ? <Check size={14} /> : <Copy size={14} />}
+                {linkCopied ? 'Copied' : 'Copy Invoice Link'}
+              </button>
+              <a href={`sms:${SITE_CONFIG.phoneRaw}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'white', border: '1.5px solid #E5E7EB', color: '#374151', borderRadius: '10px', padding: '10px 14px', fontWeight: 600, fontSize: '0.78rem', textDecoration: 'none' }}>
+                <MessageCircle size={14} /> Text Monica
+              </a>
+            </div>
+          </div>
         )}
 
         {/* Download PDF */}
@@ -279,6 +328,68 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
         </div>
 
       </div>
+    </div>
+  )
+}
+
+function EmbeddedCheckout({ estimateId, mode, onClose }: { estimateId: string; mode: 'deposit' | 'balance'; onClose: () => void }) {
+  const mountRef = useRef<HTMLDivElement | null>(null)
+  const checkoutRef = useRef<{ destroy: () => void } | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    async function mountCheckout() {
+      try {
+        const stripe = await stripePromise
+        if (!stripe || !mountRef.current) throw new Error('Payment setup is unavailable.')
+
+        const checkout = await stripe.createEmbeddedCheckoutPage({
+          fetchClientSecret: async () => {
+            const res = await fetch('/api/stripe/estimate-checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ estimateId, mode, uiMode: 'embedded' }),
+            })
+            const data = await res.json()
+            if (!res.ok || !data.clientSecret) throw new Error(data.error ?? 'Could not start payment.')
+            return data.clientSecret
+          },
+        })
+
+        if (!active || !mountRef.current) {
+          checkout.destroy()
+          return
+        }
+
+        checkoutRef.current = checkout
+        checkout.mount(mountRef.current)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Could not start payment.')
+      }
+    }
+
+    mountCheckout()
+
+    return () => {
+      active = false
+      checkoutRef.current?.destroy()
+      checkoutRef.current = null
+    }
+  }, [estimateId, mode])
+
+  return (
+    <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '16px', marginBottom: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '12px' }}>
+        <p style={{ fontSize: '13px', fontWeight: 700, color: '#0D0F0F', margin: 0 }}>Secure Blue Luna card checkout</p>
+        <button type="button" onClick={onClose} style={{ background: 'transparent', border: 'none', color: '#6B7280', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Close</button>
+      </div>
+      {error ? (
+        <p style={{ fontSize: '12px', color: '#B91C1C', lineHeight: 1.55, margin: 0 }}>{error} If you are using a protected work browser, copy the invoice link below and open it in regular Chrome or Safari.</p>
+      ) : (
+        <div ref={mountRef} style={{ minHeight: '520px' }} />
+      )}
     </div>
   )
 }

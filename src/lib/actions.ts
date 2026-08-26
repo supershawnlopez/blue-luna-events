@@ -3,7 +3,7 @@
 import { Resend } from 'resend'
 import { Lead, serverClient } from './supabase'
 import { SITE_CONFIG } from './config'
-import { channelFor } from './channel'
+import { channelForAttribution } from './channel'
 import { sendPush } from './push'
 
 export async function submitLead(data: Lead) {
@@ -14,44 +14,70 @@ export async function submitLead(data: Lead) {
     vision = `Package: ${data.package_name}.${data.vision ? ' ' + data.vision : ''}`
   }
 
-  const { data: inserted, error } = await supabase
+  const baseLead = {
+    name: data.name,
+    phone: data.phone,
+    email: data.email,
+    event_type: data.event_type,
+    event_date: data.event_date,
+    venue: data.venue,
+    vision,
+    budget_range: data.budget_range,
+    referral_source: data.referral_source ?? null,
+    status: 'new',
+    created_at: new Date().toISOString(),
+    package_id: data.package_id,
+    package_name: data.package_name,
+    add_ons: data.add_ons,
+    quoted_total: data.quoted_total,
+    is_consultation: data.is_consultation ?? false,
+    deposit_paid: data.deposit_paid ?? false,
+    deposit_amount: data.deposit_amount,
+    stripe_payment_intent_id: data.stripe_payment_intent_id,
+    source: data.source ?? 'direct',
+    custom_build: data.custom_build ?? null,
+    custom_request: data.custom_request ?? null,
+    guest_count: data.guest_count ?? null,
+    setup_time: data.setup_time ?? null,
+    looking_for: data.looking_for ?? null,
+    inspo_photos: data.inspo_photos ?? null,
+    referrer_raw: data.referrer_raw ?? null,
+    referrer_channel: channelForAttribution(data.utm_source, data.referrer_raw),
+  }
+  const richLead = {
+    ...baseLead,
+    session_id: data.session_id ?? null,
+    landing_path: data.landing_path ?? null,
+    utm_source: data.utm_source ?? null,
+    utm_medium: data.utm_medium ?? null,
+    utm_campaign: data.utm_campaign ?? null,
+    utm_content: data.utm_content ?? null,
+    utm_term: data.utm_term ?? null,
+  }
+
+  let { data: inserted, error } = await supabase
     .from('leads')
-    .insert([{
-      name: data.name,
-      phone: data.phone,
-      email: data.email,
-      event_type: data.event_type,
-      event_date: data.event_date,
-      venue: data.venue,
-      vision,
-      budget_range: data.budget_range,
-      referral_source: data.referral_source ?? null,
-      status: 'new',
-      created_at: new Date().toISOString(),
-      package_id: data.package_id,
-      package_name: data.package_name,
-      add_ons: data.add_ons,
-      quoted_total: data.quoted_total,
-      is_consultation: data.is_consultation ?? false,
-      deposit_paid: data.deposit_paid ?? false,
-      deposit_amount: data.deposit_amount,
-      stripe_payment_intent_id: data.stripe_payment_intent_id,
-      source: data.source ?? 'direct',
-      custom_build: data.custom_build ?? null,
-      custom_request: data.custom_request ?? null,
-      guest_count: data.guest_count ?? null,
-      setup_time: data.setup_time ?? null,
-      looking_for: data.looking_for ?? null,
-      inspo_photos: data.inspo_photos ?? null,
-      referrer_raw: data.referrer_raw ?? null,
-      referrer_channel: channelFor(data.referrer_raw),
-    }])
+    .insert([richLead])
     .select('id')
     .single()
+
+  if (error && (error.code === '42703' || error.code === 'PGRST204')) {
+    const fallback = await supabase
+      .from('leads')
+      .insert([baseLead])
+      .select('id')
+      .single()
+    inserted = fallback.data
+    error = fallback.error
+  }
 
   if (error) {
     console.error('Lead submission error:', error)
     return { success: false, error: error.message }
+  }
+  if (!inserted) {
+    console.error('Lead submission error: insert returned no row')
+    return { success: false, error: 'Lead submission failed' }
   }
 
   // Awaited (not fire-and-forget) — on Vercel, an unawaited promise can get cut off

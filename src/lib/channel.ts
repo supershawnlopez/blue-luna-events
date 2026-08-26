@@ -22,3 +22,25 @@ export function channelFor(referrer: string | null | undefined): string {
   if (host.includes('bluelunaevents.com')) return 'Direct'
   return 'Other'
 }
+
+export function channelForSource(source: string | null | undefined): string | null {
+  if (!source) return null
+  const s = source.trim().toLowerCase()
+  if (!s) return null
+  if (s.includes('instagram') || s === 'ig') return 'Instagram'
+  if (s.includes('facebook') || s === 'fb' || s.includes('meta')) return 'Facebook'
+  if (s.includes('google')) return 'Google'
+  if (s.includes('bing')) return 'Bing'
+  if (s.includes('yelp')) return 'Yelp'
+  if (s.includes('nextdoor')) return 'Nextdoor'
+  if (s.includes('apple')) return 'Apple Maps'
+  if (s.includes('referral') || s.includes('friend') || s.includes('family')) return 'Referral'
+  if (s.includes('saw her work')) return 'Saw Her Work'
+  if (s === 'other') return 'Other'
+  if (s === 'direct' || s === 'unknown') return 'Direct'
+  return source.trim()
+}
+
+export function channelForAttribution(utmSource: string | null | undefined, referrer: string | null | undefined): string {
+  return channelForSource(utmSource) ?? channelFor(referrer)
+}

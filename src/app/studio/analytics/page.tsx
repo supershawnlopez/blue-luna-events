@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { ChevronLeft, TrendingUp, TrendingDown, Minus, Copy, Check } from 'lucide-react'
 
 type ChannelRow = { channel: string; count: number; prevCount: number | null; trend: 'up' | 'down' | 'flat' | null }
 type PageRow = { path: string; count: number }
@@ -14,12 +14,21 @@ type Detail = {
   leadsByChannel: ChannelRow[]
   visitsByChannel: { channel: string; count: number }[]
   topPages: PageRow[]
+  pagesThatLedToInquiries: PageRow[]
+  topLeadPaths: { pages: string[]; count: number }[]
 }
 
 const WINDOWS: { id: Detail['window']; label: string }[] = [
   { id: 'month', label: 'This Month' },
   { id: '3months', label: 'Last 3 Months' },
   { id: 'all', label: 'All Time' },
+]
+
+const TRACKED_LINKS = [
+  { label: 'Instagram Bio', url: 'https://bluelunaevents.com/?utm_source=instagram&utm_medium=social&utm_campaign=bio' },
+  { label: 'Instagram Story', url: 'https://bluelunaevents.com/event-questionnaire?utm_source=instagram&utm_medium=social&utm_campaign=story' },
+  { label: 'Facebook Page', url: 'https://bluelunaevents.com/?utm_source=facebook&utm_medium=social&utm_campaign=page' },
+  { label: 'Facebook Post', url: 'https://bluelunaevents.com/event-questionnaire?utm_source=facebook&utm_medium=social&utm_campaign=post' },
 ]
 
 const PAGE_LABELS: Record<string, string> = {
@@ -33,7 +42,6 @@ const PAGE_LABELS: Record<string, string> = {
   '/birthdays': 'Birthdays',
   '/baby-showers': 'Baby Showers',
   '/corporate-events': 'Corporate Events',
-  '/q/*': 'Client Estimate / Payment Pages',
 }
 
 function pageLabel(path: string): string {
@@ -42,13 +50,18 @@ function pageLabel(path: string): string {
 }
 
 function channelLabel(channel: string): string {
-  return channel === 'Direct' || channel === 'Direct/Unknown' ? 'Direct / Unknown' : channel
+  return channel === 'Direct' || channel === 'Direct/Unknown' ? 'Unknown / Direct / DMs' : channel
+}
+
+function pathLabel(pages: string[]): string {
+  return pages.map(pageLabel).join(' → ')
 }
 
 export default function StudioAnalytics() {
   const [window_, setWindow] = useState<Detail['window']>('month')
   const [data, setData] = useState<Detail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState<string | null>(null)
 
   useEffect(() => {
     setLoading(true)
@@ -60,6 +73,16 @@ export default function StudioAnalytics() {
 
   const windowLabel = WINDOWS.find(w => w.id === window_)?.label ?? 'This Month'
   const topChannel = data?.leadsByChannel[0]
+
+  async function copyLink(label: string, url: string) {
+    try {
+      await navigator.clipboard.writeText(url)
+      setCopied(label)
+      setTimeout(() => setCopied(null), 1800)
+    } catch {
+      setCopied(null)
+    }
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '60px' }}>
@@ -114,6 +137,9 @@ export default function StudioAnalytics() {
             <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 12px' }}>
               Leads by Channel
             </p>
+            <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.3)', lineHeight: 1.5, margin: '0 0 12px' }}>
+              Best signal for where to spend attention. Customer answers and tagged links beat browser guesses.
+            </p>
             {data.leadsByChannel.length === 0 ? (
               <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', marginBottom: '28px' }}>Nothing yet.</p>
             ) : (
@@ -135,11 +161,11 @@ export default function StudioAnalytics() {
               </div>
             )}
 
-            {/* Top pages */}
+            {/* Public marketing pages */}
             {data.topPages.length > 0 && (
               <>
                 <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 12px' }}>
-                  What They&apos;re Looking At
+                  Marketing Pages Viewed
                 </p>
                 <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
                   {data.topPages.map((p, i) => (
@@ -152,6 +178,62 @@ export default function StudioAnalytics() {
               </>
             )}
 
+            {/* Pages that led to inquiries */}
+            {data.pagesThatLedToInquiries.length > 0 && (
+              <>
+                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 12px' }}>
+                  Pages That Led to Inquiries
+                </p>
+                <div style={{ background: 'rgba(91,191,191,0.05)', border: '1px solid rgba(91,191,191,0.14)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
+                  {data.pagesThatLedToInquiries.map((p, i) => (
+                    <div key={p.path} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
+                      <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.78)' }}>{pageLabel(p.path)}</span>
+                      <span style={{ fontSize: '0.82rem', color: '#5BBFBF', fontWeight: 700 }}>{p.count} lead{p.count === 1 ? '' : 's'}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* Lead paths */}
+            {data.topLeadPaths.length > 0 && (
+              <>
+                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 12px' }}>
+                  Top Lead Paths
+                </p>
+                <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
+                  {data.topLeadPaths.map((p, i) => (
+                    <div key={p.pages.join('>')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', padding: '12px 16px', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
+                      <span style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.68)', lineHeight: 1.45 }}>{pathLabel(p.pages)}</span>
+                      <span style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', fontWeight: 700, flexShrink: 0 }}>{p.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 12px' }}>
+              Tagged Links to Use
+            </p>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden', marginBottom: '28px' }}>
+              {TRACKED_LINKS.map((link, i) => (
+                <div key={link.label} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', fontWeight: 700, margin: '0 0 4px' }}>{link.label}</p>
+                    <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', lineHeight: 1.45, margin: 0, overflowWrap: 'anywhere' }}>{link.url}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copyLink(link.label, link.url)}
+                    aria-label={`Copy ${link.label}`}
+                    style={{ width: '34px', height: '34px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', background: copied === link.label ? 'rgba(91,191,191,0.14)' : 'rgba(255,255,255,0.05)', color: copied === link.label ? '#5BBFBF' : 'rgba(255,255,255,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
+                  >
+                    {copied === link.label ? <Check size={15} /> : <Copy size={15} />}
+                  </button>
+                </div>
+              ))}
+            </div>
+
             {/* Site visits — secondary, with an honest caveat */}
             {data.visitsByChannel.length > 0 && (
               <>
@@ -159,7 +241,7 @@ export default function StudioAnalytics() {
                   Site Visits by Channel
                 </p>
                 <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.3)', lineHeight: 1.5, margin: '0 0 12px' }}>
-                  Less reliable than the leads above — Instagram and Facebook&apos;s in-app browsers often hide where a visitor actually came from, so real Instagram/Facebook visits can quietly show up here as &quot;Direct.&quot; Treat Leads by Channel as the number that should drive decisions.
+                  Less reliable than the leads above — Instagram and Facebook&apos;s in-app browsers, text messages, DMs, bookmarks, and privacy settings can hide where a visitor actually came from. Use tagged Instagram/Facebook links whenever possible, and treat Leads by Channel as the number that should drive decisions.
                 </p>
                 <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '14px', overflow: 'hidden', marginBottom: '20px' }}>
                   {data.visitsByChannel.map((c, i) => (

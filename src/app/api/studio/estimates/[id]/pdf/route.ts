@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
 import { renderEstimatePdf, type EstimateRow } from '@/lib/estimatePdf'
+import { computeBalance } from '@/lib/estimateBalance'
+import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = serverClient()
@@ -14,7 +16,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 
   const buffer = await renderEstimatePdf(est as EstimateRow, payments ?? [])
-  const filename = `blue-luna-estimate-${(est.client_name as string).replace(/\s+/g, '-').toLowerCase()}.pdf`
+  const balance = computeBalance(est, payments ?? [])
+  const docLabel = getDocumentLabel(isAccepted(est, balance.totalPaid), balance).toLowerCase()
+  const filename = `blue-luna-${docLabel}-${(est.client_name as string).replace(/\s+/g, '-').toLowerCase()}.pdf`
 
   return new NextResponse(buffer as unknown as BodyInit, {
     headers: {

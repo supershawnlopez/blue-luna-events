@@ -43,21 +43,52 @@ Exit criteria for Phase 1:
 
 ## NOW (MAX 3)
 
-1. **Cancel the duplicate Google Business Profile Shawn started under his own email**
+1. **Verify Vercel has `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` for embedded invoice checkout**
+- Needed for the Ava/Mimecast fix to keep card checkout on the Blue Luna invoice page.
+- Local `.env.local` only has placeholder Stripe keys, and this repo was not linked to Vercel locally, so Codex could not verify production env names.
+- If missing in Vercel, the app falls back to hosted checkout and corporate-browser friction may remain.
+- Owner: Shawn / whoever has Vercel + Stripe access.
+
+2. **Apply Blue Luna Supabase migration for richer marketing attribution**
+- Migration file exists: `supabase/migrations/20260826010840_marketing_attribution_report_fields.sql`.
+- Needed for UTM storage and full lead-path reporting. Current code is backward-compatible before this migration, but the richest Traffic Report data requires it.
+- Codex could not apply it from this session because the available Supabase Management API token returned `403` for Blue Luna's project (`myumgaqlafbynsgnkdnj`).
+- Owner: Shawn / whoever has Blue Luna Supabase access.
+
+3. **Cancel the duplicate Google Business Profile Shawn started under his own email**
 - Real profile lives under Monica's Gmail (confirmed 2026-07-30) — the second one Shawn started under his own email is a true duplicate. Steps already given (business.google.com → that profile → Business Profile settings → Remove Business Profile). Not yet confirmed done.
 - Owner: Shawn.
 
-2. **Shawn to real-device test Phases 3-6** — Camera capture, Schedule/availability calendar, Leads/Contacts/Templates, and Social Export captions. See each phase's "Shawn Test" in `changelog.md`/`SESSION_HANDOFF.md`.
-- Owner: Shawn.
-
-3. **If Shawn wants real SMS sending activated: needs a Twilio account + A2P 10DLC carrier registration.** Code capability exists (`src/lib/sms.ts`) but is genuinely untested — no Twilio credentials exist yet. This is Shawn's action item, not something Claude can complete alone.
-- Owner: Shawn.
-
-*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: real live $1 Stripe payment test, "200+ Events Styled" stat verification, Instagram live-feed integration scoping (real Meta Graph API posting — separate, bigger project than the caption-assistance shipped today), Supabase auto-pause watch.)*
+*(Moved off NOW to make room, still real and tracked in BACKLOG/DECISIONS: Shawn real-device test Phases 3-6, real live $1 Stripe payment test, Twilio/A2P activation for SMS, "200+ Events Styled" stat verification, Instagram live-feed integration scoping (real Meta Graph API posting — separate, bigger project than the caption-assistance shipped today), Supabase auto-pause watch.)*
 
 **All 6 phases of the originally-scoped Studio Intelligence rebuild are now shipped** (Camera, Calendar/Booking, Leads/Contacts/Email/SMS, Social captions). What's left is real-device confirmation from Shawn, plus whatever he wants to scope next.
 
 ---
+
+## DONE (2026-08-26 — embedded invoice checkout for Ava/Mimecast payment issue)
+
+- ✅ **Invoice payments now open embedded checkout on the Blue Luna page.** The `/q/[token]` invoice page mounts the secure card checkout inline instead of immediately redirecting customers to a hosted checkout page.
+- ✅ **Customer-facing wording is less alarming.** The loading state now says "Opening secure Blue Luna checkout..." and 100%-due invoices show "Pay Now" instead of deposit wording.
+- ✅ **Corporate-browser fallback added.** Customers see Copy Invoice Link and Text Monica actions if a protected work browser blocks checkout.
+- ⚠️ **Production env still needs verification.** Embedded checkout requires `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` in Vercel; local env has placeholders and Codex could not inspect Vercel because the repo is not linked locally.
+- Verified: clean `npm run build`.
+
+## DONE (2026-08-26 — team-approved Traffic Report rebuild)
+
+## DONE (2026-08-26 — team-approved Traffic Report rebuild)
+
+- ✅ **Traffic Report is now marketing-first.** Private `/q/*` client estimate/payment pages are excluded from the marketing page report; Leads by Channel remains first; Site Visits by Channel stays secondary.
+- ✅ **Added growth-focused report sections.** Marketing Pages Viewed, Pages That Led to Inquiries, Top Lead Paths, and Tagged Links to Use now appear in Studio's Traffic Report.
+- ✅ **Added UTM/session attribution capture in code.** Visit tracking and Event Questionnaire lead submission now carry `utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`, landing path, and session ID where available.
+- ✅ **Added clean channel normalization.** Self-reported answers and UTMs collapse into practical buckets like Google, Instagram, Facebook, Referral, and Saw Her Work; Direct/Unknown is now **Unknown / Direct / DMs**.
+- ⚠️ **Migration still needs applying in Blue Luna Supabase.** `20260826010840_marketing_attribution_report_fields.sql` exists, but Codex did not have access to apply it live (`403` from Supabase Management API). Code is backward-compatible before migration.
+- Verified: clean `npm run build`.
+
+## DONE (2026-08-25 — payment alerts and receipt coverage)
+
+- ✅ **Verified Stripe/client-link payments already notify the right people.** Stripe webhook records the payment, sends the customer receipt email, CCs Monica, and sends a Studio PWA push alert linking back to the estimate.
+- ✅ **Closed the manual-payment gap.** Zelle/cash/check/other payments recorded from Studio now reuse the same customer receipt email and Monica PWA payment-alert path after the payment row is inserted. No schema change.
+- Verified: clean `npm run build`.
 
 ## DONE (2026-08-04, continued — "No Add-Ons" clear-all option)
 

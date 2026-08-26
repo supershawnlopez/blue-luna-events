@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
+import { channelForAttribution, channelForSource } from '@/lib/channel'
 
 export const dynamic = 'force-dynamic'
 
@@ -24,7 +25,7 @@ export async function GET() {
 
   const { data } = await db
     .from('leads')
-    .select('referrer_channel, referral_source, created_at')
+    .select('*')
     .gte('created_at', monthStart)
 
   const rows = data ?? []
@@ -34,7 +35,14 @@ export async function GET() {
     // guessed referrer every time — referrers get stripped constantly by
     // in-app browsers (Instagram/Facebook), which is exactly the traffic a
     // balloon-decor business is most likely to actually get.
-    const ch = r.referral_source || r.referrer_channel || 'Direct/Unknown'
+    const raw = r as {
+      referral_source?: string | null
+      referrer_channel?: string | null
+      referrer_raw?: string | null
+      utm_source?: string | null
+    }
+    const fallback = raw.referrer_channel || channelForAttribution(raw.utm_source, raw.referrer_raw)
+    const ch = channelForSource(raw.referral_source) || (fallback === 'Direct' ? 'Unknown / Direct / DMs' : fallback)
     counts[ch] = (counts[ch] ?? 0) + 1
   }
   const channels = Object.entries(counts)

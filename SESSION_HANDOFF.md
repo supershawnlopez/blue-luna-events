@@ -1,6 +1,65 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 16, 2026 — Claude Code*
+*Last updated: August 26, 2026 — Codex*
+
+## 2026-08-26: Urgent Ava / Mimecast payment friction fix
+
+Shawn shared Ava's screenshot from Mimecast Browser Isolation: the client invoice was opened inside `*.isolation.mimecastprotect.com`, then card payment tried to hand off to hosted checkout. That corporate browser-isolation layer can block or distrust the external checkout transition.
+
+**Shipped in code:** client estimate/invoice payments now use embedded card checkout by default. The customer taps the Blue Luna payment button and the secure card checkout mounts inside the Blue Luna invoice page instead of immediately sending them to a separate checkout browser page. The button now says **Opening secure Blue Luna checkout...** while loading.
+
+**Ava-specific behavior:** Monica's manually-set 100% deposit is honored by the existing estimate payment logic, so Ava's invoice can show/pay the full $690 amount without needing a new date-based payment rule.
+
+**Fallback added:** invoice pages now show "Company browser blocking the payment?" with **Copy Invoice Link** and **Text Monica** actions. This gives corporate clients an immediate path if their protected work browser still blocks secure card entry: copy the invoice link and open it in regular Chrome/Safari, or text Monica.
+
+**Deployment caveat:** embedded checkout requires `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` in Vercel. Local `.env.local` only has placeholder Stripe keys, and this repo is not linked to Vercel locally, so Codex could not verify production env names. The code keeps a hosted checkout fallback if the publishable key is missing, but Ava's no-redirect fix requires the real `pk_...` key in production.
+
+Verified locally with `npm run build` clean.
+
+---
+
+## 2026-08-26: Traffic Report rebuilt around the team's marketing-growth recommendation
+
+Shawn asked the team what they would fix if they owned Blue Luna and needed the Traffic Report to show what increases traffic/leads. Team call: make it a **marketing decision report**, not a raw traffic report.
+
+**Shipped in code:** Traffic Report now removes private client estimate/payment pages from the marketing page list, renames Direct/Unknown to **Unknown / Direct / DMs**, and adds the team's growth sections: **Marketing Pages Viewed**, **Pages That Led to Inquiries**, **Top Lead Paths**, and **Tagged Links to Use**. The report keeps **Leads by Channel** first, and keeps **Site Visits by Channel** secondary with a plain-English caveat.
+
+**Attribution upgraded:** public visit tracking now captures UTM fields (`utm_source`, `utm_medium`, `utm_campaign`, `utm_content`, `utm_term`), landing path, and session ID for the whole browser-tab session. Event Questionnaire submissions send the same attribution data into `submitLead()`. Channel logic now uses self-reported source first, then UTM source, then browser referrer.
+
+**Tagged links now shown inside Studio:** Instagram Bio, Instagram Story, Facebook Page, and Facebook Post URLs are shown with one-tap copy buttons so Monica/Shawn can use links that reliably identify Instagram/Facebook traffic instead of relying only on browser referrers.
+
+**Important deployment note:** created migration `supabase/migrations/20260826010840_marketing_attribution_report_fields.sql`, but could not apply it from this session because the available Supabase Management API token returns `403` for the Blue Luna project (`myumgaqlafbynsgnkdnj`). The app code is backward-compatible: current tracking/lead submission keeps working before the migration, but new UTM storage and the richest lead-path reporting require applying that migration in Blue Luna's Supabase project.
+
+**Shawn, test this after deploy + migration:**
+1. Studio → Home → tap "This Month" → confirm the report no longer shows "Client Estimate / Payment Pages."
+2. Confirm the report shows Leads by Channel, Marketing Pages Viewed, Pages That Led to Inquiries, Top Lead Paths, Tagged Links to Use, then Site Visits by Channel.
+3. Copy the Instagram Bio tagged link from Studio, open it in a fresh browser tab, then submit a test Event Questionnaire lead.
+4. Confirm the new lead reports as Instagram instead of Unknown / Direct / DMs.
+
+Verified locally with `npm run build` clean. Schema migration file created but not applied.
+
+---
+
+## 2026-08-25: Payment alerts verified; manual-payment receipt gap closed
+
+Shawn asked to verify what happens when a client makes a payment: Monica needs an alert, ideally both PWA push and email, and the customer needs a receipt email.
+
+**Verified already working for Stripe/client-link payments:** `checkout.session.completed` in `src/app/api/stripe/webhook/route.ts` records the payment, sends the customer receipt email via `sendReceiptEmail()`, CCs Monica at `monica@bluelunaevents.com`, and sends a Studio PWA push alert: "Payment Received" linking back to that estimate. This requires Monica to have enabled Studio notifications from the installed PWA.
+
+**Fixed the real gap:** Studio-recorded manual payments (Zelle/cash/check/other) only inserted an `estimate_payments` row before today. Now `POST /api/studio/estimates/[id]/payments` uses the same receipt email template and the same PWA push sender after the payment is recorded. That means if Monica records a Zelle/cash/check payment in Studio, the customer gets the receipt email and Monica's installed Studio devices get a payment alert too. The receipt email still CCs Monica, so she also gets an email copy.
+
+**Receipt branding/printability verified:** the customer email is a Blue Luna receipt, not a Stripe receipt — subject/body are Blue Luna/Monica branded and contain no Stripe wording. The email links back to the client's `/q/...` page, which becomes "Receipt" once paid in full and has a "Download Receipt as PDF" button. The PDF itself is generated by Blue Luna, printable/saveable by the browser, and now uses a matching filename (`blue-luna-receipt-client-name.pdf` when paid in full, `blue-luna-invoice...` when partially paid, `blue-luna-estimate...` before acceptance/payment).
+
+**Shawn, test this:**
+1. On Monica's phone, open the installed Blue Luna Studio PWA → Home → enable notifications if the card appears.
+2. In Studio, open a test estimate → Add Payment → enter a small manual test payment → confirm the customer email receives "Payment Receipt — ..." and Monica gets the CC.
+3. From the client link, confirm the button reads "Download Receipt as PDF" once paid in full and the saved file name starts with `blue-luna-receipt-`.
+4. Confirm the phone receives the Studio payment notification and tapping it opens that estimate.
+5. Still worth doing separately: the real live $1 Stripe test through the client `/q/...` link, because that verifies Stripe webhook delivery in production, not just the code path.
+
+Verified locally with `npm run build` clean. No schema change.
+
+---
 
 ## 2026-08-16: Estimate drafts — autosave, cross-device, Duplicate, delete/Trash
 

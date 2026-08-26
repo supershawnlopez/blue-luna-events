@@ -370,6 +370,18 @@ Why (Priya, real finding made while scoping this): `leads.referral_source`/`refe
 Why (Craig, on visit-counting accuracy): also found and fixed a smaller real bug while scoping this — `site_visits` channel/visit counts were being computed per pageview, so one visitor browsing 5 pages after landing from Instagram counted as 1 Instagram + 4 "Direct" (every page after the first has the site's own domain as `document.referrer`). Fixed by adding a `session_id` (generated client-side, `sessionStorage`-scoped) to `site_visits`, capturing the entry referrer once per browser tab session and reusing it for every pageview in that session, and deduping visit/channel counts by session in `/api/studio/analytics-detail`. Rows from before this shipped have no `session_id` and are each counted as their own visit, same as the old behavior — a known, acceptable seam in historical data, not a bug going forward.
 What shipped: `/studio/analytics` — a dedicated Traffic Report screen (This Month / Last 3 Months / All Time toggle), reached only by tapping the "This Month" card on Studio Home, not a 7th bottom-nav tab (Marcus — same pattern as Contacts opening from Leads). Leads by Channel table (ranked, trend arrow vs. previous period), a "What They're Looking At" top-pages list (which content is pulling people in — feeds directly into what to post/promote more of), Site Visits by Channel underneath with the reliability caveat. Google Search Console search-query data (what people actually type to find her) remains the one still-outstanding, higher-value addition — unchanged from the 2026-08-03 decision, still needs its own session.
 
+**[2026-08-26] — Traffic Report is a marketing decision report, not an operations traffic report.**
+Approved by: Shawn, following team recommendation (Steve/Phil/Priya/Craig/Angela)
+Why: Shawn looked at the live report and correctly questioned the value of "Client Estimate / Payment Pages" in a marketing context. Private estimate/payment page views are operational proof that a client opened a link, not useful evidence for deciding what marketing, public pages, posts, or ads are working. Steve's call: the report exists to help Monica get more qualified leads, so it should lead with source and public-page behavior that can change marketing action.
+Locked behavior:
+- `/q/*` private client estimate/payment pages are excluded from the marketing page list.
+- Leads by Channel remains the primary decision metric.
+- Site Visits by Channel stays secondary and explicitly caveated.
+- Direct/Unknown is labeled **Unknown / Direct / DMs** because it can include typed links, saved links, text messages, Instagram/Facebook DMs, privacy-blocked visits, and in-app browsers that hide referrers.
+- Attribution order: customer's self-reported source first, UTM source second, browser referrer third.
+- Instagram/Facebook should be tracked with first-party UTM links wherever Monica/Shawn control the link, because browser referrer alone is not reliable enough for those platforms.
+- The report should surface public marketing pages viewed, pages that led to inquiries, and top lead paths such as `Instagram -> Gallery -> Event Questionnaire -> Lead`.
+
 ---
 
 ## ESTIMATE DRAFTS: AUTOSAVE, DUPLICATE, DELETE/TRASH (2026-08-16)

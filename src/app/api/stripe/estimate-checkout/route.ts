@@ -6,11 +6,12 @@ import { computeBalance } from '@/lib/estimateBalance'
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 
 export async function POST(req: NextRequest) {
-  const { estimateId, mode } = await req.json()
+  const { estimateId, mode, uiMode } = await req.json()
 
   if (!estimateId || (mode !== 'deposit' && mode !== 'balance')) {
     return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
   }
+  const checkoutUiMode = uiMode === 'hosted' ? 'hosted' : 'embedded'
 
   const supabase = serverClient()
   const { data: est, error } = await supabase
@@ -34,8 +35,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Already paid in full' }, { status: 400 })
   }
 
-  const amount = mode === 'deposit' && balance.totalPaid === 0 ? balance.suggestedDeposit : balance.amountOwed
-  const label = mode === 'deposit' && balance.totalPaid === 0 ? 'Deposit' : 'Remaining Balance'
+  const isPartialDeposit = mode === 'deposit' && balance.totalPaid === 0 && balance.suggestedDeposit < balance.amountOwed
+  const amount = isPartialDeposit ? balance.suggestedDeposit : balance.amountOwed
+  const label = isPartialDeposit ? 'Deposit' : balance.totalPaid > 0 ? 'Remaining Balance' : 'Event Payment'
 
   if (!amount || amount <= 0) {
     return NextResponse.json({ error: 'Nothing due' }, { status: 400 })
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
   const baseUrl = `${protocol}://${host}`
   const returnUrl = `${baseUrl}/q/${est.share_token}`
 
-  const session = await stripe.checkout.sessions.create({
+  const sessionParams: Stripe.Checkout.SessionCreateParams = {
     mode: 'payment',
     payment_method_types: ['card'],
     customer_email: est.client_email,
@@ -62,9 +64,18 @@ export async function POST(req: NextRequest) {
       quantity: 1,
     }],
     metadata: { estimate_id: est.id, amount: String(amount) },
-    success_url: `${returnUrl}?paid=1`,
-    cancel_url: returnUrl,
-  })
+  }
 
-  return NextResponse.json({ url: session.url })
+  if (checkoutUiMode === 'embedded') {
+    sessionParams.ui_mode = 'embedded_page'
+    sessionParams.return_url = `${returnUrl}?paid=1`
+  } else {
+    sessionParams.ui_mode = 'hosted_page'
+    sessionParams.success_url = `${returnUrl}?paid=1`
+    sessionParams.cancel_url = returnUrl
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionParams)
+
+  return NextResponse.json({ clientSecret: session.client_secret, url: session.url })
 }

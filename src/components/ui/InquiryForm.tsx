@@ -12,6 +12,7 @@ const MUTED = '#6B7280'
 const BORDER = '#E5E7EB'
 const WARM = '#F9FAFB'
 const MAX_PHOTOS = 15
+const ATTRIBUTION_KEYS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as const
 
 type FormState = {
   name: string
@@ -61,6 +62,20 @@ function SectionLabel({ icon, children, optional }: { icon: React.ReactNode; chi
       {optional && <span style={{ color: '#9CA3AF', fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}> (optional)</span>}
     </label>
   )
+}
+
+function attributionPayload() {
+  if (typeof window === 'undefined') return {}
+  const payload: Record<string, string> = {}
+  for (const key of ATTRIBUTION_KEYS) {
+    const value = sessionStorage.getItem(`bl_${key}`)
+    if (value) payload[key] = value
+  }
+  const sessionId = sessionStorage.getItem('bl_session_id')
+  const landingPath = sessionStorage.getItem('bl_landing_path')
+  if (sessionId) payload.session_id = sessionId
+  if (landingPath) payload.landing_path = landingPath
+  return payload
 }
 
 export default function InquiryForm() {
@@ -176,6 +191,7 @@ export default function InquiryForm() {
       source: 'inquiry',
       referrer_raw: typeof document !== 'undefined' ? (document.referrer || undefined) : undefined,
       referral_source: form.heardAbout || undefined,
+      ...attributionPayload(),
     })
 
     setLoading(false)

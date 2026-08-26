@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
+import { sendReceiptEmail } from '@/lib/receiptEmail'
+import { sendPush } from '@/lib/push'
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+const METHOD_LABELS: Record<string, string> = {
+  zelle: 'Zelle',
+  cash: 'cash',
+  check: 'check',
+  other: 'other',
+}
+
+export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = serverClient()
   const { data, error } = await supabase
     .from('estimate_payments')
@@ -38,6 +47,32 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Match Stripe payments: once a payment is recorded, the client gets a
+  // receipt and Monica's installed Studio devices get a payment alert.
+  try {
+    const host = req.headers.get('host') ?? 'bluelunaevents.com'
+    const result = await sendReceiptEmail(params.id, amount, host)
+    if (!result.ok) console.error('Manual payment receipt email failed:', result.error)
+  } catch (err) {
+    console.error('Manual payment receipt email failed:', err)
+  }
+
+  try {
+    const { data: est } = await supabase
+      .from('estimates')
+      .select('client_name')
+      .eq('id', params.id)
+      .single()
+    await sendPush(
+      '💰 Payment Recorded',
+      `$${amount.toLocaleString()} ${METHOD_LABELS[method] ?? method} payment from ${est?.client_name ?? 'a client'}`,
+      `/studio/estimates/${params.id}`
+    )
+  } catch (err) {
+    console.error('Manual payment push notification failed:', err)
+  }
+
   return NextResponse.json(data)
 }
 
