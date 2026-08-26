@@ -211,7 +211,7 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
         {accepted && !hasPaidAnything && (
           <div style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.25)', borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <PartyPopper size={18} color="#5BBFBF" />
-            <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>{isFullPaymentDue ? `You're all set! Complete your ${fmt(paymentAmount)} payment below.` : 'You&apos;re all set! Ready to lock in your date? Pay your deposit below.'}</p>
+            <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>{isFullPaymentDue ? `You're all set! Complete your ${fmt(paymentAmount)} payment below.` : "You're all set! Ready to lock in your date? Pay your deposit below."}</p>
           </div>
         )}
 
