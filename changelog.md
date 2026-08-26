@@ -35,6 +35,26 @@
 
 ---
 
+## Session: August 26, 2026 — team-approved invoice activity tracking
+**AI:** Codex + team call
+**Worked on:** Shawn approved the team's plan to track client invoice opens/clicks/payment progress separately from marketing traffic, and asked whether Studio clicks could stay off the record.
+
+### Completed This Session
+- Added public invoice activity logging for `invoice_viewed`, `payment_button_clicked`, and `checkout_started`.
+- Kept Studio checks out of the client activity record by adding a Studio-only `?preview=studio` open URL and suppressing tracking when the invoice is opened from Studio/referrer.
+- Added shared estimate activity logging with backward-compatible fallback for the old table shape.
+- Logged `payment_received` for both Stripe-recorded payments and Studio/manual payments.
+- Routed estimate email and receipt email activity logging through the shared helper.
+- Reworked the Studio estimate detail panel from "Sent History" to a broader "Activity" timeline with readable labels and amount/recipient details.
+- Fixed the Estimates tab/back behavior so invoice detail links preserve `fromTab` and `/studio/estimates?tab=invoices` reloads on the Invoices tab.
+- Created migration `20260826162000_estimate_activity_tracking.sql` for `actor_type`, `metadata`, `dedupe_key`, and indexes on `estimate_activity`.
+- Verified: clean `npm run build` and `git diff --check`.
+
+### Follow-Up
+- Apply `20260826162000_estimate_activity_tracking.sql` in Blue Luna Supabase. The code works before migration, but dedupe/rich metadata requires the new columns.
+
+---
+
 ## Session: August 26, 2026 — embedded invoice checkout for corporate-browser payment issue
 **AI:** Codex
 **Worked on:** Shawn shared Ava's Mimecast Browser Isolation screenshot and asked for a quick fix so the customer can pay now without the checkout handoff looking suspicious or getting blocked.

@@ -48,13 +48,28 @@ type ActivityEntry = {
   id: string
   type: 'estimate_sent' | 'receipt_sent' | string
   recipient: string | null
+  actor_type?: string | null
+  metadata?: Record<string, unknown> | null
   created_at: string
 }
 
 function activityLabel(type: string): string {
   if (type === 'estimate_sent') return 'Estimate emailed'
   if (type === 'receipt_sent') return 'Receipt emailed'
+  if (type === 'invoice_viewed') return 'Invoice opened'
+  if (type === 'payment_button_clicked') return 'Payment button clicked'
+  if (type === 'checkout_started') return 'Checkout started'
+  if (type === 'payment_received') return 'Payment received'
   return type
+}
+
+function activityDetail(entry: ActivityEntry): string | null {
+  const details: string[] = []
+  const amount = entry.metadata?.amount ?? entry.metadata?.amount_paid
+  if (typeof amount === 'number' && amount > 0) details.push(fmt(amount))
+  if (entry.recipient) details.push(`to ${entry.recipient}`)
+  if (entry.actor_type && entry.actor_type !== 'system') details.push(entry.actor_type)
+  return details.length ? details.join(' · ') : null
 }
 
 const METHODS = [
@@ -454,13 +469,16 @@ function EstimateDetailInner() {
   const balance = computeBalance(est, payments)
   const accepted = isAccepted(est, balance.totalPaid)
   const docLabel = getDocumentLabel(accepted, balance)
+  const fromTab = searchParams.get('fromTab')
+  const backHref = fromTab === 'invoices' || fromTab === 'trash' ? `/studio/estimates?tab=${fromTab}` : '/studio/estimates'
   const shareUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/q/${est.share_token}`
+  const studioPreviewUrl = `${shareUrl}?preview=studio`
 
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '100px' }}>
       <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 20px) 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
         <div style={{ maxWidth: '560px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Link href="/studio/estimates" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
+          <Link href={backHref} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
             <ChevronLeft size={18} />
           </Link>
           <div>
@@ -493,7 +511,7 @@ function EstimateDetailInner() {
             </button>
           </div>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-            <a href={shareUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: '#5BBFBF', color: '#0D0F0F', borderRadius: '10px', padding: '10px', fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none' }}>
+            <a href={studioPreviewUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: '#5BBFBF', color: '#0D0F0F', borderRadius: '10px', padding: '10px', fontWeight: 700, fontSize: '0.82rem', textDecoration: 'none' }}>
               Open <ExternalLink size={13} />
             </a>
             <a href={`/api/studio/estimates/${est.id}/pdf`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', borderRadius: '10px', padding: '10px', fontWeight: 600, fontSize: '0.82rem', textDecoration: 'none' }}>
@@ -528,23 +546,26 @@ function EstimateDetailInner() {
           </button>
         </div>
 
-        {/* Sent history — proof of what's actually gone out, no need to ask or check email logs by hand */}
+        {/* Activity — operational proof of what clients saw and what payment events ran. */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px', marginBottom: '16px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Sent History</p>
+          <p style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Activity</p>
           {activity.length === 0 && (
-            <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Nothing sent yet.</p>
+            <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>No activity yet.</p>
           )}
-          {activity.map(a => (
-            <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div>
-                <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'white', margin: 0 }}>{activityLabel(a.type)}</p>
-                {a.recipient && <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>to {a.recipient}</p>}
+          {activity.map(a => {
+            const detail = activityDetail(a)
+            return (
+              <div key={a.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <div>
+                  <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'white', margin: 0 }}>{activityLabel(a.type)}</p>
+                  {detail && <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>{detail}</p>}
+                </div>
+                <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0, flexShrink: 0, marginLeft: '10px' }}>
+                  {new Date(a.created_at).toLocaleDateString()} {new Date(a.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                </p>
               </div>
-              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: 0, flexShrink: 0, marginLeft: '10px' }}>
-                {new Date(a.created_at).toLocaleDateString()} {new Date(a.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-              </p>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
         {/* Event details */}

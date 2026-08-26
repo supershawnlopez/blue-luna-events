@@ -58,7 +58,8 @@ Exit criteria for Phase 1:
 3. **Apply Blue Luna Supabase migrations**
 - Marketing attribution: `supabase/migrations/20260826010840_marketing_attribution_report_fields.sql`.
 - Stripe reliability: `supabase/migrations/20260826150500_stripe_payment_reliability.sql`.
-- Needed for UTM storage/full lead paths, Stripe duplicate protection, and webhook audit visibility.
+- Invoice activity tracking: `supabase/migrations/20260826162000_estimate_activity_tracking.sql`.
+- Needed for UTM storage/full lead paths, Stripe duplicate protection, webhook audit visibility, and deduped/richer invoice activity records.
 - Codex could not apply them from this session because the available Supabase Management API token returned `403` for Blue Luna and `.env.local` has no DB password.
 - Owner: Shawn / whoever has Blue Luna Supabase access.
 
@@ -69,6 +70,13 @@ Exit criteria for Phase 1:
 ---
 
 ## DONE (2026-08-26 — embedded invoice checkout for Ava/Mimecast payment issue)
+
+- ✅ **Team-approved operational invoice activity tracking shipped.** Public client invoice pages log invoice opened, payment button clicked, and checkout started; Stripe/manual payments log payment received; estimate and receipt emails log through the shared activity helper.
+- ✅ **Studio clicks stay off the client record.** Studio's Open button uses a `?preview=studio` URL and the public invoice page suppresses tracking for Studio preview/referrer traffic. Copied/emailed client links stay clean.
+- ✅ **Estimate detail Activity timeline expanded.** Studio now shows operational activity beyond just emails, with readable event labels and amount/recipient details where available.
+- ✅ **Invoices tab back behavior fixed.** `/studio/estimates?tab=invoices` is preserved, and opening an invoice from the Invoices tab returns back there instead of Pending.
+- ⚠️ **Activity migration still needs applying in Blue Luna Supabase.** `20260826162000_estimate_activity_tracking.sql` exists; code falls back before migration, but dedupe/rich metadata requires it.
+- Verified: clean `npm run build` and `git diff --check`.
 
 - ✅ **Invoice payments now open embedded checkout on the Blue Luna page.** The `/q/[token]` invoice page mounts the secure card checkout inline instead of immediately redirecting customers to a hosted checkout page.
 - ✅ **Customer-facing wording is less alarming.** The loading state now says "Opening secure Blue Luna checkout..." and 100%-due invoices show "Pay Now" instead of deposit wording.

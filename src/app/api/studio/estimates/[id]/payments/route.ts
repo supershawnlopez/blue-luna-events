@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
 import { sendReceiptEmail } from '@/lib/receiptEmail'
+import { logEstimateActivity } from '@/lib/estimateActivity'
 import { sendPush } from '@/lib/push'
 
 const METHOD_LABELS: Record<string, string> = {
@@ -50,6 +51,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   // Match Stripe payments: once a payment is recorded, the client gets a
   // receipt and Monica's installed Studio devices get a payment alert.
+  try {
+    await logEstimateActivity({
+      estimateId: params.id,
+      type: 'payment_received',
+      actorType: 'studio',
+      dedupeKey: `payment_received:${data.id}`,
+      metadata: { amount, payment_id: data.id, method, note: body.note || null },
+    })
+  } catch (err) {
+    console.error('Manual payment activity log failed:', err)
+  }
+
   try {
     const host = req.headers.get('host') ?? 'bluelunaevents.com'
     const result = await sendReceiptEmail(params.id, amount, host)

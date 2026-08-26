@@ -3,6 +3,7 @@ import { serverClient } from '@/lib/supabase'
 import { SITE_CONFIG } from '@/lib/config'
 import { computeBalance } from '@/lib/estimateBalance'
 import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
+import { logEstimateActivity } from '@/lib/estimateActivity'
 
 function fmt(n: number) {
   return `$${n.toLocaleString()}`
@@ -101,7 +102,13 @@ export async function sendReceiptEmail(estimateId: string, amountPaid: number, h
 
   // Non-blocking: a logging failure should never mask a successful send.
   try {
-    await supabase.from('estimate_activity').insert([{ estimate_id: estimateId, type: 'receipt_sent', recipient: est.client_email }])
+    await logEstimateActivity({
+      estimateId,
+      type: 'receipt_sent',
+      recipient: est.client_email,
+      actorType: 'system',
+      metadata: { amount_paid: amountPaid, document_label: docLabel },
+    })
   } catch (err) {
     console.error('Failed to log receipt activity:', err)
   }

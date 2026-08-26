@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 import { serverClient } from '@/lib/supabase'
 import { sendReceiptEmail } from '@/lib/receiptEmail'
+import { logEstimateActivity } from '@/lib/estimateActivity'
 import { sendPush } from '@/lib/push'
 
 type RecordOptions = {
@@ -99,6 +100,20 @@ export async function recordEstimatePaymentFromCheckoutSession(
 
   let receiptError: string | undefined
   let pushError: string | undefined
+
+  await logEstimateActivity({
+    estimateId,
+    type: 'payment_received',
+    actorType: 'stripe',
+    dedupeKey: `payment_received:${session.id}`,
+    metadata: {
+      amount,
+      payment_id: payment.id,
+      checkout_session_id: session.id,
+      payment_intent_id: paymentIntentId ?? null,
+      customer_email: session.customer_email ?? null,
+    },
+  })
 
   const receipt = await sendReceiptEmail(estimateId, amount, options.host)
   if (!receipt.ok) receiptError = receipt.error ?? 'Receipt email failed'

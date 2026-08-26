@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { loadStripe } from '@stripe/stripe-js'
 import { Check, Copy, CreditCard, Download, MessageCircle, Phone, PartyPopper } from 'lucide-react'
@@ -62,6 +62,10 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   const paymentAmount = isFullPaymentDue ? balance.amountOwed : balance.suggestedDeposit
   const paymentMode = isFullPaymentDue ? 'balance' : 'deposit'
   const paymentLabel = isFullPaymentDue ? `Pay Now — ${fmt(paymentAmount)}` : `Pay Deposit — ${fmt(paymentAmount)}`
+  const shouldSuppressTracking = useCallback(() => {
+    if (typeof window === 'undefined') return true
+    return new URLSearchParams(window.location.search).get('preview') === 'studio' || document.referrer.includes('/studio')
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -122,6 +126,15 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
     }
   }, [token])
 
+  useEffect(() => {
+    if (shouldSuppressTracking() || document.visibilityState !== 'visible') return
+    const today = new Date().toISOString().slice(0, 10)
+    const key = `invoice_viewed:${token}:${today}`
+    if (sessionStorage.getItem(key)) return
+    sessionStorage.setItem(key, '1')
+    logClientActivity('invoice_viewed')
+  }, [shouldSuppressTracking, token])
+
   async function handleAccept() {
     setAccepting(true)
     const res = await fetch(`/api/q/${token}/accept`, { method: 'POST' })
@@ -131,6 +144,10 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   }
 
   async function handlePay() {
+    if (!shouldSuppressTracking()) {
+      logClientActivity('payment_button_clicked', { amount: paymentAmount, ui_mode: stripePromise ? 'embedded' : 'hosted' })
+    }
+
     if (stripePromise) {
       setShowCheckout(true)
       return
@@ -143,7 +160,12 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
       body: JSON.stringify({ estimateId: est.id, mode: paymentMode, uiMode: 'hosted' }),
     })
     const data = await res.json()
-    if (data.url) window.location.assign(data.url)
+    if (data.url) {
+      if (!shouldSuppressTracking()) {
+        logClientActivity('checkout_started', { amount: paymentAmount, ui_mode: 'hosted', checkout_session_id: data.sessionId })
+      }
+      window.location.assign(data.url)
+    }
     else setPaying(false)
   }
 
@@ -344,6 +366,9 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
           <EmbeddedCheckout
             estimateId={est.id}
             mode={paymentMode}
+            amount={paymentAmount}
+            trackingSuppressed={shouldSuppressTracking()}
+            onCheckoutStarted={checkoutSessionId => logClientActivity('checkout_started', { amount: paymentAmount, ui_mode: 'embedded', checkout_session_id: checkoutSessionId })}
             onClose={() => setShowCheckout(false)}
           />
         )}
@@ -397,9 +422,39 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
       </div>
     </div>
   )
+
+  function logClientActivity(type: string, extra?: Record<string, unknown>) {
+    const sessionKey = 'blue_luna_invoice_session'
+    let sessionId = sessionStorage.getItem(sessionKey)
+    if (!sessionId) {
+      sessionId = crypto.randomUUID()
+      sessionStorage.setItem(sessionKey, sessionId)
+    }
+
+    fetch(`/api/q/${token}/activity`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, session_id: sessionId, ...extra }),
+      keepalive: true,
+    }).catch(() => {})
+  }
 }
 
-function EmbeddedCheckout({ estimateId, mode, onClose }: { estimateId: string; mode: 'deposit' | 'balance'; onClose: () => void }) {
+function EmbeddedCheckout({
+  estimateId,
+  mode,
+  amount,
+  trackingSuppressed,
+  onCheckoutStarted,
+  onClose,
+}: {
+  estimateId: string
+  mode: 'deposit' | 'balance'
+  amount: number
+  trackingSuppressed: boolean
+  onCheckoutStarted: (checkoutSessionId?: string) => void
+  onClose: () => void
+}) {
   const mountRef = useRef<HTMLDivElement | null>(null)
   const checkoutRef = useRef<{ destroy: () => void } | null>(null)
   const [error, setError] = useState('')
@@ -421,6 +476,7 @@ function EmbeddedCheckout({ estimateId, mode, onClose }: { estimateId: string; m
             })
             const data = await res.json()
             if (!res.ok || !data.clientSecret) throw new Error(data.error ?? 'Could not start payment.')
+            if (!trackingSuppressed) onCheckoutStarted(data.sessionId)
             return data.clientSecret
           },
         })
@@ -444,7 +500,7 @@ function EmbeddedCheckout({ estimateId, mode, onClose }: { estimateId: string; m
       checkoutRef.current?.destroy()
       checkoutRef.current = null
     }
-  }, [estimateId, mode])
+  }, [amount, estimateId, mode, onCheckoutStarted, trackingSuppressed])
 
   return (
     <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '16px', marginBottom: '16px' }}>

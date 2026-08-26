@@ -32,6 +32,7 @@ type Estimate = {
 }
 
 type DisplayStatus = 'in_progress' | 'draft' | 'sent' | 'partial_paid' | 'paid_full' | 'declined' | 'owing'
+type EstimateTab = 'pending' | 'invoices' | 'trash'
 
 const STATUS_STYLES: Record<DisplayStatus, { label: string; bg: string; color: string }> = {
   in_progress:  { label: 'In Progress', bg: 'rgba(201,169,110,0.15)', color: '#C9A96E' },
@@ -69,11 +70,17 @@ function shortDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+function tabFromUrl(): EstimateTab {
+  if (typeof window === 'undefined') return 'pending'
+  const tab = new URLSearchParams(window.location.search).get('tab')
+  return tab === 'invoices' || tab === 'trash' ? tab : 'pending'
+}
+
 export default function EstimatesList() {
   const [estimates, setEstimates] = useState<Estimate[]>([])
   const [trashed, setTrashed] = useState<Estimate[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'pending' | 'invoices' | 'trash'>('pending')
+  const [tab, setTabState] = useState<EstimateTab>(tabFromUrl)
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [restoringId, setRestoringId] = useState<string | null>(null)
@@ -90,6 +97,19 @@ export default function EstimatesList() {
       })
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    setTabState(tabFromUrl())
+  }, [])
+
+  function setTab(nextTab: EstimateTab) {
+    setTabState(nextTab)
+    if (typeof window === 'undefined') return
+    const url = new URL(window.location.href)
+    if (nextTab === 'pending') url.searchParams.delete('tab')
+    else url.searchParams.set('tab', nextTab)
+    window.history.replaceState(null, '', `${url.pathname}${url.search}`)
+  }
 
   // Every row gets a delete option (Shawn's ask, 2026-08-16) — gated behind
   // an inline confirm since a real client estimate isn't as disposable as an
@@ -261,7 +281,8 @@ export default function EstimatesList() {
               const inProgress = isInProgress(est)
               const s = STATUS_STYLES[displayStatus(est, accepted, balance)]
               const hasDiscount = balance.discountAmount > 0
-              const href = inProgress ? `/studio/estimates/new?draft=${est.id}` : `/studio/estimates/${est.id}`
+              const fromTab = encodeURIComponent(tab)
+              const href = inProgress ? `/studio/estimates/new?draft=${est.id}&fromTab=${fromTab}` : `/studio/estimates/${est.id}?fromTab=${fromTab}`
               const confirming = confirmingId === est.id
 
               if (confirming) {

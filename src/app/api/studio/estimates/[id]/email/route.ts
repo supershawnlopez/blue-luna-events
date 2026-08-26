@@ -5,6 +5,7 @@ import { SITE_CONFIG } from '@/lib/config'
 import { computeBalance } from '@/lib/estimateBalance'
 import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 import { renderEstimatePdf, type EstimateRow } from '@/lib/estimatePdf'
+import { logEstimateActivity } from '@/lib/estimateActivity'
 
 function firstName(name: string) {
   return name.trim().split(' ')[0]
@@ -113,7 +114,13 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   }
 
   try {
-    await supabase.from('estimate_activity').insert([{ estimate_id: params.id, type: 'estimate_sent', recipient }])
+    await logEstimateActivity({
+      estimateId: params.id,
+      type: 'estimate_sent',
+      recipient,
+      actorType: 'studio',
+      metadata: { document_label: docLabel, resend_id: data?.id ?? null },
+    })
   } catch (err) {
     console.error('Failed to log estimate-email activity:', err)
   }

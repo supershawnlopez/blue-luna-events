@@ -2,6 +2,22 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 26, 2026 — Codex*
 
+## 2026-08-26: Team-approved invoice activity tracking added
+
+Shawn approved the team plan to add operational tracking for invoice/payment confidence, separate from marketing analytics.
+
+**Shipped in code:** public invoice pages now log client-side operational activity for `invoice_viewed`, `payment_button_clicked`, and `checkout_started`. Stripe and Studio/manual payments now log `payment_received`, and estimate/receipt emails now continue logging through a shared activity helper. Studio's estimate detail page now shows these in a single **Activity** timeline instead of only "Sent History."
+
+**Studio clicks are intentionally excluded:** the Studio **Open** button now opens the client invoice with `?preview=studio`, and the public invoice page suppresses tracking when that flag is present or the referrer is Studio. The clean client link that Monica copies/emails stays unchanged.
+
+**Navigation fix shipped:** `/studio/estimates` now preserves `?tab=invoices` / `?tab=trash`, and invoice/detail links carry `fromTab`, so Back from an invoice returns Monica to the Invoices tab instead of dumping her into Pending Estimates.
+
+**Migration created but not applied:** `supabase/migrations/20260826162000_estimate_activity_tracking.sql` adds `actor_type`, `metadata`, `dedupe_key`, and indexes to `estimate_activity`. Code falls back to the old activity columns before the migration, but the migration is needed for deduped view tracking and richer activity details.
+
+Verified locally with `npm run build` clean.
+
+---
+
 ## 2026-08-26: Ava $690 invoice reconciled; Stripe payment reliability patched
 
 Shawn clarified the urgent invoice is the $690 Dunkin'/Alliance Marketing Partners invoice only. The successful Stripe payment was **$345** from corporate cardholder **Kristina Ribaudo** for Ava. The separate $800 invoice is intentionally not part of this immediate reconciliation.
