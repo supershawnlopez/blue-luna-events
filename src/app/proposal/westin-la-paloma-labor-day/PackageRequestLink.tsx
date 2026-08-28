@@ -15,10 +15,6 @@ export default function PackageRequestLink({ packageId, packageLabel }: PackageR
     window.dispatchEvent(new CustomEvent('westin-package-selected', { detail: { packageId } }))
   }
 
-  function continueToConfirm() {
-    document.getElementById('request-package')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
-
   useEffect(() => {
     function handlePackageSelected(event: Event) {
       setSelectedPackageId((event as CustomEvent<{ packageId?: string }>).detail?.packageId ?? '')
@@ -35,8 +31,7 @@ export default function PackageRequestLink({ packageId, packageLabel }: PackageR
       </button>
       {selected && (
         <div className="package-selected-note">
-          <p>{packageLabel} is selected. Continue reviewing, then confirm your direction at the bottom.</p>
-          <button type="button" onClick={continueToConfirm}>Continue to Confirm</button>
+          <p>{packageLabel} is selected. Continue through the proposal, review the design/weather notes, and confirm your direction when you reach the bottom.</p>
         </div>
       )}
     </div>

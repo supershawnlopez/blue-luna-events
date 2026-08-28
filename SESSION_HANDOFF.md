@@ -6,18 +6,18 @@
 
 Shawn approved the team's recommendation to stop auto-scrolling the client from the package cards to the bottom confirmation form. The concern was that auto-scroll made the client skip the unit pricing, design/weather notes, and support material.
 
-**Shipped in code:** top package-card buttons now select the package in place and show an inline confirmation: `B is selected. Continue reviewing, then confirm your direction at the bottom.` The client can keep reading naturally or tap **Continue to Confirm** when ready. The bottom selector still syncs to the selected package and the submit button still updates correctly.
+**Shipped in code:** top package-card buttons now select the package in place and show an inline confirmation: `B is selected. Continue through the proposal, review the design/weather notes, and confirm your direction when you reach the bottom.` There is no jump button from the package card. The bottom selector still syncs to the selected package and the submit button still updates correctly.
 
 **Design/weather notes:** upgraded the notes section from small fine-print styling into a more visible proposal section with a larger heading, teal-tinted background, and a framed white notes panel. The bottom checkbox now has the heading **Design + Weather Acknowledgement** plus a `Review design/weather notes` anchor link back to that section.
 
 **Client wording:** bottom guidance now reads `B is selected. Add any notes you would like Monica to review, then confirm your direction.`
 
-Verified locally with `npm run build` clean, `git diff --check` clean aside from normal Windows line-ending warnings, and Playwright mobile check confirming top package selection does not change scroll position (`deltaAfterSelect: 0`), **Continue to Confirm** scrolls to the bottom, guidance says B, submit says `Submit B Direction`, and no console errors were reported.
+Verified locally with `npm run build` clean, `git diff --check` clean aside from normal Windows line-ending warnings, and Playwright mobile check confirming top package selection does not change scroll position (`deltaAfterSelect: 0`), no **Continue to Confirm** button is shown, guidance says B, submit says `Submit B Direction`, and no console errors were reported.
 
 **Shawn, test this after deploy:**
 1. Open the Westin proposal on iPhone and tap Package B's **Request this package**.
 2. Confirm the page stays in the package area and shows the inline selected-package message.
-3. Tap **Continue to Confirm** and confirm it moves to the bottom.
+3. Continue scrolling naturally and confirm the design/weather notes are visible.
 4. Confirm the bottom acknowledgement has a heading and the design/weather notes link works.
 
 ---

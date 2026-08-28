@@ -22,7 +22,7 @@ Why: Venue and corporate buyers may need to share a proposal internally before M
 
 **Selection addendum, approved 2026-08-28:** Package-card actions should look and behave like quiet buttons, not text links. Selecting a package from the card must visibly mark the matching bottom selector and guide the client to confirm. In pricing comparisons, Standard Price is supporting context; Westin Partner Price is the visual lead.
 
-**Selection UX addendum, approved 2026-08-28:** Package-card selection must not force the client to the bottom of the page. Selecting a package should confirm the choice in place, let the client continue reviewing pricing and design/weather notes, and offer an explicit **Continue to Confirm** action for clients who are ready to jump down.
+**Selection UX addendum, approved 2026-08-28:** Package-card selection must not force or invite the client to jump to the bottom of the page. Selecting a package should confirm the choice in place and tell the client to continue reviewing the proposal, including pricing and design/weather notes, before final confirmation at the bottom.
 
 ---
 

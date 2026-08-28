@@ -19,7 +19,7 @@
 
 ### Completed This Session
 - Removed automatic scroll-to-bottom from top package-card selections.
-- Added inline selected-package confirmation on the chosen package card with a **Continue to Confirm** button.
+- Added inline selected-package confirmation on the chosen package card without a jump button, so the client keeps reviewing the proposal naturally.
 - Kept the bottom package selector synced through the existing selection event.
 - Strengthened the Design + Weather Notes section with a larger heading, teal-tinted section background, and framed notes panel.
 - Added a **Design + Weather Acknowledgement** heading to the bottom checkbox and a link back to the notes section.
@@ -28,7 +28,7 @@
 ### Verification
 - `npm run build` passed clean.
 - `git diff --check` passed aside from normal Windows line-ending warnings.
-- Playwright mobile check confirmed top package selection does not change scroll position, **Continue to Confirm** scrolls to the bottom, guidance and submit button match Package B, the notes anchor exists, and console errors are clean.
+- Playwright mobile check confirmed top package selection does not change scroll position, no jump button is shown, guidance and submit button match Package B, the notes anchor exists, and console errors are clean.
 
 ---
 

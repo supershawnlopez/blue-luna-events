@@ -365,19 +365,7 @@ export default function WestinProposalPage() {
           font-size: 0.84rem;
           font-weight: 700;
           line-height: 1.45;
-          margin: 0 0 12px;
-        }
-        .package-selected-note button {
-          border: 0;
-          background: transparent;
-          color: #0d0f0f;
-          cursor: pointer;
-          font: inherit;
-          font-size: 0.84rem;
-          font-weight: 900;
-          padding: 0;
-          text-decoration: underline;
-          text-underline-offset: 4px;
+          margin: 0;
         }
         .unit-grid {
           display: grid;

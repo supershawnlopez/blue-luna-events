@@ -72,10 +72,10 @@ Exit criteria for Phase 1:
 ## DONE (2026-08-28 — Westin proposal selection UX refinement)
 
 - ✅ **Removed forced package-card auto-scroll.** Top package requests now select the package in place and let the client continue reading.
-- ✅ **Added selected-package inline confirmation.** The selected card now shows guidance plus a voluntary **Continue to Confirm** action.
+- ✅ **Added selected-package inline confirmation.** The selected card now tells the client to keep reviewing the proposal and confirm when they naturally reach the bottom.
 - ✅ **Strengthened design/weather notes.** Notes are now a visible proposal section, not buried fine print.
 - ✅ **Improved acknowledgement block.** Bottom checkbox now has a clear heading and a link back to design/weather notes.
-- Verified: clean `npm run build`; Playwright mobile check confirmed no scroll change after selecting a top package, voluntary confirm jump works, B guidance and submit text match, and console errors are clean.
+- Verified: clean `npm run build`; Playwright mobile check confirmed no scroll change after selecting a top package, no jump button is shown, B guidance and submit text match, and console errors are clean.
 
 ---
 
