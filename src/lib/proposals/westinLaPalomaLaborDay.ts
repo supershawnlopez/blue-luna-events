@@ -7,16 +7,16 @@ export type ProposalPackage = {
   includes: { title: string; detail?: string }[]
 }
 
-export type ProposalAddOn = {
+export type ProposalRefinementItem = {
   id: string
-  item: string
   title: string
-  detail: string
+  description: string
+  unitLabel: string
   standard: string
   partner: string
-  standardPrice: number
-  partnerPrice: number
-  includedIn: string[]
+  standardUnitPrice: number
+  partnerUnitPrice: number
+  packageQuantities: Record<string, number>
 }
 
 export const westinProposal = {
@@ -81,81 +81,114 @@ export const westinProposal = {
     },
   ] satisfies ProposalPackage[],
   unitPricing: [
-    { item: '7-ft balloon column with topper/icon', standard: '$175 each', partner: '$125 each', addOnId: 'additional-column' },
-    { item: 'Premium centerpiece with dove', standard: '$45 each', partner: '$30 each', addOnId: 'additional-centerpiece' },
-    { item: 'Railing balloon cluster', standard: '$10 each', partner: '$10 each', addOnId: 'additional-railing-cluster' },
-    { item: 'Pool Staircase Pearl Treatment', standard: '$175', partner: '$125', addOnId: 'pool-staircase' },
-    { item: 'Check-in desk pearl strands', standard: '$75 per desk', partner: '$50 per desk', addOnId: 'check-in-pearls' },
-    { item: 'Coffee shop pearl + balloon cluster', standard: '$175', partner: '$125', addOnId: 'coffee-shop' },
+    { item: '7-ft balloon column with topper/icon', standard: '$175 each', partner: '$125 each' },
+    { item: 'Premium centerpiece with dove', standard: '$45 each', partner: '$30 each' },
+    { item: 'Railing balloon cluster', standard: '$10 each', partner: '$10 each' },
+    { item: 'Pool Staircase Pearl Treatment', standard: '$175', partner: '$125' },
+    { item: 'Check-in desk pearl strands', standard: '$75 per desk', partner: '$50 per desk' },
+    { item: 'Coffee shop pearl + balloon cluster', standard: '$175', partner: '$125' },
   ],
-  addOns: [
+  refinementItems: [
     {
-      id: 'additional-column',
-      item: '7-ft balloon column with topper/icon',
-      title: 'Additional Balloon Column',
-      detail: '1 additional 7-ft column with topper/icon',
+      id: 'main-entry-columns',
+      title: 'Main Entry Arrival Columns',
+      description: '7-ft columns with topper/icon',
+      unitLabel: 'columns',
       standard: '$175 each',
       partner: '$125 each',
-      standardPrice: 175,
-      partnerPrice: 125,
-      includedIn: [],
+      standardUnitPrice: 175,
+      partnerUnitPrice: 125,
+      packageQuantities: { 'package-a': 4, 'package-b': 4, 'package-b-plus': 4, 'package-c': 4 },
     },
     {
-      id: 'additional-centerpiece',
-      item: 'Premium centerpiece with dove',
-      title: 'Additional Premium Centerpiece',
-      detail: '1 additional centerpiece with dove',
+      id: 'flag-columns',
+      title: 'Flag Photo Wall Columns',
+      description: '7-ft columns framing the flag photo moment',
+      unitLabel: 'columns',
+      standard: '$175 each',
+      partner: '$125 each',
+      standardUnitPrice: 175,
+      partnerUnitPrice: 125,
+      packageQuantities: { 'package-a': 5, 'package-b': 5, 'package-b-plus': 5, 'package-c': 5 },
+    },
+    {
+      id: 'bar-centerpieces',
+      title: 'Bar Seating Centerpieces',
+      description: 'Premium centerpieces with dove',
+      unitLabel: 'centerpieces',
       standard: '$45 each',
       partner: '$30 each',
-      standardPrice: 45,
-      partnerPrice: 30,
-      includedIn: [],
-    },
-    {
-      id: 'additional-railing-cluster',
-      item: 'Railing balloon cluster',
-      title: 'Additional Railing Balloon Cluster',
-      detail: '1 additional railing cluster',
-      standard: '$10 each',
-      partner: '$10 each',
-      standardPrice: 10,
-      partnerPrice: 10,
-      includedIn: [],
+      standardUnitPrice: 45,
+      partnerUnitPrice: 30,
+      packageQuantities: { 'package-a': 8, 'package-b': 8, 'package-b-plus': 8, 'package-c': 8 },
     },
     {
       id: 'pool-staircase',
-      item: 'Pool Staircase Pearl Treatment',
       title: 'Pool Staircase Pearl Treatment',
-      detail: '1 staircase treatment',
-      standard: '$175',
-      partner: '$125',
-      standardPrice: 175,
-      partnerPrice: 125,
-      includedIn: ['package-b', 'package-b-plus', 'package-c'],
+      description: 'Pearl treatment for the pool-facing staircase',
+      unitLabel: 'treatments',
+      standard: '$175 each',
+      partner: '$125 each',
+      standardUnitPrice: 175,
+      partnerUnitPrice: 125,
+      packageQuantities: { 'package-a': 0, 'package-b': 1, 'package-b-plus': 1, 'package-c': 1 },
+    },
+    {
+      id: 'stair-railing-clusters',
+      title: 'Stair Railing Balloon Clusters',
+      description: 'Balloon clusters for stair railings',
+      unitLabel: 'clusters',
+      standard: '$10 each',
+      partner: '$10 each',
+      standardUnitPrice: 10,
+      partnerUnitPrice: 10,
+      packageQuantities: { 'package-a': 0, 'package-b': 14, 'package-b-plus': 14, 'package-c': 14 },
+    },
+    {
+      id: 'bar-level-arch-columns',
+      title: 'Bar-Level Arch Columns',
+      description: '7-ft columns for the bar-level architectural arches',
+      unitLabel: 'columns',
+      standard: '$175 each',
+      partner: '$125 each',
+      standardUnitPrice: 175,
+      partnerUnitPrice: 125,
+      packageQuantities: { 'package-a': 0, 'package-b': 0, 'package-b-plus': 4, 'package-c': 4 },
+    },
+    {
+      id: 'arch-clusters',
+      title: 'Architectural Arch Balloon Clusters',
+      description: 'Balloon clusters for the architectural wall arches',
+      unitLabel: 'clusters',
+      standard: '$10 each',
+      partner: '$10 each',
+      standardUnitPrice: 10,
+      partnerUnitPrice: 10,
+      packageQuantities: { 'package-a': 0, 'package-b': 0, 'package-b-plus': 0, 'package-c': 7 },
     },
     {
       id: 'check-in-pearls',
-      item: 'Check-in desk pearl strands',
       title: 'Check-In Desk Pearl Strands',
-      detail: '2 desk pearl strand zones',
-      standard: '$150',
-      partner: '$100',
-      standardPrice: 150,
-      partnerPrice: 100,
-      includedIn: ['package-c'],
+      description: 'Pearl strands for the hotel check-in desks',
+      unitLabel: 'desks',
+      standard: '$75 each',
+      partner: '$50 each',
+      standardUnitPrice: 75,
+      partnerUnitPrice: 50,
+      packageQuantities: { 'package-a': 0, 'package-b': 0, 'package-b-plus': 0, 'package-c': 2 },
     },
     {
       id: 'coffee-shop',
-      item: 'Coffee shop pearl + balloon cluster',
       title: 'Coffee Shop Pearl + Balloon Cluster',
-      detail: '1 coffee shop feature zone',
-      standard: '$175',
-      partner: '$125',
-      standardPrice: 175,
-      partnerPrice: 125,
-      includedIn: ['package-c'],
+      description: 'Pearl and balloon cluster treatment for the coffee shop',
+      unitLabel: 'zones',
+      standard: '$175 each',
+      partner: '$125 each',
+      standardUnitPrice: 175,
+      partnerUnitPrice: 125,
+      packageQuantities: { 'package-a': 0, 'package-b': 0, 'package-b-plus': 0, 'package-c': 1 },
     },
-  ] satisfies ProposalAddOn[],
+  ] satisfies ProposalRefinementItem[],
   notes: [
     'Outdoor or exposed balloon decor may be affected by heat, wind, sun, rain, humidity, venue conditions, and guest interaction.',
     'Final placement is subject to venue access, approved attachment methods, setup timing, and safe installation conditions.',

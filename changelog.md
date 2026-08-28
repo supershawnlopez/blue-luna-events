@@ -13,6 +13,25 @@
 
 ---
 
+## Session: August 28, 2026 — Westin package quantity refinement
+**AI:** Codex + approved team direction
+**Worked on:** Shawn and Monica approved the Steve/Jony-led recommendation to let the Westin buyer refine a selected package without cheapening the proposal or turning the package cards into a build-your-own cart.
+
+### Completed This Session
+- Replaced the Westin add-only enhancement model with package-prefilled quantity refinement.
+- Kept package cards and unit pricing presentation clean; quantity editing now happens only in the bottom confirmation panel.
+- Added **Refine This Direction** with plus/minus controls for package quantities and optional refinements.
+- Added live Adjusted Westin Partner Price recalculation based on the current quantities.
+- Updated the request payload to send adjusted quantities instead of add-on IDs.
+- Updated the public request API to recalculate trusted standard/partner totals and included items from the proposal config before saving/emailing.
+- Updated documentation so the old add-only direction is marked superseded.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright mobile QA at `390px` confirmed package selection remains in-page, quantity controls update the visible adjusted price, the submit path succeeds, and the payload includes adjusted quantities.
+
+---
+
 ## Session: August 28, 2026 — Westin optional enhancements
 **AI:** Codex + approved team direction
 **Worked on:** Shawn approved the Steve/Jony direction to help the Westin buyer use additional budget without cheapening the proposal or turning it into an editable cart.

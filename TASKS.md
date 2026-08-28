@@ -69,9 +69,20 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin package quantity refinement)
+
+- ✅ **Replaced add-only proposal upgrades with guided refinement.** The Westin proposal now keeps package cards clean and moves quantity editing to the bottom **Refine This Direction** panel.
+- ✅ **Added package-prefilled quantity controls.** A/B/B+/C prefill their included quantities; the client can adjust columns, centerpieces, staircase treatment, railing clusters, arch columns/clusters, check-in pearls, and coffee shop treatment before final confirmation.
+- ✅ **Recalculated adjusted partner price live.** The bottom summary updates the Adjusted Westin Partner Price immediately as quantities change.
+- ✅ **Server recalculates trusted pricing.** Public submit accepts quantities, then recomputes standard/partner totals and included items from Blue Luna's trusted proposal config before saving/emailing.
+- Verified: clean `npm run build`; Playwright mobile QA confirmed quantity changes update the visible total and submit payload.
+
+---
+
 ## DONE (2026-08-28 — Westin optional enhancements)
 
-- ✅ **Added luxury-safe upgrade controls.** Optional Enhancements rows/cards can add items to the selected package direction without turning the proposal into a full cart.
+- ✅ **Superseded by the quantity-refinement pass above.** Optional Enhancements rows/cards briefly allowed add-only upgrades, but Shawn reopened the direction so clients could adjust quantities quickly during a budget conversation.
+- ✅ **Added luxury-safe upgrade controls.** Optional Enhancements rows/cards could add items to the selected package direction without turning the proposal into a full cart.
 - ✅ **Kept package-first psychology.** Add-ons are add-only and state-aware: addable, added, or already included.
 - ✅ **Added adjusted confirmation summary.** Bottom form now shows selected direction, added options, and adjusted Westin Partner Price.
 - ✅ **Server recalculates adjusted pricing.** Public submit saves/emails trusted adjusted totals and included items for Studio estimate handoff.

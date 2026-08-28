@@ -24,7 +24,9 @@ Why: Venue and corporate buyers may need to share a proposal internally before M
 
 **Selection UX addendum, approved 2026-08-28:** Package-card selection must not force or invite the client to jump to the bottom of the page. Selecting a package should confirm the choice in place and tell the client to continue reviewing the proposal, including pricing and design/weather notes, before final confirmation at the bottom.
 
-**Optional enhancement addendum, approved 2026-08-28:** Proposal add-ons must feel like polished upgrades to a selected direction, not a cart or discount calculator. Use **Optional Enhancements** framing, quiet **Add to selected direction** controls, and a bottom adjusted-price summary. Do not add remove/reduce controls unless Shawn explicitly reopens this decision with Steve/Jony approval.
+**Optional enhancement addendum, approved 2026-08-28, superseded same day:** Proposal add-ons briefly used polished add-only controls. Shawn reopened the direction after reviewing the real sales need: the Westin buyer may need to quickly add or reduce quantities during a budget conversation.
+
+**Refinement addendum, approved 2026-08-28:** Proposal package cards stay clean, luxury-first, and non-transactional. Unit pricing is reference-only. Quantity editing belongs only in the bottom confirmation area under **Refine This Direction**, where the selected package pre-fills its quantities and the client can adjust counts before Monica prepares the official estimate. The UI must feel like guided proposal refinement, not a cart, bargain calculator, or self-serve checkout.
 
 ---
 

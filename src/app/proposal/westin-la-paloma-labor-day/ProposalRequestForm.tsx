@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Check, Download, Send } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
@@ -9,43 +9,48 @@ type Status = 'idle' | 'sending' | 'sent' | 'error'
 
 type WestinWindow = Window & {
   __westinSelectedPackageId?: string
-  __westinAddedAddOnIds?: string[]
+}
+
+type Quantities = Record<string, number>
+
+function quantitiesForPackage(packageId: string): Quantities {
+  return Object.fromEntries(
+    westinProposal.refinementItems.map(item => {
+      const packageQuantities = item.packageQuantities as Record<string, number>
+      return [item.id, packageQuantities[packageId] ?? 0]
+    })
+  )
 }
 
 export default function ProposalRequestForm() {
   const [selectedPackageId, setSelectedPackageId] = useState('package-a')
+  const [quantities, setQuantities] = useState<Quantities>(() => quantitiesForPackage('package-a'))
   const [notes, setNotes] = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
   const [selectionGuidance, setSelectionGuidance] = useState('')
   const [selectionPulse, setSelectionPulse] = useState(false)
-  const [addedAddOnIds, setAddedAddOnIds] = useState<string[]>([])
   const selectedPackage = westinProposal.packages.find(pkg => pkg.id === selectedPackageId) ?? westinProposal.packages[0]
-  const addedOptions = useMemo(
-    () => westinProposal.addOns.filter(addOn => addedAddOnIds.includes(addOn.id) && !addOn.includedIn.includes(selectedPackage.id)),
-    [addedAddOnIds, selectedPackage.id],
+  const adjustedPartnerPrice = westinProposal.refinementItems.reduce(
+    (total, item) => total + (quantities[item.id] ?? 0) * item.partnerUnitPrice,
+    0,
   )
-  const adjustedPartnerPrice = selectedPackage.partnerPrice + addedOptions.reduce((total, option) => total + option.partnerPrice, 0)
+  const adjustedItems = westinProposal.refinementItems.filter(item => (quantities[item.id] ?? 0) > 0)
 
   function choosePackage(packageId: string) {
     const pkg = westinProposal.packages.find(item => item.id === packageId)
     if (!pkg) return
-    const nextAddOnIds = addedAddOnIds.filter(id => {
-      const addOn = westinProposal.addOns.find(item => item.id === id)
-      return addOn && !addOn.includedIn.includes(packageId)
-    })
+    const nextQuantities = quantitiesForPackage(packageId)
     setSelectedPackageId(packageId)
-    setAddedAddOnIds(nextAddOnIds)
+    setQuantities(nextQuantities)
     setMessage('')
     setSelectionPulse(false)
     window.setTimeout(() => setSelectionPulse(true), 20)
-    setSelectionGuidance(`${pkg.name.split(' - ')[0]} is selected. Add any notes you would like Monica to review, then confirm your direction.`)
+    setSelectionGuidance(`${pkg.name.split(' - ')[0]} is selected. Continue reviewing the proposal, refine quantities if needed, add any notes for Monica, then confirm your direction.`)
     const westinWindow = window as WestinWindow
     westinWindow.__westinSelectedPackageId = packageId
-    westinWindow.__westinAddedAddOnIds = nextAddOnIds
     window.dispatchEvent(new CustomEvent('westin-package-state-changed', { detail: { packageId } }))
-    window.dispatchEvent(new CustomEvent('westin-addon-state-changed', { detail: { addedIds: nextAddOnIds } }))
   }
 
   useEffect(() => {
@@ -56,33 +61,13 @@ export default function ProposalRequestForm() {
 
     window.addEventListener('westin-package-selected', handlePackageSelected)
     return () => window.removeEventListener('westin-package-selected', handlePackageSelected)
-  }, [addedAddOnIds])
-
-  useEffect(() => {
-    function handleAddOnToggle(event: Event) {
-      const addOnId = (event as CustomEvent<{ addOnId?: string }>).detail?.addOnId
-      const addOn = westinProposal.addOns.find(item => item.id === addOnId)
-      if (!addOn || addOn.includedIn.includes(selectedPackageId)) return
-
-      setAddedAddOnIds(current => {
-        return current.includes(addOn.id)
-          ? current.filter(id => id !== addOn.id)
-          : [...current, addOn.id]
-      })
-      setMessage('')
-    }
-
-    window.addEventListener('westin-addon-toggle', handleAddOnToggle)
-    return () => window.removeEventListener('westin-addon-toggle', handleAddOnToggle)
-  }, [selectedPackageId])
+  }, [])
 
   useEffect(() => {
     const westinWindow = window as WestinWindow
     westinWindow.__westinSelectedPackageId = selectedPackageId
-    westinWindow.__westinAddedAddOnIds = addedAddOnIds
     window.dispatchEvent(new CustomEvent('westin-package-state-changed', { detail: { packageId: selectedPackageId } }))
-    window.dispatchEvent(new CustomEvent('westin-addon-state-changed', { detail: { addedIds: addedAddOnIds } }))
-  }, [selectedPackageId, addedAddOnIds])
+  }, [selectedPackageId])
 
   useEffect(() => {
     if (!selectionPulse) return
@@ -105,7 +90,10 @@ export default function ProposalRequestForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageId: selectedPackage.id,
-        addOnIds: addedOptions.map(option => option.id),
+        adjustments: westinProposal.refinementItems.map(item => ({
+          id: item.id,
+          quantity: quantities[item.id] ?? 0,
+        })),
         notes,
         acceptedDisclosures: termsAccepted,
       }),
@@ -120,6 +108,12 @@ export default function ProposalRequestForm() {
 
     setStatus('sent')
     setMessage('Package direction received. Blue Luna Events will confirm final details before preparing the official estimate and payment link.')
+  }
+
+  function updateQuantity(itemId: string, nextQuantity: number) {
+    const quantity = Math.max(0, Math.min(40, Math.round(nextQuantity)))
+    setQuantities(current => ({ ...current, [itemId]: quantity }))
+    setMessage('')
   }
 
   return (
@@ -168,8 +162,8 @@ export default function ProposalRequestForm() {
             </p>
           )}
 
-          <div className="selected-summary" aria-live="polite">
-            <div className="selected-summary-top">
+          <div className="selected-summary">
+            <div className="selected-summary-top" aria-live="polite">
               <div>
                 <span>Selected Direction</span>
                 <strong>{selectedPackage.name}</strong>
@@ -179,20 +173,55 @@ export default function ProposalRequestForm() {
                 <strong>{formatMoney(adjustedPartnerPrice)}</strong>
               </div>
             </div>
-            <div className="selected-summary-addons">
-              <span>Added Options</span>
-              {addedOptions.length > 0 ? (
-                <ul>
-                  {addedOptions.map(option => (
-                    <li key={option.id}>
-                      <span>{option.title}</span>
-                      <strong>+{formatMoney(option.partnerPrice)}</strong>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>No additional options selected.</p>
-              )}
+            <div className="refine-panel">
+              <div className="refine-heading">
+                <span>Refine This Direction</span>
+                <p>Package quantities are pre-filled below. Adjust only what you would like Blue Luna to review before Monica prepares the official estimate.</p>
+              </div>
+              <div className="refine-list">
+                {westinProposal.refinementItems.map(item => {
+                  const quantity = quantities[item.id] ?? 0
+                  const packageQuantities = item.packageQuantities as Record<string, number>
+                  const includedQuantity = packageQuantities[selectedPackage.id] ?? 0
+                  return (
+                    <div className={quantity > 0 ? 'refine-row active' : 'refine-row'} key={item.id}>
+                      <div>
+                        <strong>{item.title}</strong>
+                        <p>
+                          {includedQuantity > 0 ? `${includedQuantity} included in ${selectedPackage.name.split(' - ')[0]}` : 'Optional refinement'} · {item.partner}
+                        </p>
+                      </div>
+                      <div className="quantity-control" aria-label={`${item.title} quantity`}>
+                        <button type="button" onClick={() => updateQuantity(item.id, quantity - 1)} aria-label={`Decrease ${item.title}`}>
+                          -
+                        </button>
+                        <span>{quantity}</span>
+                        <button type="button" onClick={() => updateQuantity(item.id, quantity + 1)} aria-label={`Increase ${item.title}`}>
+                          +
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="selected-summary-items">
+                <span>Current Direction</span>
+                {adjustedItems.length > 0 ? (
+                  <ul>
+                    {adjustedItems.map(item => {
+                      const quantity = quantities[item.id] ?? 0
+                      return (
+                        <li key={item.id}>
+                          <span>{quantity} {item.unitLabel} · {item.title}</span>
+                          <strong>{formatMoney(quantity * item.partnerUnitPrice)}</strong>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                ) : (
+                  <p>No decor items selected.</p>
+                )}
+              </div>
             </div>
           </div>
 
@@ -386,7 +415,7 @@ export default function ProposalRequestForm() {
           padding: 16px;
         }
         .selected-summary-top span,
-        .selected-summary-addons > span {
+        .selected-summary-items > span {
           color: #5bbfbf;
           display: block;
           font-size: 0.66rem;
@@ -406,36 +435,117 @@ export default function ProposalRequestForm() {
         .selected-summary-top div:last-child strong {
           font-size: 1.28rem;
         }
-        .selected-summary-addons {
+        .refine-panel {
           background: #fff;
+          border-top: 1px solid #e5e7eb;
+        }
+        .refine-heading {
+          border-bottom: 1px solid #eef0f2;
           padding: 16px;
         }
-        .selected-summary-addons > span {
+        .refine-heading span {
+          color: #0d0f0f;
+          display: block;
+          font-size: 0.9rem;
+          font-weight: 900;
+          margin-bottom: 5px;
+        }
+        .refine-heading p {
+          color: #667085;
+          font-size: 0.82rem;
+          line-height: 1.45;
+          margin: 0;
+        }
+        .refine-list {
+          display: grid;
+        }
+        .refine-row {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 14px;
+          align-items: center;
+          border-bottom: 1px solid #eef0f2;
+          padding: 14px 16px;
+        }
+        .refine-row.active {
+          background: #fbfefe;
+        }
+        .refine-row strong {
+          display: block;
+          font-size: 0.9rem;
+          line-height: 1.25;
+          margin-bottom: 4px;
+        }
+        .refine-row p {
+          color: #667085;
+          font-size: 0.78rem;
+          font-weight: 700;
+          line-height: 1.35;
+          margin: 0;
+        }
+        .quantity-control {
+          align-items: center;
+          background: #f9fafb;
+          border: 1px solid #e5e7eb;
+          border-radius: 999px;
+          display: grid;
+          grid-template-columns: 34px 36px 34px;
+          min-height: 38px;
+          overflow: hidden;
+        }
+        .quantity-control button {
+          align-items: center;
+          background: transparent;
+          border: 0;
+          color: #0d0f0f;
+          cursor: pointer;
+          display: flex;
+          font: inherit;
+          font-size: 1.08rem;
+          font-weight: 900;
+          height: 38px;
+          justify-content: center;
+          padding: 0;
+        }
+        .quantity-control button:hover {
+          background: rgba(91,191,191,0.15);
+        }
+        .quantity-control span {
+          color: #0d0f0f;
+          font-size: 0.92rem;
+          font-weight: 900;
+          text-align: center;
+        }
+        .selected-summary-items {
+          background: #f9fafb;
+          padding: 16px;
+        }
+        .selected-summary-items > span {
           color: #8a94a3;
         }
-        .selected-summary-addons p,
-        .selected-summary-addons ul {
+        .selected-summary-items p,
+        .selected-summary-items ul {
           color: #667085;
           font-size: 0.84rem;
           line-height: 1.5;
           margin: 0;
         }
-        .selected-summary-addons ul {
+        .selected-summary-items ul {
           display: grid;
           gap: 8px;
           list-style: none;
           padding: 0;
         }
-        .selected-summary-addons li {
+        .selected-summary-items li {
           display: flex;
           gap: 14px;
           justify-content: space-between;
         }
-        .selected-summary-addons li span {
+        .selected-summary-items li span {
           color: #374151;
           font-weight: 700;
         }
-        .selected-summary-addons li strong {
+        .selected-summary-items li strong {
           color: #0d0f0f;
           white-space: nowrap;
         }
@@ -539,6 +649,12 @@ export default function ProposalRequestForm() {
           }
           .selected-summary-top {
             grid-template-columns: 1fr;
+          }
+          .refine-row {
+            grid-template-columns: 1fr;
+          }
+          .quantity-control {
+            width: max-content;
           }
           .bottom-pdf {
             align-items: flex-start;

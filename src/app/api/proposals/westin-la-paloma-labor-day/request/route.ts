@@ -18,21 +18,38 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Please select a valid package.' }, { status: 400 })
   }
 
-  const addOnIds = Array.isArray(body.addOnIds)
-    ? (body.addOnIds as unknown[]).filter((id): id is string => typeof id === 'string')
-    : []
-  const addedOptions = westinProposal.addOns.filter(addOn =>
-    addOnIds.includes(addOn.id) && !addOn.includedIn.includes(selectedPackage.id)
+  const requestedAdjustments: unknown[] = Array.isArray(body.adjustments) ? body.adjustments : []
+  const quantityById = new Map<string, number>()
+  for (const item of westinProposal.refinementItems) {
+    const match = requestedAdjustments.find(adjustment =>
+      adjustment &&
+      typeof adjustment === 'object' &&
+      (adjustment as { id?: unknown }).id === item.id
+    ) as { quantity?: unknown } | undefined
+    const packageQuantities = item.packageQuantities as Record<string, number>
+    const fallbackQuantity = packageQuantities[selectedPackage.id] ?? 0
+    const rawQuantity = typeof match?.quantity === 'number' ? match.quantity : fallbackQuantity
+    quantityById.set(item.id, Math.max(0, Math.min(40, Math.round(rawQuantity))))
+  }
+
+  const adjustedItems = westinProposal.refinementItems.map(item => ({
+    ...item,
+    quantity: quantityById.get(item.id) ?? 0,
+  }))
+  const adjustedStandardPrice = adjustedItems.reduce(
+    (total, item) => total + item.quantity * item.standardUnitPrice,
+    0,
   )
-  const adjustedStandardPrice = selectedPackage.standardPrice + addedOptions.reduce((total, option) => total + option.standardPrice, 0)
-  const adjustedPartnerPrice = selectedPackage.partnerPrice + addedOptions.reduce((total, option) => total + option.partnerPrice, 0)
-  const includedItems = [
-    ...selectedPackage.includes,
-    ...addedOptions.map(option => ({
-      title: `Added Option: ${option.title}`,
-      detail: `${option.detail} at ${option.partner}`,
-    })),
-  ]
+  const adjustedPartnerPrice = adjustedItems.reduce(
+    (total, item) => total + item.quantity * item.partnerUnitPrice,
+    0,
+  )
+  const includedItems = adjustedItems
+    .filter(item => item.quantity > 0)
+    .map(item => ({
+      title: `${item.quantity} ${item.unitLabel} - ${item.title}`,
+      detail: `${item.description} at ${item.partner}`,
+    }))
 
   const notes = clean(body.notes)
   const acceptedDisclosures = body.acceptedDisclosures === true
@@ -76,7 +93,7 @@ export async function POST(req: Request) {
       from: 'Blue Luna Events <notifications@bluelunaevents.com>',
       to: [SITE_CONFIG.email],
       subject: `Westin proposal package selected — ${selectedPackage.name}`,
-      html: buildSelectionEmail(selectedPackage, addedOptions, adjustedStandardPrice, adjustedPartnerPrice, notes, selection?.id ?? null),
+      html: buildSelectionEmail(selectedPackage, includedItems, adjustedStandardPrice, adjustedPartnerPrice, notes, selection?.id ?? null),
     })
 
     if (error) {
@@ -97,19 +114,13 @@ function clean(value: unknown) {
 
 function buildSelectionEmail(
   selectedPackage: (typeof westinProposal.packages)[number],
-  addedOptions: (typeof westinProposal.addOns)[number][],
+  includedItems: { title: string; detail?: string }[],
   adjustedStandardPrice: number,
   adjustedPartnerPrice: number,
   notes: string,
   selectionId: string | null,
 ) {
-  const includes = [
-    ...selectedPackage.includes,
-    ...addedOptions.map(option => ({
-      title: `Added Option: ${option.title}`,
-      detail: `${option.detail} at ${option.partner}`,
-    })),
-  ]
+  const includes = includedItems
     .map(item => `<li><strong>${escapeHtml(item.title)}</strong>${item.detail ? `<br><span>${escapeHtml(item.detail)}</span>` : ''}</li>`)
     .join('')
   const studioUrl = selectionId

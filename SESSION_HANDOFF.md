@@ -2,6 +2,25 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin proposal quantity refinement approved
+
+Shawn approved the team recommendation to stop treating the Westin proposal as add-only enhancements and instead let the buyer refine the selected package at the bottom confirmation step. Steve/Jony direction: package cards stay clean and luxury-first; unit pricing stays reference-only; quantity editing happens only in the final review panel so the proposal feels guided, not like a cart.
+
+**Shipped in code:** the bottom confirmation now shows **Selected Direction**, **Adjusted Westin Partner Price**, and a **Refine This Direction** panel. Package quantities prefill from A/B/B+/C, and the client can use plus/minus controls to adjust columns, centerpieces, staircase treatment, railing clusters, arch columns/clusters, check-in pearls, and coffee shop treatment before submitting.
+
+**Server safety:** the public request API now accepts adjusted quantities but recalculates Standard Price, Westin Partner Price, and included items from the trusted proposal config before saving/emailing. Browser-sent prices are not trusted.
+
+Verified with `npm run build` clean. Playwright mobile QA on `390px` confirmed package selection stays in-page, quantity changes update the visible adjusted price, and submit sends the adjusted quantities. Example verified: Package B refined to 6 main-entry columns, 5 flag columns, 4 bar centerpieces, 1 pool staircase treatment, and 14 railing clusters recalculates to `$1,760` and submits those quantities.
+
+**Shawn, test this after deploy:**
+1. Open the Westin proposal on iPhone.
+2. Select Package B or B+ from the package cards and confirm the page does not jump to the bottom.
+3. Scroll to the bottom and adjust a few quantities in **Refine This Direction**.
+4. Confirm the Adjusted Westin Partner Price changes immediately.
+5. Submit a test direction and confirm Monica sees the refined quantities in Studio/ email after the Supabase proposal table migration is applied.
+
+---
+
 ## 2026-08-28: Westin proposal optional enhancements added
 
 Shawn and Monica approved the team direction to keep the proposal luxury-first and package-first, while still allowing the Westin buyer to add a few polished upgrades if he has extra budget to use before September 1.
