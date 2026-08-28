@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin optional enhancements)
+
+- ✅ **Added luxury-safe upgrade controls.** Optional Enhancements rows/cards can add items to the selected package direction without turning the proposal into a full cart.
+- ✅ **Kept package-first psychology.** Add-ons are add-only and state-aware: addable, added, or already included.
+- ✅ **Added adjusted confirmation summary.** Bottom form now shows selected direction, added options, and adjusted Westin Partner Price.
+- ✅ **Server recalculates adjusted pricing.** Public submit saves/emails trusted adjusted totals and included items for Studio estimate handoff.
+- Verified: clean `npm run build`; Playwright mobile checks confirmed Package B + Coffee Shop totals `$1,755`, submits `addOnIds: ["coffee-shop"]`, Package C marks Coffee Shop as included, and console/page errors are clean.
+
+---
+
 ## DONE (2026-08-28 — Westin proposal selection UX refinement)
 
 - ✅ **Removed forced package-card auto-scroll.** Top package requests now select the package in place and let the client continue reading.

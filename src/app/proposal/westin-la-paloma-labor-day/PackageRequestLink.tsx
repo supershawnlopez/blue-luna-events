@@ -7,11 +7,17 @@ type PackageRequestLinkProps = {
   packageLabel: string
 }
 
+type WestinWindow = Window & {
+  __westinSelectedPackageId?: string
+}
+
 export default function PackageRequestLink({ packageId, packageLabel }: PackageRequestLinkProps) {
   const [selectedPackageId, setSelectedPackageId] = useState('')
   const selected = selectedPackageId === packageId
 
   function requestPackage() {
+    const westinWindow = window as WestinWindow
+    westinWindow.__westinSelectedPackageId = packageId
     window.dispatchEvent(new CustomEvent('westin-package-selected', { detail: { packageId } }))
   }
 
@@ -21,7 +27,11 @@ export default function PackageRequestLink({ packageId, packageLabel }: PackageR
     }
 
     window.addEventListener('westin-package-selected', handlePackageSelected)
-    return () => window.removeEventListener('westin-package-selected', handlePackageSelected)
+    window.addEventListener('westin-package-state-changed', handlePackageSelected)
+    return () => {
+      window.removeEventListener('westin-package-selected', handlePackageSelected)
+      window.removeEventListener('westin-package-state-changed', handlePackageSelected)
+    }
   }, [])
 
   return (

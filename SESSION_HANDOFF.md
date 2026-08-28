@@ -2,6 +2,27 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin proposal optional enhancements added
+
+Shawn and Monica approved the team direction to keep the proposal luxury-first and package-first, while still allowing the Westin buyer to add a few polished upgrades if he has extra budget to use before September 1.
+
+**Shipped in code:** the old a la carte framing is now **Optional Enhancements**. Each pricing row/card has a quiet state-aware control: addable items say **Add to selected direction**, added items say **Added to direction**, and items already included in the selected package say **Included in selected direction**. This is add-only; there are no remove/reduce controls, so the proposal does not become a bargain-shopping calculator.
+
+**Bottom confirmation:** the confirmation form now shows **Selected Direction**, **Added Options**, and **Adjusted Westin Partner Price**. Example verified locally: Package B plus Coffee Shop Pearl + Balloon Cluster shows `$1,755` and submits `addOnIds: ["coffee-shop"]`.
+
+**Server safety:** the request API recalculates added options and adjusted prices from the trusted proposal config before saving/emailing. It saves the adjusted package contents and price so Monica's Studio estimate handoff uses the upgraded direction.
+
+Verified with `npm run build` clean and `git diff --check` clean aside from normal Windows line-ending warnings. Playwright mobile checks confirmed Package C marks Coffee Shop as already included, Package B can add Coffee Shop, the adjusted total updates, the submit payload includes the add-on ID, and there are no console/page errors.
+
+**Shawn, test this after deploy:**
+1. Select Package B.
+2. Scroll to Optional Enhancements and add Coffee Shop Pearl + Balloon Cluster.
+3. Confirm the button changes to **Added to direction**.
+4. Scroll to the bottom and confirm the adjusted Westin Partner Price is `$1,755`.
+5. Select Package C and confirm Coffee Shop reads **Included in selected direction** instead of addable.
+
+---
+
 ## 2026-08-28: Westin proposal package selection UX refined
 
 Shawn approved the team's recommendation to stop auto-scrolling the client from the package cards to the bottom confirmation form. The concern was that auto-scroll made the client skip the unit pricing, design/weather notes, and support material.

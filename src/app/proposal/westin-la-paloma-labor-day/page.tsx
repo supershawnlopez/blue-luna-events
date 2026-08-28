@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Download } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
+import AddOnButton from './AddOnButton'
 import PackageRequestLink from './PackageRequestLink'
 import ProposalRequestForm from './ProposalRequestForm'
 
@@ -80,10 +81,10 @@ export default function WestinProposalPage() {
       <section className="unit-section">
         <div className="proposal-shell unit-grid">
           <div>
-            <p className="proposal-kicker">A La Carte Customization</p>
-            <h2>Unit pricing keeps the package easy to adjust.</h2>
+            <p className="proposal-kicker">Optional Enhancements</p>
+            <h2>Add polish where the budget allows.</h2>
             <p className="muted-copy">
-              Items can be added or removed by zone while keeping the same Standard Price and Westin Partner Price structure.
+              Optional upgrades can be added to the selected direction while keeping the same Standard Price and Westin Partner Price structure.
             </p>
           </div>
           <div className="unit-table" aria-label="A la carte unit pricing">
@@ -91,12 +92,14 @@ export default function WestinProposalPage() {
               <span>Item</span>
               <span>Standard Price</span>
               <span>Westin Partner Price</span>
+              <span>Selected Direction</span>
             </div>
             {westinProposal.unitPricing.map(item => (
               <div key={item.item} className="unit-row">
                 <span>{item.item}</span>
                 <span>{item.standard}</span>
                 <span>{item.partner}</span>
+                <span>{item.addOnId && <AddOnButton addOnId={item.addOnId} />}</span>
               </div>
             ))}
           </div>
@@ -112,6 +115,7 @@ export default function WestinProposalPage() {
                   <span>Westin Partner Price</span>
                   <strong>{item.partner}</strong>
                 </div>
+                {item.addOnId && <AddOnButton addOnId={item.addOnId} />}
               </article>
             ))}
           </div>
@@ -385,7 +389,7 @@ export default function WestinProposalPage() {
         .unit-head,
         .unit-row {
           display: grid;
-          grid-template-columns: minmax(0, 1.6fr) minmax(120px, 0.7fr) minmax(150px, 0.8fr);
+          grid-template-columns: minmax(0, 1.45fr) minmax(110px, 0.62fr) minmax(145px, 0.72fr) minmax(170px, 0.76fr);
           gap: 18px;
           align-items: center;
           padding: 16px 20px;
@@ -401,7 +405,8 @@ export default function WestinProposalPage() {
           font-size: 0.92rem;
         }
         .unit-row span:nth-child(2),
-        .unit-row span:nth-child(3) {
+        .unit-row span:nth-child(3),
+        .unit-row span:nth-child(4) {
           text-align: right;
         }
         .unit-row span:nth-child(2) {
@@ -411,6 +416,33 @@ export default function WestinProposalPage() {
         .unit-row span:nth-child(3) {
           color: #0d0f0f;
           font-weight: 900;
+        }
+        .addon-chip {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid rgba(91,191,191,0.42);
+          border-radius: 999px;
+          background: #f4fbfb;
+          color: #2c7c7c;
+          cursor: pointer;
+          font: inherit;
+          font-size: 0.74rem;
+          font-weight: 900;
+          line-height: 1.2;
+          min-height: 36px;
+          padding: 9px 12px;
+          text-align: center;
+        }
+        .addon-chip.added,
+        .addon-chip.included {
+          background: #0d0f0f;
+          border-color: #0d0f0f;
+          color: white;
+        }
+        .addon-chip.included {
+          cursor: default;
+          opacity: 0.78;
         }
         .notes-section {
           background: #f4fbfb;
@@ -539,6 +571,10 @@ export default function WestinProposalPage() {
             color: #0d0f0f;
             font-size: 1.02rem;
             font-weight: 900;
+          }
+          .unit-card > .addon-chip {
+            margin-top: 14px;
+            width: 100%;
           }
         }
       `,

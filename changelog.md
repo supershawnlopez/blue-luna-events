@@ -13,6 +13,26 @@
 
 ---
 
+## Session: August 28, 2026 — Westin optional enhancements
+**AI:** Codex + approved team direction
+**Worked on:** Shawn approved the Steve/Jony direction to help the Westin buyer use additional budget without cheapening the proposal or turning it into an editable cart.
+
+### Completed This Session
+- Reframed the a la carte section as **Optional Enhancements**.
+- Added quiet **Add to selected direction** controls to optional pricing rows/cards.
+- Added state-aware add-on labels: **Added to direction** and **Included in selected direction**.
+- Added bottom selected-direction summary with added options and adjusted Westin Partner Price.
+- Updated proposal submit payload to include add-on IDs.
+- Updated the request API to recalculate adjusted standard/partner pricing from trusted proposal data before saving/emailing.
+- Extended submitted included items so Studio estimate prefill includes added options in the package description.
+
+### Verification
+- `npm run build` passed clean.
+- `git diff --check` passed aside from normal Windows line-ending warnings.
+- Playwright mobile checks confirmed Package B + Coffee Shop shows `$1,755`, submits `addOnIds: ["coffee-shop"]`, Package C marks Coffee Shop as already included, and console/page errors are clean.
+
+---
+
 ## Session: August 28, 2026 — Westin proposal selection UX refinement
 **AI:** Codex + approved team direction
 **Worked on:** Shawn approved the recommendation to stop forcing clients from the package cards to the bottom form, make the selected-package state visible in place, and make design/weather notes more prominent before final confirmation.

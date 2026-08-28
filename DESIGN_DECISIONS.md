@@ -24,6 +24,8 @@ Why: Venue and corporate buyers may need to share a proposal internally before M
 
 **Selection UX addendum, approved 2026-08-28:** Package-card selection must not force or invite the client to jump to the bottom of the page. Selecting a package should confirm the choice in place and tell the client to continue reviewing the proposal, including pricing and design/weather notes, before final confirmation at the bottom.
 
+**Optional enhancement addendum, approved 2026-08-28:** Proposal add-ons must feel like polished upgrades to a selected direction, not a cart or discount calculator. Use **Optional Enhancements** framing, quiet **Add to selected direction** controls, and a bottom adjusted-price summary. Do not add remove/reduce controls unless Shawn explicitly reopens this decision with Steve/Jony approval.
+
 ---
 
 ## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)

@@ -18,6 +18,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Please select a valid package.' }, { status: 400 })
   }
 
+  const addOnIds = Array.isArray(body.addOnIds)
+    ? (body.addOnIds as unknown[]).filter((id): id is string => typeof id === 'string')
+    : []
+  const addedOptions = westinProposal.addOns.filter(addOn =>
+    addOnIds.includes(addOn.id) && !addOn.includedIn.includes(selectedPackage.id)
+  )
+  const adjustedStandardPrice = selectedPackage.standardPrice + addedOptions.reduce((total, option) => total + option.standardPrice, 0)
+  const adjustedPartnerPrice = selectedPackage.partnerPrice + addedOptions.reduce((total, option) => total + option.partnerPrice, 0)
+  const includedItems = [
+    ...selectedPackage.includes,
+    ...addedOptions.map(option => ({
+      title: `Added Option: ${option.title}`,
+      detail: `${option.detail} at ${option.partner}`,
+    })),
+  ]
+
   const notes = clean(body.notes)
   const acceptedDisclosures = body.acceptedDisclosures === true
 
@@ -37,9 +53,9 @@ export async function POST(req: Request) {
       event_date: westinProposal.eventDate,
       package_id: selectedPackage.id,
       package_name: selectedPackage.name,
-      standard_price: selectedPackage.standardPrice,
-      partner_price: selectedPackage.partnerPrice,
-      included_items: selectedPackage.includes,
+      standard_price: adjustedStandardPrice,
+      partner_price: adjustedPartnerPrice,
+      included_items: includedItems,
       notes: notes || null,
       accepted_disclosures: acceptedDisclosures,
     }])
@@ -47,7 +63,7 @@ export async function POST(req: Request) {
     .single()
 
   if (selectionError || !selection) {
-    if (selectionError?.code !== '42P01') {
+    if (selectionError?.code !== '42P01' && selectionError?.code !== 'PGRST205') {
       console.error('Westin proposal selection save failed:', selectionError)
       return NextResponse.json({ error: 'Could not save package selection.' }, { status: 500 })
     }
@@ -60,7 +76,7 @@ export async function POST(req: Request) {
       from: 'Blue Luna Events <notifications@bluelunaevents.com>',
       to: [SITE_CONFIG.email],
       subject: `Westin proposal package selected — ${selectedPackage.name}`,
-      html: buildSelectionEmail(selectedPackage, notes, selection?.id ?? null),
+      html: buildSelectionEmail(selectedPackage, addedOptions, adjustedStandardPrice, adjustedPartnerPrice, notes, selection?.id ?? null),
     })
 
     if (error) {
@@ -81,10 +97,19 @@ function clean(value: unknown) {
 
 function buildSelectionEmail(
   selectedPackage: (typeof westinProposal.packages)[number],
+  addedOptions: (typeof westinProposal.addOns)[number][],
+  adjustedStandardPrice: number,
+  adjustedPartnerPrice: number,
   notes: string,
   selectionId: string | null,
 ) {
-  const includes = selectedPackage.includes
+  const includes = [
+    ...selectedPackage.includes,
+    ...addedOptions.map(option => ({
+      title: `Added Option: ${option.title}`,
+      detail: `${option.detail} at ${option.partner}`,
+    })),
+  ]
     .map(item => `<li><strong>${escapeHtml(item.title)}</strong>${item.detail ? `<br><span>${escapeHtml(item.detail)}</span>` : ''}</li>`)
     .join('')
   const studioUrl = selectionId
@@ -109,8 +134,8 @@ function buildSelectionEmail(
               <p style="margin:0 0 8px;color:#667085;font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:800">Selected Package</p>
               <h2 style="margin:0 0 8px;font-size:22px;line-height:1.2">${escapeHtml(selectedPackage.name)}</h2>
               <p style="margin:0 0 22px;color:#667085;font-size:15px;line-height:1.6">
-                Westin Partner Price: <strong style="color:#0d0f0f">$${selectedPackage.partnerPrice.toLocaleString()}</strong><br>
-                Standard Price: $${selectedPackage.standardPrice.toLocaleString()}
+                Adjusted Westin Partner Price: <strong style="color:#0d0f0f">$${adjustedPartnerPrice.toLocaleString()}</strong><br>
+                Adjusted Standard Price: $${adjustedStandardPrice.toLocaleString()}
               </p>
               <ul style="margin:0 0 22px;padding-left:20px;color:#374151;font-size:14px;line-height:1.6">${includes}</ul>
               ${notes ? `<div style="border-left:3px solid #5bbfbf;background:#f9fafb;padding:14px 16px;border-radius:0 10px 10px 0"><p style="margin:0;color:#374151;font-size:14px;line-height:1.6">${escapeHtml(notes)}</p></div>` : ''}

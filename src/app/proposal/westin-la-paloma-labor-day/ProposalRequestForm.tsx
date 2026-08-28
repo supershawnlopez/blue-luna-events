@@ -1,11 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Check, Download, Send } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
+
+type WestinWindow = Window & {
+  __westinSelectedPackageId?: string
+  __westinAddedAddOnIds?: string[]
+}
 
 export default function ProposalRequestForm() {
   const [selectedPackageId, setSelectedPackageId] = useState('package-a')
@@ -15,16 +20,32 @@ export default function ProposalRequestForm() {
   const [message, setMessage] = useState('')
   const [selectionGuidance, setSelectionGuidance] = useState('')
   const [selectionPulse, setSelectionPulse] = useState(false)
+  const [addedAddOnIds, setAddedAddOnIds] = useState<string[]>([])
   const selectedPackage = westinProposal.packages.find(pkg => pkg.id === selectedPackageId) ?? westinProposal.packages[0]
+  const addedOptions = useMemo(
+    () => westinProposal.addOns.filter(addOn => addedAddOnIds.includes(addOn.id) && !addOn.includedIn.includes(selectedPackage.id)),
+    [addedAddOnIds, selectedPackage.id],
+  )
+  const adjustedPartnerPrice = selectedPackage.partnerPrice + addedOptions.reduce((total, option) => total + option.partnerPrice, 0)
 
   function choosePackage(packageId: string) {
     const pkg = westinProposal.packages.find(item => item.id === packageId)
     if (!pkg) return
+    const nextAddOnIds = addedAddOnIds.filter(id => {
+      const addOn = westinProposal.addOns.find(item => item.id === id)
+      return addOn && !addOn.includedIn.includes(packageId)
+    })
     setSelectedPackageId(packageId)
+    setAddedAddOnIds(nextAddOnIds)
     setMessage('')
     setSelectionPulse(false)
     window.setTimeout(() => setSelectionPulse(true), 20)
     setSelectionGuidance(`${pkg.name.split(' - ')[0]} is selected. Add any notes you would like Monica to review, then confirm your direction.`)
+    const westinWindow = window as WestinWindow
+    westinWindow.__westinSelectedPackageId = packageId
+    westinWindow.__westinAddedAddOnIds = nextAddOnIds
+    window.dispatchEvent(new CustomEvent('westin-package-state-changed', { detail: { packageId } }))
+    window.dispatchEvent(new CustomEvent('westin-addon-state-changed', { detail: { addedIds: nextAddOnIds } }))
   }
 
   useEffect(() => {
@@ -35,7 +56,33 @@ export default function ProposalRequestForm() {
 
     window.addEventListener('westin-package-selected', handlePackageSelected)
     return () => window.removeEventListener('westin-package-selected', handlePackageSelected)
-  }, [])
+  }, [addedAddOnIds])
+
+  useEffect(() => {
+    function handleAddOnToggle(event: Event) {
+      const addOnId = (event as CustomEvent<{ addOnId?: string }>).detail?.addOnId
+      const addOn = westinProposal.addOns.find(item => item.id === addOnId)
+      if (!addOn || addOn.includedIn.includes(selectedPackageId)) return
+
+      setAddedAddOnIds(current => {
+        return current.includes(addOn.id)
+          ? current.filter(id => id !== addOn.id)
+          : [...current, addOn.id]
+      })
+      setMessage('')
+    }
+
+    window.addEventListener('westin-addon-toggle', handleAddOnToggle)
+    return () => window.removeEventListener('westin-addon-toggle', handleAddOnToggle)
+  }, [selectedPackageId])
+
+  useEffect(() => {
+    const westinWindow = window as WestinWindow
+    westinWindow.__westinSelectedPackageId = selectedPackageId
+    westinWindow.__westinAddedAddOnIds = addedAddOnIds
+    window.dispatchEvent(new CustomEvent('westin-package-state-changed', { detail: { packageId: selectedPackageId } }))
+    window.dispatchEvent(new CustomEvent('westin-addon-state-changed', { detail: { addedIds: addedAddOnIds } }))
+  }, [selectedPackageId, addedAddOnIds])
 
   useEffect(() => {
     if (!selectionPulse) return
@@ -58,6 +105,7 @@ export default function ProposalRequestForm() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         packageId: selectedPackage.id,
+        addOnIds: addedOptions.map(option => option.id),
         notes,
         acceptedDisclosures: termsAccepted,
       }),
@@ -120,6 +168,34 @@ export default function ProposalRequestForm() {
             </p>
           )}
 
+          <div className="selected-summary" aria-live="polite">
+            <div className="selected-summary-top">
+              <div>
+                <span>Selected Direction</span>
+                <strong>{selectedPackage.name}</strong>
+              </div>
+              <div>
+                <span>Adjusted Westin Partner Price</span>
+                <strong>{formatMoney(adjustedPartnerPrice)}</strong>
+              </div>
+            </div>
+            <div className="selected-summary-addons">
+              <span>Added Options</span>
+              {addedOptions.length > 0 ? (
+                <ul>
+                  {addedOptions.map(option => (
+                    <li key={option.id}>
+                      <span>{option.title}</span>
+                      <strong>+{formatMoney(option.partnerPrice)}</strong>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>No additional options selected.</p>
+              )}
+            </div>
+          </div>
+
           <div className="field-grid">
             <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes or changes for Blue Luna to review" rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }} />
           </div>
@@ -143,7 +219,7 @@ export default function ProposalRequestForm() {
             ].filter(Boolean).join(' ')}
           >
             {status === 'sent' ? <Check size={17} /> : <Send size={17} />}
-            {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Package Direction Sent' : `Submit ${selectedPackage.name.split(' - ')[0]} Direction`}
+            {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Package Direction Sent' : `Submit ${selectedPackage.name.split(' - ')[0]} Direction for Review`}
           </button>
 
           {message && (
@@ -293,6 +369,76 @@ export default function ProposalRequestForm() {
           margin: -2px 0 16px;
           padding: 12px 14px;
         }
+        .selected-summary {
+          border: 1px solid #e5e7eb;
+          border-radius: 16px;
+          margin: 0 0 18px;
+          overflow: hidden;
+        }
+        .selected-summary-top {
+          background: #0d0f0f;
+          color: white;
+          display: grid;
+          gap: 1px;
+          grid-template-columns: 1fr 0.82fr;
+        }
+        .selected-summary-top div {
+          padding: 16px;
+        }
+        .selected-summary-top span,
+        .selected-summary-addons > span {
+          color: #5bbfbf;
+          display: block;
+          font-size: 0.66rem;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          margin-bottom: 6px;
+          text-transform: uppercase;
+        }
+        .selected-summary-top strong {
+          display: block;
+          font-size: 0.98rem;
+          line-height: 1.25;
+        }
+        .selected-summary-top div:last-child {
+          background: rgba(91,191,191,0.12);
+        }
+        .selected-summary-top div:last-child strong {
+          font-size: 1.28rem;
+        }
+        .selected-summary-addons {
+          background: #fff;
+          padding: 16px;
+        }
+        .selected-summary-addons > span {
+          color: #8a94a3;
+        }
+        .selected-summary-addons p,
+        .selected-summary-addons ul {
+          color: #667085;
+          font-size: 0.84rem;
+          line-height: 1.5;
+          margin: 0;
+        }
+        .selected-summary-addons ul {
+          display: grid;
+          gap: 8px;
+          list-style: none;
+          padding: 0;
+        }
+        .selected-summary-addons li {
+          display: flex;
+          gap: 14px;
+          justify-content: space-between;
+        }
+        .selected-summary-addons li span {
+          color: #374151;
+          font-weight: 700;
+        }
+        .selected-summary-addons li strong {
+          color: #0d0f0f;
+          white-space: nowrap;
+        }
         .request-submit {
           width: 100%;
           border: 0;
@@ -390,6 +536,9 @@ export default function ProposalRequestForm() {
           }
           .package-option-main {
             align-items: flex-start;
+          }
+          .selected-summary-top {
+            grid-template-columns: 1fr;
           }
           .bottom-pdf {
             align-items: flex-start;
