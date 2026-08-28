@@ -149,9 +149,10 @@ export default function WestinProposalPage() {
         }
         .proposal-client-mark {
           display: flex;
+          flex-direction: column;
           justify-content: flex-end;
-          align-items: center;
-          gap: 16px;
+          align-items: flex-end;
+          gap: 8px;
           margin-bottom: clamp(46px, 7vw, 82px);
         }
         .proposal-client-mark span {
@@ -163,7 +164,7 @@ export default function WestinProposalPage() {
         }
         .proposal-client-mark img {
           width: auto;
-          height: 72px;
+          height: 108px;
           object-fit: contain;
         }
         .proposal-kicker {
@@ -392,14 +393,17 @@ export default function WestinProposalPage() {
           .notes-section {
             padding: 42px 0;
           }
+          .proposal-hero {
+            padding-top: 78px;
+          }
           .proposal-client-mark {
             justify-content: flex-start;
-            align-items: flex-end;
-            gap: 12px;
-            margin-bottom: 34px;
+            align-items: flex-start;
+            gap: 6px;
+            margin-bottom: 38px;
           }
           .proposal-client-mark img {
-            height: 54px;
+            height: 92px;
           }
           .hero-grid,
           .section-heading,

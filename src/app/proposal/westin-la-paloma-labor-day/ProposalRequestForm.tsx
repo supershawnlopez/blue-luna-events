@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { CSSProperties } from 'react'
-import { Check, Send } from 'lucide-react'
+import { Check, Download, Send } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
@@ -103,7 +103,7 @@ export default function ProposalRequestForm() {
             className={status === 'sent' ? 'request-submit sent' : 'request-submit'}
           >
             {status === 'sent' ? <Check size={17} /> : <Send size={17} />}
-            {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Package Requested' : `Request ${selectedPackage.name.split(' - ')[0]}`}
+            {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Package Direction Sent' : `Submit ${selectedPackage.name.split(' - ')[0]} Direction`}
           </button>
 
           {message && (
@@ -111,6 +111,14 @@ export default function ProposalRequestForm() {
               {message}
             </p>
           )}
+
+          <div className="bottom-pdf">
+            <p>Need to share the proposal internally?</p>
+            <a href={westinProposal.pdfPath} download>
+              <Download size={16} />
+              Download PDF
+            </a>
+          </div>
         </form>
       </div>
       <style
@@ -226,19 +234,27 @@ export default function ProposalRequestForm() {
           background: #5bbfbf;
           color: #0d0f0f;
           font-weight: 900;
-          font-size: 0.95rem;
-          padding: 15px 18px;
+          font-size: 1rem;
+          padding: 17px 20px;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 8px;
+          box-shadow: 0 14px 32px rgba(91,191,191,0.34);
+          transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+        }
+        .request-submit:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 18px 40px rgba(91,191,191,0.42);
         }
         .request-submit:disabled {
           cursor: default;
+          transform: none;
         }
         .request-submit.sent {
           background: #22c55e;
+          box-shadow: 0 14px 32px rgba(34,197,94,0.26);
         }
         .form-message {
           color: #374151;
@@ -248,6 +264,31 @@ export default function ProposalRequestForm() {
         }
         .form-message.error {
           color: #b91c1c;
+        }
+        .bottom-pdf {
+          border-top: 1px solid #e5e7eb;
+          margin-top: 22px;
+          padding-top: 18px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+        }
+        .bottom-pdf p {
+          color: #667085;
+          font-size: 0.82rem;
+          line-height: 1.4;
+          margin: 0;
+        }
+        .bottom-pdf a {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          color: #0d0f0f;
+          font-size: 0.88rem;
+          font-weight: 900;
+          text-decoration: none;
+          white-space: nowrap;
         }
         @media (max-width: 820px) {
           .proposal-request {
@@ -266,6 +307,16 @@ export default function ProposalRequestForm() {
           }
           .package-option-main {
             align-items: flex-start;
+          }
+          .bottom-pdf {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+          .bottom-pdf a {
+            background: #f4fbfb;
+            border: 1px solid rgba(91,191,191,0.45);
+            border-radius: 999px;
+            padding: 11px 14px;
           }
         }
       `,

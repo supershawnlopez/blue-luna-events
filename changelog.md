@@ -13,6 +13,23 @@
 
 ---
 
+## Session: August 28, 2026 — Westin proposal final mobile CTA polish
+**AI:** Codex
+**Worked on:** Shawn reviewed the live iPhone view and caught final presentation issues at the top and bottom of the proposal page.
+
+### Completed This Session
+- Added more mobile top breathing room so the sticky site navigation no longer covers the "Prepared for / The Westin" client mark.
+- Stacked "Prepared for" above the Westin logo and increased the Westin logo size so the co-branding feels intentional.
+- Added a second Download PDF action at the bottom inside the package-direction card for internal sharing.
+- Strengthened the final submit button styling and changed the label to `Submit A Direction`, `Submit B Direction`, etc.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright at `390px` confirmed no horizontal overflow, stacked Westin mark, mobile Westin logo at `92px`, bottom PDF link present, and clearer submit text.
+- The only browser warning was a dev-only `/_vercel/insights/script.js` 404, unrelated to the proposal.
+
+---
+
 ## Session: August 28, 2026 — Westin proposal mobile cleanup
 **AI:** Codex + team call
 **Worked on:** Shawn shared live iPhone screenshots showing the Westin proposal felt close but had mobile presentation problems: duplicate branding near the hero, clipped unit pricing, squeezed request section, and unnecessary name/email/phone fields in a proposal-state workflow.

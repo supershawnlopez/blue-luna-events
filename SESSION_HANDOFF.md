@@ -2,6 +2,22 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin proposal final mobile CTA polish
+
+Shawn caught one more live iPhone issue: the site navigation visually covered the "Prepared for / The Westin" mark at the top, and the bottom of the page needed a second PDF download plus a clearer package-submit button.
+
+**Shipped in code:** the Westin client mark now has more top breathing room on mobile, stacks "Prepared for" above the Westin logo, and renders the Westin logo larger so it feels intentional. The bottom package-direction card now has a stronger submit button (`Submit A Direction`, etc.) and a secondary "Need to share the proposal internally? Download PDF" action.
+
+Verified locally with `npm run build` clean. Playwright mobile check at `390px` confirmed no horizontal overflow, the Westin logo renders at `92px` on mobile, the mark is stacked, the bottom PDF link exists, and the submit button uses the clearer label. The only browser warning was a dev-only `/_vercel/insights/script.js` 404, unrelated to the proposal page.
+
+**Shawn, test this after deploy:**
+1. Reload `/proposal/westin-la-paloma-labor-day` on iPhone.
+2. Confirm the "Prepared for" / Westin mark is no longer covered by the navigation.
+3. Confirm the Westin logo feels large enough.
+4. Scroll to the bottom and confirm the PDF download and submit button are easy to notice.
+
+---
+
 ## 2026-08-28: Westin proposal mobile cleanup approved and shipped
 
 Shawn reviewed live iPhone screenshots of the Westin proposal and approved the team fix list: remove the duplicate logo treatment, stop the unit pricing table from clipping on mobile, stack the package-selection section on phone, and remove name/email/phone fields because this is already a proposal for a known client.
