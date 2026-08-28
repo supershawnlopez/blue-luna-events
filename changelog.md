@@ -13,6 +13,27 @@
 
 ---
 
+## Session: August 28, 2026 — Westin proposal mobile cleanup
+**AI:** Codex + team call
+**Worked on:** Shawn shared live iPhone screenshots showing the Westin proposal felt close but had mobile presentation problems: duplicate branding near the hero, clipped unit pricing, squeezed request section, and unnecessary name/email/phone fields in a proposal-state workflow.
+
+### Completed This Session
+- Followed the approved team direction: removed the extra Blue Luna logo treatment inside the proposal hero and left the global site header as the Blue Luna brand anchor.
+- Repositioned the Westin mark as a quieter "Prepared for" client mark.
+- Replaced the mobile a la carte pricing table with readable pricing cards so prices no longer clip off-screen.
+- Stacked the package-selection section on mobile so the dark copy panel no longer squeezes beside the form.
+- Changed the bottom CTA copy to "Choose a package direction."
+- Removed name, email, and phone fields from the bottom selector because this is an active proposal for a known client, not a public lead form.
+- Updated the proposal request endpoint to send Monica an internal package-selection email instead of creating a new public lead.
+- Fixed dev hydration warnings caused by embedded style blocks so the proposal page loads cleanly.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright at `390px` confirmed no horizontal overflow, mobile pricing cards active, one-column request section, no contact fields, and no console/page errors.
+- Local package-selection email could not be fully sent because local `.env.local` has an invalid Resend key (`401`), so Shawn/Monica should submit one live production test after deploy.
+
+---
+
 ## Session: August 28, 2026 — Westin digital proposal + balloon decor disclosures
 **AI:** Codex + team call
 **Worked on:** Shawn and Monica wanted the Westin La Paloma resort opportunity handled as a luxury proposal link with PDF download, package selection, and industry-appropriate balloon decor disclosures.

@@ -18,6 +18,8 @@ Why: The site must feel like a luxury brand, not a local balloon company. Teal r
 Approved by: Shawn + Jony Ive + Steve Jobs
 Why: Venue and corporate buyers may need to share a proposal internally before Monica creates an official estimate. The proposal must feel upscale and easy to scan, while the official estimate remains the transactional/payment record. The Westin La Paloma proposal is the first implementation of this pattern.
 
+**Mobile addendum, approved 2026-08-28:** Proposal pages must not reuse public lead-form behavior when the client is already known. Package selection should ask only for package direction, optional notes, and required disclosure acknowledgement. Unit pricing must become readable mobile cards instead of a horizontally scrolling or clipped table. Co-branding should stay quiet: the global header owns Blue Luna branding, and the client/venue mark belongs inside the proposal content as a secondary mark.
+
 ---
 
 ## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)

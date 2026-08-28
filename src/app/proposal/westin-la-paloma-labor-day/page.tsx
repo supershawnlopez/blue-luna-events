@@ -15,9 +15,9 @@ export default function WestinProposalPage() {
     <main className="westin-proposal">
       <section className="proposal-hero">
         <div className="proposal-shell">
-          <div className="proposal-nav">
-            <Image src="/images/logo-color.png" alt="Blue Luna Events" width={220} height={70} priority />
-            <Image src="/images/westin-la-paloma-dove-wordmark.png" alt="The Westin" width={150} height={110} priority className="westin-mark" />
+          <div className="proposal-client-mark">
+            <span>Prepared for</span>
+            <Image src="/images/westin-la-paloma-dove-wordmark.png" alt="The Westin" width={150} height={110} priority />
           </div>
 
           <p className="proposal-kicker">{westinProposal.kicker}</p>
@@ -84,7 +84,7 @@ export default function WestinProposalPage() {
               Items can be added or removed by zone while keeping the same Standard Price and Westin Partner Price structure.
             </p>
           </div>
-          <div className="unit-table">
+          <div className="unit-table" aria-label="A la carte unit pricing">
             <div className="unit-head">
               <span>Item</span>
               <span>Standard Price</span>
@@ -96,6 +96,21 @@ export default function WestinProposalPage() {
                 <span>{item.standard}</span>
                 <span>{item.partner}</span>
               </div>
+            ))}
+          </div>
+          <div className="unit-cards" aria-label="A la carte unit pricing">
+            {westinProposal.unitPricing.map(item => (
+              <article key={item.item} className="unit-card">
+                <h3>{item.item}</h3>
+                <div>
+                  <span>Standard Price</span>
+                  <strong>{item.standard}</strong>
+                </div>
+                <div>
+                  <span>Westin Partner Price</span>
+                  <strong>{item.partner}</strong>
+                </div>
+              </article>
             ))}
           </div>
         </div>
@@ -115,7 +130,9 @@ export default function WestinProposalPage() {
 
       <ProposalRequestForm />
 
-      <style>{`
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .westin-proposal {
           background: #fdfcfa;
           color: #0d0f0f;
@@ -130,19 +147,24 @@ export default function WestinProposalPage() {
           padding: 42px 0 72px;
           border-top: 3px solid #5bbfbf;
         }
-        .proposal-nav {
+        .proposal-client-mark {
           display: flex;
-          justify-content: space-between;
+          justify-content: flex-end;
           align-items: center;
-          margin-bottom: clamp(56px, 8vw, 96px);
+          gap: 16px;
+          margin-bottom: clamp(46px, 7vw, 82px);
         }
-        .proposal-nav img {
+        .proposal-client-mark span {
+          color: #9ca3af;
+          text-transform: uppercase;
+          letter-spacing: 0.16em;
+          font-size: 0.68rem;
+          font-weight: 900;
+        }
+        .proposal-client-mark img {
           width: auto;
-          height: 56px;
+          height: 72px;
           object-fit: contain;
-        }
-        .proposal-nav .westin-mark {
-          height: 78px;
         }
         .proposal-kicker {
           margin: 0 0 14px;
@@ -319,6 +341,9 @@ export default function WestinProposalPage() {
           border-radius: 18px;
           overflow: hidden;
         }
+        .unit-cards {
+          display: none;
+        }
         .unit-head,
         .unit-row {
           display: grid;
@@ -367,11 +392,14 @@ export default function WestinProposalPage() {
           .notes-section {
             padding: 42px 0;
           }
-          .proposal-nav img {
-            height: 44px;
+          .proposal-client-mark {
+            justify-content: flex-start;
+            align-items: flex-end;
+            gap: 12px;
+            margin-bottom: 34px;
           }
-          .proposal-nav .westin-mark {
-            height: 58px;
+          .proposal-client-mark img {
+            height: 54px;
           }
           .hero-grid,
           .section-heading,
@@ -392,14 +420,43 @@ export default function WestinProposalPage() {
             text-align: left;
           }
           .unit-table {
-            overflow-x: auto;
+            display: none;
           }
-          .unit-head,
-          .unit-row {
-            min-width: 620px;
+          .unit-cards {
+            display: grid;
+            gap: 12px;
+          }
+          .unit-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 18px;
+            padding: 18px;
+          }
+          .unit-card h3 {
+            font-size: 1rem;
+            line-height: 1.25;
+            margin: 0 0 16px;
+          }
+          .unit-card div {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            border-top: 1px solid #eef0f2;
+            padding-top: 12px;
+            margin-top: 12px;
+          }
+          .unit-card span {
+            color: #667085;
+            font-size: 0.82rem;
+          }
+          .unit-card strong {
+            text-align: right;
+            white-space: nowrap;
           }
         }
-      `}</style>
+      `,
+        }}
+      />
     </main>
   )
 }

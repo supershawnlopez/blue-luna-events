@@ -2,6 +2,27 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin proposal mobile cleanup approved and shipped
+
+Shawn reviewed live iPhone screenshots of the Westin proposal and approved the team fix list: remove the duplicate logo treatment, stop the unit pricing table from clipping on mobile, stack the package-selection section on phone, and remove name/email/phone fields because this is already a proposal for a known client.
+
+**Shipped in code:** `/proposal/westin-la-paloma-labor-day` now keeps the sticky site header as the only Blue Luna logo, shows the Westin mark as a simple "Prepared for" client mark in the proposal hero, converts a la carte unit pricing into mobile cards under `820px`, and stacks the package-selection CTA/form on mobile.
+
+**Proposal-state fix:** the bottom selector no longer asks for name, email, or phone. The client chooses a package direction, can leave optional notes, acknowledges the design/weather notes, and submits. The API now sends Monica an internal package-selection email instead of creating a new public lead.
+
+Verified locally with `npm run build` clean. Playwright mobile check at `390px` confirmed no horizontal overflow, mobile unit pricing cards are active, the request section is one column, contact fields are gone, and console/page errors are clean.
+
+**Local environment caveat:** the package-selection email could not be fully sent locally because `.env.local` has an invalid `RESEND_API_KEY` (`401`). Production previously had Resend fixed, but Shawn/Monica should submit one live package test after deploy and confirm Monica receives the internal email.
+
+**Shawn, test this after deploy:**
+1. Open `/proposal/westin-la-paloma-labor-day` on iPhone.
+2. Confirm the top no longer shows duplicate Blue Luna branding.
+3. Scroll to A La Carte Customization and confirm prices are readable cards, not a clipped table.
+4. Scroll to the bottom and confirm it only asks for package direction, optional notes, and the design/weather acknowledgement.
+5. Submit a test package direction and confirm Monica gets the email.
+
+---
+
 ## 2026-08-28: Westin digital proposal + balloon decor disclosures added
 
 Shawn approved the team direction to treat resort/corporate proposal work as a polished digital proposal first, with PDF download as the backup, and to keep payment inside the normal Studio estimate flow after Monica confirms final details.

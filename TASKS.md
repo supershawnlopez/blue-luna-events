@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin proposal mobile cleanup)
+
+- ✅ **Mobile proposal layout cleaned up after Shawn's iPhone screenshots.** Removed duplicate Blue Luna logo treatment inside the proposal hero, converted mobile unit pricing from a clipped table into readable cards, and stacked the package-selection section on iPhone.
+- ✅ **Bottom selector now matches proposal state.** Removed name/email/phone fields because Blue Luna already has the client context; the client now selects a package direction, adds optional notes, and acknowledges design/weather notes.
+- ✅ **Package-selection API no longer creates a public lead.** It sends Monica an internal package-selection email for this proposal workflow.
+- Verified: clean `npm run build`; Playwright mobile check at `390px` confirmed no horizontal overflow, mobile cards active, one-column selector, no contact fields, and no console/page errors.
+- ⚠️ Local package-selection email could not be sent because local `.env.local` has an invalid Resend key; test the live production email after deploy.
+
+---
+
 ## DONE (2026-08-28 — Westin digital proposal + decor disclosures)
 
 - ✅ **Westin proposal page added.** `/proposal/westin-la-paloma-labor-day` presents the approved Labor Day package ladder, Westin Partner Pricing, unit pricing, short design/weather notes, and PDF download.

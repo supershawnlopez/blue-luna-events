@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { submitLead } from '@/lib/actions'
+import { Resend } from 'resend'
+import { SITE_CONFIG } from '@/lib/config'
 import { westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 
 export const dynamic = 'force-dynamic'
@@ -16,55 +17,82 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Please select a valid package.' }, { status: 400 })
   }
 
-  const name = clean(body.name)
-  const email = clean(body.email)
-  const phone = clean(body.phone)
   const notes = clean(body.notes)
   const acceptedDisclosures = body.acceptedDisclosures === true
 
-  if (!name || !email) {
-    return NextResponse.json({ error: 'Name and email are required.' }, { status: 400 })
-  }
   if (!acceptedDisclosures) {
     return NextResponse.json({ error: 'Please review the decor notes before requesting a package.' }, { status: 400 })
   }
 
-  const vision = [
-    `Westin proposal package requested: ${selectedPackage.name}.`,
-    `Westin Partner Price: $${selectedPackage.partnerPrice.toLocaleString()}.`,
-    `Standard Price: $${selectedPackage.standardPrice.toLocaleString()}.`,
-    'Client reviewed the design/weather notes before submitting.',
-    notes ? `Client notes: ${notes}` : '',
-  ].filter(Boolean).join(' ')
+  if (process.env.RESEND_API_KEY) {
+    const resend = new Resend(process.env.RESEND_API_KEY)
+    const { error } = await resend.emails.send({
+      from: 'Blue Luna Events <notifications@bluelunaevents.com>',
+      to: [SITE_CONFIG.email],
+      subject: `Westin proposal package selected — ${selectedPackage.name}`,
+      html: buildSelectionEmail(selectedPackage, notes),
+    })
 
-  const result = await submitLead({
-    name,
-    email,
-    phone: phone || 'Not provided',
-    event_type: 'Corporate / Resort Event',
-    event_date: 'Labor Day 2026',
-    venue: 'Westin La Paloma',
-    vision,
-    budget_range: `$${selectedPackage.partnerPrice.toLocaleString()} Westin Partner Price`,
-    referral_source: 'Westin proposal page',
-    status: 'new',
-    source: 'inquiry',
-    package_id: selectedPackage.id,
-    package_name: selectedPackage.name,
-    quoted_total: selectedPackage.partnerPrice,
-    is_consultation: true,
-    looking_for: ['Resort decor proposal', selectedPackage.name],
-    custom_request: notes || undefined,
-    referrer_raw: req.headers.get('referer') ?? undefined,
-  })
-
-  if (!result.success) {
-    return NextResponse.json({ error: result.error ?? 'Could not save request.' }, { status: 500 })
+    if (error) {
+      console.error('Westin proposal selection email failed:', error)
+      return NextResponse.json({ error: 'Could not send package selection.' }, { status: 500 })
+    }
   }
 
-  return NextResponse.json({ ok: true, leadId: result.leadId })
+  return NextResponse.json({ ok: true })
 }
 
 function clean(value: unknown) {
   return typeof value === 'string' ? value.trim().slice(0, 1200) : ''
+}
+
+function buildSelectionEmail(
+  selectedPackage: (typeof westinProposal.packages)[number],
+  notes: string,
+) {
+  const includes = selectedPackage.includes
+    .map(item => `<li><strong>${escapeHtml(item.title)}</strong>${item.detail ? `<br><span>${escapeHtml(item.detail)}</span>` : ''}</li>`)
+    .join('')
+
+  return `<!doctype html>
+<html>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#0d0f0f">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:28px 16px">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fff;border-radius:18px;overflow:hidden">
+          <tr>
+            <td style="background:#0d0f0f;padding:30px">
+              <p style="margin:0 0 8px;color:#5bbfbf;text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:800">Westin La Paloma Proposal</p>
+              <h1 style="margin:0;color:#fff;font-family:Georgia,serif;font-size:28px;line-height:1.1">Package direction selected</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:28px 30px">
+              <p style="margin:0 0 8px;color:#667085;font-size:12px;text-transform:uppercase;letter-spacing:.12em;font-weight:800">Selected Package</p>
+              <h2 style="margin:0 0 8px;font-size:22px;line-height:1.2">${escapeHtml(selectedPackage.name)}</h2>
+              <p style="margin:0 0 22px;color:#667085;font-size:15px;line-height:1.6">
+                Westin Partner Price: <strong style="color:#0d0f0f">$${selectedPackage.partnerPrice.toLocaleString()}</strong><br>
+                Standard Price: $${selectedPackage.standardPrice.toLocaleString()}
+              </p>
+              <ul style="margin:0 0 22px;padding-left:20px;color:#374151;font-size:14px;line-height:1.6">${includes}</ul>
+              ${notes ? `<div style="border-left:3px solid #5bbfbf;background:#f9fafb;padding:14px 16px;border-radius:0 10px 10px 0"><p style="margin:0;color:#374151;font-size:14px;line-height:1.6">${escapeHtml(notes)}</p></div>` : ''}
+              <p style="margin:22px 0 0;color:#667085;font-size:13px;line-height:1.6">The client acknowledged the design/weather notes before submitting this package direction.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 }
