@@ -3,7 +3,7 @@
 import { useState, useEffect, type MouseEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Camera, FolderOpen, FileText, LogOut, Phone, CalendarClock, CircleDollarSign, CheckCircle2, TrendingUp, TrendingDown, X, ChevronRight } from 'lucide-react'
+import { Camera, FolderOpen, FileText, LogOut, Phone, CalendarClock, CircleDollarSign, CheckCircle2, TrendingUp, TrendingDown, X, ChevronRight, ClipboardList } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import NotificationSetup from '@/components/studio/NotificationSetup'
 
@@ -283,6 +283,7 @@ export default function StudioHome() {
             { href: '/studio/media',         Icon: Camera,     label: 'Upload Photos',      sub: 'Add new work to your library' },
             { href: '/studio/galleries',      Icon: FolderOpen, label: 'New Client Gallery', sub: 'Share an event with your client' },
             { href: '/studio/estimates/new',  Icon: FileText,   label: 'New Estimate',       sub: 'Build an estimate for an event' },
+            { href: '/studio/proposals',      Icon: ClipboardList, label: 'Proposals',       sub: 'Share luxury proposal links' },
           ].map(({ href, Icon, label, sub }) => (
             <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px', textDecoration: 'none' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '11px', background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

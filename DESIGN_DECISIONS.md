@@ -12,6 +12,14 @@ Why: The site must feel like a luxury brand, not a local balloon company. Teal r
 
 ---
 
+## DIGITAL PROPOSALS — LUXURY PRESENTATION, NOT ESTIMATE UI (LOCKED — 2026-08-28)
+
+**Resort/corporate proposal pages use a polished editorial presentation with generous whitespace, co-branding where appropriate, package cards, unit pricing, and PDF download. They should not look like the normal estimate/payment page.**
+Approved by: Shawn + Jony Ive + Steve Jobs
+Why: Venue and corporate buyers may need to share a proposal internally before Monica creates an official estimate. The proposal must feel upscale and easy to scan, while the official estimate remains the transactional/payment record. The Westin La Paloma proposal is the first implementation of this pattern.
+
+---
+
 ## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)
 
 **A secondary "Twilight" glow (soft blush/lavender/gold radial gradient, `--twilight-glow` in `globals.css`) is used as a subtle atmospheric accent behind circular photo elements sitewide. It never becomes a solid fill, never appears as flat blush/lavender/gold blocks, and never replaces teal as the primary functional color (buttons, links, active states, borders).**

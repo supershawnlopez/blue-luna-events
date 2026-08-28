@@ -15,6 +15,14 @@
 
 ## CORE PRODUCT DECISIONS
 
+**[2026-08-28] — Resort/corporate proposals are digital proposal pages first; estimates/payment links come after Monica confirms final details.**
+Approved by: Shawn + Steve Jobs + Jony Ive + Angela Ahrendts + Craig Federighi + Priya Nair
+Why: Westin La Paloma needs a luxury presentation path, not a normal estimate-first workflow. The client should be able to review a polished private proposal page, download a PDF for internal sharing, and request a package. That request becomes a Studio lead; Monica then confirms final placement, timing, venue access, taxes/fees if needed, and sends the official estimate/payment link. Proposals stay separate from payment records so the estimate remains the legal/money source of truth.
+
+**[2026-08-28] — Balloon decor disclosures are layered: short notes on proposals, full terms page, required acceptance before estimate/payment actions.**
+Approved by: Shawn + Monica + Steve Jobs + Jony Ive + Angela Ahrendts + Priya Nair
+Why: Balloon decor is temporary and affected by heat, wind, sun, rain, humidity, venue conditions, guest interaction, children, pets, and latex/rental-equipment safety. The proposal should stay polished with short notes, while the official estimate/payment flow must require clear acceptance of the full terms before money actions.
+
 **[2026-05-01] — Package configurator replaces the manual quote form as the primary booking path.**
 Approved by: Shawn
 Why: 50% of Monica's leads were ghosting after a manual price reveal. Real-time pricing plus a Stripe deposit removes the ambush and bakes an upgrade path into the flow itself.

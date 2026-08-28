@@ -1,6 +1,29 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 26, 2026 — Codex*
+*Last updated: August 28, 2026 — Codex*
+
+## 2026-08-28: Westin digital proposal + balloon decor disclosures added
+
+Shawn approved the team direction to treat resort/corporate proposal work as a polished digital proposal first, with PDF download as the backup, and to keep payment inside the normal Studio estimate flow after Monica confirms final details.
+
+**Shipped in code:** added a private, no-index digital proposal page at `/proposal/westin-la-paloma-labor-day`, using the approved Westin Labor Day package/pricing structure and the approved PDF download asset. The page lets the client review packages, download the PDF, review short design/weather notes, and request a package. Package requests post to `/api/proposals/westin-la-paloma-labor-day/request`, which creates a normal Studio lead for Monica to review before she sends an official estimate/payment link.
+
+**Studio access:** added `/studio/proposals` and a Studio Home quick action so Monica can open the proposal, copy the share link, or download the PDF.
+
+**Disclosures:** added `/terms/balloon-decor` with reusable balloon decor terms covering heat, wind, outdoor conditions, guest/child/pet interaction, latex safety, rental equipment, venue access, substitutions, and photography. Existing client estimate/payment pages now require a terms checkbox before accepting or paying.
+
+**Important:** no new database migration was added. This first pass uses the existing `leads` pipeline for package requests and keeps proposals separate from estimates/payments.
+
+Verified locally with `npm run build` clean. Local dev server ran on `http://localhost:3001`; `/proposal/westin-la-paloma-labor-day`, `/studio/proposals`, `/terms/balloon-decor`, and the PDF asset all returned `200 OK`; the proposal request API rejected an empty body with `400`.
+
+**Shawn, test this after deploy:**
+1. Open `/studio/proposals` in Monica's Studio and copy/open the Westin proposal link.
+2. Open `/proposal/westin-la-paloma-labor-day` on phone and desktop; confirm it feels like a luxury proposal, not a normal estimate.
+3. Tap **Download PDF** and confirm the PDF opens/downloads.
+4. Request a package using your own email and confirm Monica sees a new lead in Studio.
+5. Open any client estimate link and confirm the balloon decor terms checkbox appears before Accept/Pay.
+
+---
 
 ## 2026-08-26: Team-approved invoice activity tracking added
 

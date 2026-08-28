@@ -49,6 +49,8 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   const [accepting, setAccepting] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
   const [showCheckout, setShowCheckout] = useState(false)
+  const [termsAccepted, setTermsAccepted] = useState(false)
+  const [termsMessage, setTermsMessage] = useState('')
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'checking' | 'confirmed' | 'processing' | 'error'>('idle')
   const [paymentStatusMessage, setPaymentStatusMessage] = useState('')
   const first = firstName(est.client_name)
@@ -136,6 +138,10 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   }, [shouldSuppressTracking, token])
 
   async function handleAccept() {
+    if (!termsAccepted) {
+      setTermsMessage('Please review and agree to the balloon decor terms before accepting.')
+      return
+    }
     setAccepting(true)
     const res = await fetch(`/api/q/${token}/accept`, { method: 'POST' })
     const data = await res.json()
@@ -144,6 +150,10 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   }
 
   async function handlePay() {
+    if (!termsAccepted) {
+      setTermsMessage('Please review and agree to the balloon decor terms before payment.')
+      return
+    }
     if (!shouldSuppressTracking()) {
       logClientActivity('payment_button_clicked', { amount: paymentAmount, ui_mode: stripePromise ? 'embedded' : 'hosted' })
     }
@@ -327,6 +337,30 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
         </div>
 
         {/* Accept / Payment CTA */}
+        {!balance.isPaidInFull && (
+          <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '16px', marginBottom: '14px' }}>
+            <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '12px', color: '#6B7280', lineHeight: 1.55 }}>
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={e => {
+                  setTermsAccepted(e.target.checked)
+                  if (e.target.checked) setTermsMessage('')
+                }}
+                style={{ marginTop: '3px' }}
+              />
+              <span>
+                I have reviewed and agree to the Blue Luna Events balloon decor terms, including outdoor conditions, venue access, guest interaction, and rental-equipment responsibility.{' '}
+                <a href="/terms/balloon-decor" target="_blank" rel="noreferrer" style={{ color: '#3A8F8F', fontWeight: 700 }}>
+                  View terms
+                </a>
+              </span>
+            </label>
+            {termsMessage && (
+              <p style={{ color: '#B91C1C', fontSize: '12px', lineHeight: 1.45, margin: '10px 0 0' }}>{termsMessage}</p>
+            )}
+          </div>
+        )}
         {!accepted && (
           <button
             onClick={handleAccept}

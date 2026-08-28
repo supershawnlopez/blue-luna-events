@@ -13,6 +13,26 @@
 
 ---
 
+## Session: August 28, 2026 — Westin digital proposal + balloon decor disclosures
+**AI:** Codex + team call
+**Worked on:** Shawn and Monica wanted the Westin La Paloma resort opportunity handled as a luxury proposal link with PDF download, package selection, and industry-appropriate balloon decor disclosures.
+
+### Completed This Session
+- Team recommendation approved: proposal page first, PDF download as backup, and payment link only after Monica confirms final details and converts the selected package into an official estimate.
+- Added `/proposal/westin-la-paloma-labor-day` — no-index digital proposal page with Blue Luna/Westin branding, approved package ladder, Standard Price vs Westin Partner Price, unit pricing, design/weather notes, PDF download, and request-package form.
+- Added `/api/proposals/westin-la-paloma-labor-day/request` — validates package selection and disclosure acknowledgement, then creates a normal Studio lead through the existing `submitLead()` pipeline.
+- Added `/studio/proposals` and a Studio Home quick action so Monica can open/share the Westin proposal and download the PDF from Studio.
+- Added `/terms/balloon-decor` for reusable balloon decor terms: heat, wind, outdoor conditions, popping/fading/movement, children/pets/guest interaction, latex safety, rental equipment, venue access, substitutions, and photography.
+- Updated `/q/[token]` client estimate/payment page to require a balloon decor terms checkbox before Accept or Pay.
+- Copied the approved Westin PDF into `public/proposals/` and the Westin mark into `public/images/`.
+- Verified: clean `npm run build`; local dev server on port `3001`; proposal, Studio proposals, terms, and PDF asset returned `200 OK`; empty request API returned `400`.
+
+### Follow-Up
+- After deploy, submit one real test package request with Shawn's email and confirm it appears in Studio Leads.
+- Later: turn this first hardcoded proposal into a reusable database-backed Proposals module if Monica starts doing more venue/corporate proposals.
+
+---
+
 ## Session: August 26, 2026 — Ava invoice reconciled and Stripe payment recovery added
 **AI:** Codex + team call
 **Worked on:** Shawn clarified Ava's `$690` Friday invoice already received a successful `$345` Stripe card payment, but Blue Luna did not record it, did not update the invoice balance, and did not send receipt/alert.

@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin digital proposal + decor disclosures)
+
+- ✅ **Westin proposal page added.** `/proposal/westin-la-paloma-labor-day` presents the approved Labor Day package ladder, Westin Partner Pricing, unit pricing, short design/weather notes, and PDF download.
+- ✅ **Package request flow added without jumping straight to payment.** The client can request a package; the request creates a normal Studio lead so Monica can confirm details before sending the official estimate/payment link.
+- ✅ **Studio Proposals added.** `/studio/proposals` gives Monica a simple backend place to open the proposal, copy the client link, or download the PDF. Studio Home now has a Proposals quick action.
+- ✅ **Balloon decor terms added.** `/terms/balloon-decor` covers outdoor conditions, heat, wind, guest/child/pet interaction, latex safety, venue rules, rental equipment, substitutions, and photography. Client estimate/payment pages now require a terms checkbox before Accept/Pay.
+- Verified: clean `npm run build`; local `200 OK` checks for proposal, Studio proposals, terms, and PDF asset; empty package-request API correctly returns `400`.
+
+---
+
 ## DONE (2026-08-26 — embedded invoice checkout for Ava/Mimecast payment issue)
 
 - ✅ **Team-approved operational invoice activity tracking shipped.** Public client invoice pages log invoice opened, payment button clicked, and checkout started; Stripe/manual payments log payment received; estimate and receipt emails log through the shared activity helper.
