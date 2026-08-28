@@ -13,6 +13,25 @@
 
 ---
 
+## Session: August 28, 2026 — Westin proposal selection UX refinement
+**AI:** Codex + approved team direction
+**Worked on:** Shawn approved the recommendation to stop forcing clients from the package cards to the bottom form, make the selected-package state visible in place, and make design/weather notes more prominent before final confirmation.
+
+### Completed This Session
+- Removed automatic scroll-to-bottom from top package-card selections.
+- Added inline selected-package confirmation on the chosen package card with a **Continue to Confirm** button.
+- Kept the bottom package selector synced through the existing selection event.
+- Strengthened the Design + Weather Notes section with a larger heading, teal-tinted section background, and framed notes panel.
+- Added a **Design + Weather Acknowledgement** heading to the bottom checkbox and a link back to the notes section.
+- Updated bottom guidance to say, "Add any notes you would like Monica to review, then confirm your direction."
+
+### Verification
+- `npm run build` passed clean.
+- `git diff --check` passed aside from normal Windows line-ending warnings.
+- Playwright mobile check confirmed top package selection does not change scroll position, **Continue to Confirm** scrolls to the bottom, guidance and submit button match Package B, the notes anchor exists, and console errors are clean.
+
+---
+
 ## Session: August 28, 2026 — Westin proposal final launch polish
 **AI:** Codex + team direction
 **Worked on:** Shawn caught two last proposal-launch issues from iPhone/PWA testing: Studio looked broken when no selections were available, and the client guidance text could stay on the previous package after switching selections at the bottom.

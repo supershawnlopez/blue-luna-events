@@ -24,7 +24,7 @@ export default function ProposalRequestForm() {
     setMessage('')
     setSelectionPulse(false)
     window.setTimeout(() => setSelectionPulse(true), 20)
-    setSelectionGuidance(`${pkg.name.split(' - ')[0]} is selected. Add any additional notes below, then confirm your selection.`)
+    setSelectionGuidance(`${pkg.name.split(' - ')[0]} is selected. Add any notes you would like Monica to review, then confirm your direction.`)
   }
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function ProposalRequestForm() {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!termsAccepted) {
-      setMessage('Please review the decor notes before requesting a package.')
+      setMessage('Please review and acknowledge the design/weather notes before submitting your package direction.')
       return
     }
 
@@ -127,7 +127,9 @@ export default function ProposalRequestForm() {
           <label className="terms-check">
             <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} />
             <span>
+              <strong>Design + Weather Acknowledgement</strong>
               I reviewed the design/weather notes and understand final placement is subject to venue access, setup timing, and safe installation conditions.
+              <a href="#design-weather-notes">Review design/weather notes</a>
             </span>
           </label>
 
@@ -260,6 +262,21 @@ export default function ProposalRequestForm() {
           color: #667085;
           font-size: 0.82rem;
           line-height: 1.45;
+        }
+        .terms-check strong {
+          color: #0d0f0f;
+          display: block;
+          font-size: 0.78rem;
+          font-weight: 900;
+          margin-bottom: 4px;
+        }
+        .terms-check a {
+          color: #3a8f8f;
+          display: inline-block;
+          font-weight: 800;
+          margin-top: 6px;
+          text-decoration: underline;
+          text-underline-offset: 4px;
         }
         .terms-check input {
           margin-top: 3px;

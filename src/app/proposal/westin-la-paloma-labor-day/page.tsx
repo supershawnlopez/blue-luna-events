@@ -70,7 +70,7 @@ export default function WestinProposalPage() {
                     </div>
                   ))}
                 </div>
-                <PackageRequestLink packageId={pkg.id} />
+                <PackageRequestLink packageId={pkg.id} packageLabel={pkg.name.split(' - ')[0]} />
               </article>
             ))}
           </div>
@@ -118,9 +118,12 @@ export default function WestinProposalPage() {
         </div>
       </section>
 
-      <section className="notes-section">
+      <section id="design-weather-notes" className="notes-section">
         <div className="proposal-shell">
-          <p className="proposal-kicker">Design + Weather Notes</p>
+          <div className="notes-heading">
+            <p className="proposal-kicker">Design + Weather Notes</p>
+            <h2>Important installation notes before confirming.</h2>
+          </div>
           <div className="notes-card">
             {westinProposal.notes.map(note => (
               <p key={note}>{note}</p>
@@ -340,6 +343,42 @@ export default function WestinProposalPage() {
           font: inherit;
           font-size: 0.86rem;
         }
+        .select-link.selected {
+          background: #5bbfbf;
+          color: #0d0f0f;
+          border-color: #5bbfbf;
+        }
+        .package-action {
+          display: grid;
+          justify-items: start;
+          gap: 12px;
+        }
+        .package-selected-note {
+          background: #f4fbfb;
+          border: 1px solid rgba(91,191,191,0.36);
+          border-radius: 14px;
+          padding: 14px;
+          max-width: 440px;
+        }
+        .package-selected-note p {
+          color: #1b6868;
+          font-size: 0.84rem;
+          font-weight: 700;
+          line-height: 1.45;
+          margin: 0 0 12px;
+        }
+        .package-selected-note button {
+          border: 0;
+          background: transparent;
+          color: #0d0f0f;
+          cursor: pointer;
+          font: inherit;
+          font-size: 0.84rem;
+          font-weight: 900;
+          padding: 0;
+          text-decoration: underline;
+          text-underline-offset: 4px;
+        }
         .unit-grid {
           display: grid;
           grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.3fr);
@@ -386,12 +425,24 @@ export default function WestinProposalPage() {
           font-weight: 900;
         }
         .notes-section {
-          background: white;
+          background: #f4fbfb;
+          border-top: 1px solid rgba(91,191,191,0.28);
+          border-bottom: 1px solid rgba(91,191,191,0.28);
+        }
+        .notes-heading {
+          max-width: 760px;
+          margin-bottom: 28px;
+        }
+        .notes-heading h2 {
+          max-width: 700px;
         }
         .notes-card {
-          max-width: 860px;
-          border-left: 2px solid #5bbfbf;
-          padding-left: 24px;
+          max-width: 900px;
+          background: white;
+          border: 1px solid rgba(91,191,191,0.28);
+          border-radius: 18px;
+          padding: clamp(22px, 4vw, 34px);
+          box-shadow: 0 18px 50px rgba(13,15,15,0.06);
         }
         .notes-card p {
           margin: 0 0 10px;

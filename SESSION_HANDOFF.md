@@ -2,13 +2,33 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin proposal package selection UX refined
+
+Shawn approved the team's recommendation to stop auto-scrolling the client from the package cards to the bottom confirmation form. The concern was that auto-scroll made the client skip the unit pricing, design/weather notes, and support material.
+
+**Shipped in code:** top package-card buttons now select the package in place and show an inline confirmation: `B is selected. Continue reviewing, then confirm your direction at the bottom.` The client can keep reading naturally or tap **Continue to Confirm** when ready. The bottom selector still syncs to the selected package and the submit button still updates correctly.
+
+**Design/weather notes:** upgraded the notes section from small fine-print styling into a more visible proposal section with a larger heading, teal-tinted background, and a framed white notes panel. The bottom checkbox now has the heading **Design + Weather Acknowledgement** plus a `Review design/weather notes` anchor link back to that section.
+
+**Client wording:** bottom guidance now reads `B is selected. Add any notes you would like Monica to review, then confirm your direction.`
+
+Verified locally with `npm run build` clean, `git diff --check` clean aside from normal Windows line-ending warnings, and Playwright mobile check confirming top package selection does not change scroll position (`deltaAfterSelect: 0`), **Continue to Confirm** scrolls to the bottom, guidance says B, submit says `Submit B Direction`, and no console errors were reported.
+
+**Shawn, test this after deploy:**
+1. Open the Westin proposal on iPhone and tap Package B's **Request this package**.
+2. Confirm the page stays in the package area and shows the inline selected-package message.
+3. Tap **Continue to Confirm** and confirm it moves to the bottom.
+4. Confirm the bottom acknowledgement has a heading and the design/weather notes link works.
+
+---
+
 ## 2026-08-28: Westin proposal final launch polish
 
 Shawn caught two final live issues before sending the proposal: Monica's Studio PWA showed a red "Could not load proposal selections" message, and the client-facing bottom package guidance could stay stuck on the previous package after changing from C to B/A.
 
 **Shipped in code:** Studio Proposals now treats a missing/not-yet-applied `proposal_selections` table as an empty selections inbox and uses calm copy instead of a red error. The empty state now tells Monica no package selections have been submitted yet and that submitted directions will appear there for estimate creation. The proposal form guidance now updates every time the client chooses A/B/B+/C, whether they select from the top package cards or the bottom selector.
 
-**Client wording:** changed the guidance to `B is selected. Add any additional notes below, then confirm your selection.` This matches the optional notes box and avoids implying there are separate notes the client must review.
+**Client wording:** changed the guidance to `B is selected. Add any notes you would like Monica to review, then confirm your direction.` This matches the optional notes box and avoids implying there are separate notes the client must review.
 
 Verified locally with `npm run build` clean and `git diff --check` clean aside from normal Windows line-ending warnings.
 
