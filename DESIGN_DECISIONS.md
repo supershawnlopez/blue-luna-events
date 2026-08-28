@@ -20,6 +20,8 @@ Why: Venue and corporate buyers may need to share a proposal internally before M
 
 **Mobile addendum, approved 2026-08-28:** Proposal pages must not reuse public lead-form behavior when the client is already known. Package selection should ask only for package direction, optional notes, and required disclosure acknowledgement. Unit pricing must become readable mobile cards instead of a horizontally scrolling or clipped table. Co-branding should stay quiet: the global header owns Blue Luna branding, and the client/venue mark belongs inside the proposal content as a secondary mark.
 
+**Selection addendum, approved 2026-08-28:** Package-card actions should look and behave like quiet buttons, not text links. Selecting a package from the card must visibly mark the matching bottom selector and guide the client to confirm. In pricing comparisons, Standard Price is supporting context; Westin Partner Price is the visual lead.
+
 ---
 
 ## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)

@@ -19,6 +19,10 @@
 Approved by: Shawn + Steve Jobs + Jony Ive + Angela Ahrendts + Craig Federighi + Priya Nair
 Why: Westin La Paloma needs a luxury presentation path, not a normal estimate-first workflow. The client should be able to review a polished private proposal page, download a PDF for internal sharing, and request a package. That request becomes a Studio lead; Monica then confirms final placement, timing, venue access, taxes/fees if needed, and sends the official estimate/payment link. Proposals stay separate from payment records so the estimate remains the legal/money source of truth.
 
+**[2026-08-28] — Proposal package selections become their own Studio record before estimate/payment.**
+Approved by: Shawn + Steve Jobs + Angela Ahrendts + Marcus Webb + Priya Nair
+Why: Shawn clarified the Westin buyer is already in a proposal state, not a public lead-form state. The client should choose a package direction without re-entering name/email/phone, then Monica should see that selection in Studio and convert it into the official estimate when ready. The approved workflow is: proposal page → package direction saved in `proposal_selections` → Monica reviews in Studio → existing estimate builder opens prefilled from the selection → Monica sends official estimate/payment link → receipt/payment notifications happen only after payment. This prevents email-only loss, avoids treating every package tap as payment, and keeps estimates as the money source of truth.
+
 **[2026-08-28] — Balloon decor disclosures are layered: short notes on proposals, full terms page, required acceptance before estimate/payment actions.**
 Approved by: Shawn + Monica + Steve Jobs + Jony Ive + Angela Ahrendts + Priya Nair
 Why: Balloon decor is temporary and affected by heat, wind, sun, rain, humidity, venue conditions, guest interaction, children, pets, and latex/rental-equipment safety. The proposal should stay polished with short notes, while the official estimate/payment flow must require clear acceptance of the full terms before money actions.

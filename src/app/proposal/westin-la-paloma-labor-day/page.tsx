@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Download } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
+import PackageRequestLink from './PackageRequestLink'
 import ProposalRequestForm from './ProposalRequestForm'
 
 export const metadata: Metadata = {
@@ -41,7 +42,10 @@ export default function WestinProposalPage() {
         <div className="proposal-shell">
           <div className="section-heading">
             <p>Package Options</p>
-            <h2>Choose the level of resort presence.</h2>
+            <h2 className="package-heading">
+              <span>Choose the level of</span>
+              <span>resort presence.</span>
+            </h2>
           </div>
 
           <div className="package-grid">
@@ -66,9 +70,7 @@ export default function WestinProposalPage() {
                     </div>
                   ))}
                 </div>
-                <Link href="#request-package" className="select-link">
-                  Request this package
-                </Link>
+                <PackageRequestLink packageId={pkg.id} />
               </article>
             ))}
           </div>
@@ -329,6 +331,14 @@ export default function WestinProposalPage() {
         }
         .select-link {
           color: #3a8f8f;
+          border: 1px solid rgba(91,191,191,0.45);
+          border-radius: 999px;
+          background: #f4fbfb;
+          padding: 10px 14px;
+          width: fit-content;
+          cursor: pointer;
+          font: inherit;
+          font-size: 0.86rem;
         }
         .unit-grid {
           display: grid;
@@ -366,7 +376,14 @@ export default function WestinProposalPage() {
         .unit-row span:nth-child(2),
         .unit-row span:nth-child(3) {
           text-align: right;
-          font-weight: 700;
+        }
+        .unit-row span:nth-child(2) {
+          color: #8a94a3;
+          font-weight: 600;
+        }
+        .unit-row span:nth-child(3) {
+          color: #0d0f0f;
+          font-weight: 900;
         }
         .notes-section {
           background: white;
@@ -404,6 +421,13 @@ export default function WestinProposalPage() {
           }
           .proposal-client-mark img {
             height: 92px;
+          }
+          .package-heading {
+            font-size: clamp(2.35rem, 10.2vw, 3.15rem);
+            max-width: 360px;
+          }
+          .package-heading span {
+            display: block;
           }
           .hero-grid,
           .section-heading,
@@ -456,6 +480,26 @@ export default function WestinProposalPage() {
           .unit-card strong {
             text-align: right;
             white-space: nowrap;
+          }
+          .unit-card div:first-of-type span,
+          .unit-card div:first-of-type strong {
+            color: #8a94a3;
+            font-weight: 600;
+          }
+          .unit-card div:last-of-type {
+            background: #f4fbfb;
+            border: 1px solid rgba(91,191,191,0.34);
+            border-radius: 12px;
+            padding: 12px;
+          }
+          .unit-card div:last-of-type span {
+            color: #3a8f8f;
+            font-weight: 800;
+          }
+          .unit-card div:last-of-type strong {
+            color: #0d0f0f;
+            font-size: 1.02rem;
+            font-weight: 900;
           }
         }
       `,

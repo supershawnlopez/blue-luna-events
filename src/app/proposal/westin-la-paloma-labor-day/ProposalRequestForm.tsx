@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Check, Download, Send } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
@@ -13,7 +13,37 @@ export default function ProposalRequestForm() {
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
+  const [selectionGuidance, setSelectionGuidance] = useState('')
+  const [selectionPulse, setSelectionPulse] = useState(false)
   const selectedPackage = westinProposal.packages.find(pkg => pkg.id === selectedPackageId) ?? westinProposal.packages[0]
+
+  function choosePackage(packageId: string, guided = false) {
+    const pkg = westinProposal.packages.find(item => item.id === packageId)
+    if (!pkg) return
+    setSelectedPackageId(packageId)
+    setMessage('')
+    setSelectionPulse(false)
+    window.setTimeout(() => setSelectionPulse(true), 20)
+    if (guided) {
+      setSelectionGuidance(`${pkg.name.split(' - ')[0]} has been marked. Please review the notes below, then confirm your selection.`)
+    }
+  }
+
+  useEffect(() => {
+    function handlePackageSelected(event: Event) {
+      const packageId = (event as CustomEvent<{ packageId?: string }>).detail?.packageId
+      if (packageId) choosePackage(packageId, true)
+    }
+
+    window.addEventListener('westin-package-selected', handlePackageSelected)
+    return () => window.removeEventListener('westin-package-selected', handlePackageSelected)
+  }, [])
+
+  useEffect(() => {
+    if (!selectionPulse) return
+    const timeout = window.setTimeout(() => setSelectionPulse(false), 900)
+    return () => window.clearTimeout(timeout)
+  }, [selectionPulse])
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -69,7 +99,7 @@ export default function ProposalRequestForm() {
                 <button
                   type="button"
                   key={pkg.id}
-                  onClick={() => setSelectedPackageId(pkg.id)}
+                  onClick={() => choosePackage(pkg.id)}
                   className={active ? 'package-option active' : 'package-option'}
                 >
                   <span className="package-option-main">
@@ -86,6 +116,12 @@ export default function ProposalRequestForm() {
             })}
           </div>
 
+          {selectionGuidance && (
+            <p className="selection-guidance">
+              {selectionGuidance}
+            </p>
+          )}
+
           <div className="field-grid">
             <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes or changes for Blue Luna to review" rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }} />
           </div>
@@ -100,7 +136,11 @@ export default function ProposalRequestForm() {
           <button
             type="submit"
             disabled={status === 'sending' || status === 'sent'}
-            className={status === 'sent' ? 'request-submit sent' : 'request-submit'}
+            className={[
+              'request-submit',
+              status === 'sent' ? 'sent' : '',
+              selectionPulse && status === 'idle' ? 'attention' : '',
+            ].filter(Boolean).join(' ')}
           >
             {status === 'sent' ? <Check size={17} /> : <Send size={17} />}
             {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Package Direction Sent' : `Submit ${selectedPackage.name.split(' - ')[0]} Direction`}
@@ -227,6 +267,17 @@ export default function ProposalRequestForm() {
           margin-top: 3px;
           flex: 0 0 auto;
         }
+        .selection-guidance {
+          background: #f4fbfb;
+          border: 1px solid rgba(91,191,191,0.36);
+          border-radius: 14px;
+          color: #1b6868;
+          font-size: 0.84rem;
+          font-weight: 700;
+          line-height: 1.45;
+          margin: -2px 0 16px;
+          padding: 12px 14px;
+        }
         .request-submit {
           width: 100%;
           border: 0;
@@ -248,6 +299,9 @@ export default function ProposalRequestForm() {
           transform: translateY(-1px);
           box-shadow: 0 18px 40px rgba(91,191,191,0.42);
         }
+        .request-submit.attention {
+          animation: submit-attention 820ms ease both;
+        }
         .request-submit:disabled {
           cursor: default;
           transform: none;
@@ -255,6 +309,20 @@ export default function ProposalRequestForm() {
         .request-submit.sent {
           background: #22c55e;
           box-shadow: 0 14px 32px rgba(34,197,94,0.26);
+        }
+        @keyframes submit-attention {
+          0% {
+            transform: scale(1);
+            box-shadow: 0 14px 32px rgba(91,191,191,0.34);
+          }
+          45% {
+            transform: scale(1.035);
+            box-shadow: 0 0 0 8px rgba(91,191,191,0.18), 0 20px 44px rgba(91,191,191,0.48);
+          }
+          100% {
+            transform: scale(1);
+            box-shadow: 0 14px 32px rgba(91,191,191,0.34);
+          }
         }
         .form-message {
           color: #374151;

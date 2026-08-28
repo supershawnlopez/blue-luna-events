@@ -12,6 +12,9 @@ export const westinProposal = {
   title: 'Labor Day at Westin La Paloma',
   kicker: 'Decor Packages + Westin Partner Pricing',
   venue: 'Westin La Paloma',
+  clientName: 'Westin La Paloma',
+  eventDate: '2026-09-07',
+  eventTypeId: 'corporate',
   pdfPath: '/proposals/westin-la-paloma-labor-day-westin-partner-pricing.pdf',
   intro:
     'A polished Labor Day decor plan designed around guest arrival, the flag photo moment, and key hospitality areas throughout the resort.',

@@ -2,6 +2,29 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Proposal selections now hand off into Studio estimates
+
+Shawn approved the team's next-build direction: keep the Westin page in proposal state, guide the client after selecting a package, save the selected package direction for Monica, and let Monica move it into the official estimate/payment system only after review.
+
+**Shipped in code:** the Westin proposal page now has functional package-card request buttons. Tapping Package B/B+/C scrolls to the bottom selector, marks that package, shows guidance ("B has been marked..."), changes the submit button to the right package, and gives the button a short attention animation. The "Request this package" controls now look like quiet buttons instead of plain links. The package heading was balanced into two intentional lines on mobile, and a la carte Standard Price is visually demoted while Westin Partner Price is emphasized.
+
+**Studio workflow:** added `proposal_selections` migration and protected Studio APIs at `/api/studio/proposals` and `/api/studio/proposals/[id]`. The public proposal submit saves the selected package direction, optional notes, disclosure acknowledgement, package pricing, and included items. Monica's Studio Proposals page now shows submitted selections and has **Create Estimate** for each one.
+
+**Estimate handoff:** `/studio/estimates/new?proposal_selection_id=<id>` now loads the proposal selection into the existing estimate builder. It preloads Westin La Paloma, Labor Day 2026, Corporate event type, the selected package, package contents, and partner price as a line item. Monica still confirms/adds the recipient email before sending, because the proposal page intentionally does not ask the client for contact info.
+
+**Important migration:** created `supabase/migrations/20260828193000_proposal_selections.sql`. This must be applied in Blue Luna Supabase for the Studio inbox and estimate handoff to persist selections. The public submit has a fallback so it can still email Monica if the table is missing, but the full workflow requires the migration.
+
+Verified locally with `npm run build` clean. Playwright at `390px` confirmed Package B request scrolls to the bottom, selects B, changes the submit button to `Submit B Direction`, shows the guidance message, has no horizontal overflow, and has no console/page errors. Unauthenticated `/api/studio/proposals` returns `401`.
+
+**Shawn, test this after deploy + migration:**
+1. Open the Westin proposal on iPhone and tap Package B's **Request this package**.
+2. Confirm it scrolls down, B is selected, and the button says `Submit B Direction`.
+3. Submit a package direction.
+4. Open Studio → Proposals and confirm the selection appears.
+5. Tap **Create Estimate** and confirm the estimate builder is prefilled with Westin/package/items/pricing; Monica then adds/ confirms the recipient email and sends the official estimate/payment link.
+
+---
+
 ## 2026-08-28: Westin proposal final mobile CTA polish
 
 Shawn caught one more live iPhone issue: the site navigation visually covered the "Prepared for / The Westin" mark at the top, and the bottom of the page needed a second PDF download plus a clearer package-submit button.

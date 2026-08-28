@@ -69,6 +69,18 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Proposal selection to estimate handoff)
+
+- ✅ **Client package-card requests now work.** Tapping Package B/B+/C scrolls to the bottom selector, selects the correct package, shows guidance, and updates the submit button to that package.
+- ✅ **Package request controls are now button-like.** They remain quiet but no longer look like dead text links.
+- ✅ **Pricing hierarchy improved.** Standard Price is visually demoted; Westin Partner Price is emphasized.
+- ✅ **Proposal selections now have a Studio workflow.** Added protected Studio proposal-selection APIs and a Studio Proposals selection inbox.
+- ✅ **Estimate builder prefill added.** `?proposal_selection_id=<id>` loads the selected Westin package, event type, date, venue, line item, price, and notes into the existing estimate builder.
+- ⚠️ **Migration required live:** `supabase/migrations/20260828193000_proposal_selections.sql` must be applied before Studio can persist and list proposal selections. Public submit can still email Monica if the table is missing.
+- Verified: clean `npm run build`; Playwright mobile check confirmed Package B handoff behavior; unauthenticated Studio proposal API returns `401`.
+
+---
+
 ## DONE (2026-08-28 — Westin proposal final mobile CTA polish)
 
 - ✅ **Fixed top mobile logo overlap.** Added more mobile top spacing, stacked "Prepared for" above the Westin mark, and increased the Westin logo size.

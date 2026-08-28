@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { SITE_CONFIG } from '@/lib/config'
+import { serverClient } from '@/lib/supabase'
 import { westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 
 export const dynamic = 'force-dynamic'
@@ -24,22 +25,54 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Please review the decor notes before requesting a package.' }, { status: 400 })
   }
 
+  const db = serverClient()
+  const { data: selection, error: selectionError } = await db
+    .from('proposal_selections')
+    .insert([{
+      proposal_slug: westinProposal.slug,
+      proposal_title: westinProposal.title,
+      venue: westinProposal.venue,
+      client_name: westinProposal.clientName,
+      event_type: westinProposal.eventTypeId,
+      event_date: westinProposal.eventDate,
+      package_id: selectedPackage.id,
+      package_name: selectedPackage.name,
+      standard_price: selectedPackage.standardPrice,
+      partner_price: selectedPackage.partnerPrice,
+      included_items: selectedPackage.includes,
+      notes: notes || null,
+      accepted_disclosures: acceptedDisclosures,
+    }])
+    .select('id')
+    .single()
+
+  if (selectionError || !selection) {
+    if (selectionError?.code !== '42P01') {
+      console.error('Westin proposal selection save failed:', selectionError)
+      return NextResponse.json({ error: 'Could not save package selection.' }, { status: 500 })
+    }
+    console.error('Westin proposal selection save failed:', selectionError)
+  }
+
   if (process.env.RESEND_API_KEY) {
     const resend = new Resend(process.env.RESEND_API_KEY)
     const { error } = await resend.emails.send({
       from: 'Blue Luna Events <notifications@bluelunaevents.com>',
       to: [SITE_CONFIG.email],
       subject: `Westin proposal package selected — ${selectedPackage.name}`,
-      html: buildSelectionEmail(selectedPackage, notes),
+      html: buildSelectionEmail(selectedPackage, notes, selection?.id ?? null),
     })
 
     if (error) {
       console.error('Westin proposal selection email failed:', error)
+      if (selection?.id) {
+        return NextResponse.json({ ok: true, selectionId: selection.id, emailWarning: true })
+      }
       return NextResponse.json({ error: 'Could not send package selection.' }, { status: 500 })
     }
   }
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, selectionId: selection?.id ?? null })
 }
 
 function clean(value: unknown) {
@@ -49,10 +82,14 @@ function clean(value: unknown) {
 function buildSelectionEmail(
   selectedPackage: (typeof westinProposal.packages)[number],
   notes: string,
+  selectionId: string | null,
 ) {
   const includes = selectedPackage.includes
     .map(item => `<li><strong>${escapeHtml(item.title)}</strong>${item.detail ? `<br><span>${escapeHtml(item.detail)}</span>` : ''}</li>`)
     .join('')
+  const studioUrl = selectionId
+    ? `https://${SITE_CONFIG.website}/studio/proposals?open=${encodeURIComponent(selectionId)}`
+    : `https://${SITE_CONFIG.website}/studio/proposals`
 
   return `<!doctype html>
 <html>
@@ -78,6 +115,7 @@ function buildSelectionEmail(
               <ul style="margin:0 0 22px;padding-left:20px;color:#374151;font-size:14px;line-height:1.6">${includes}</ul>
               ${notes ? `<div style="border-left:3px solid #5bbfbf;background:#f9fafb;padding:14px 16px;border-radius:0 10px 10px 0"><p style="margin:0;color:#374151;font-size:14px;line-height:1.6">${escapeHtml(notes)}</p></div>` : ''}
               <p style="margin:22px 0 0;color:#667085;font-size:13px;line-height:1.6">The client acknowledged the design/weather notes before submitting this package direction.</p>
+              <a href="${studioUrl}" style="display:inline-block;margin-top:22px;background:#5bbfbf;color:#0d0f0f;border-radius:999px;padding:13px 20px;font-size:14px;font-weight:800;text-decoration:none">${selectionId ? 'Review in Studio' : 'Open Studio Proposals'}</a>
             </td>
           </tr>
         </table>

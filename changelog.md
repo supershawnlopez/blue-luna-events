@@ -13,6 +13,32 @@
 
 ---
 
+## Session: August 28, 2026 — proposal selection to estimate handoff
+**AI:** Codex + team direction
+**Worked on:** Shawn approved the team recommendation to keep the Westin flow in proposal state first, save the selected package direction, and let Monica convert that selection into an official Studio estimate/payment link after review.
+
+### Completed This Session
+- Made package-card **Request this package** actions functional: selecting Package B/B+/C scrolls to the bottom selector and marks the correct package instead of leaving A selected.
+- Added client guidance after a package-card selection: "B has been marked. Please review the notes below, then confirm your selection."
+- Changed package-card request links into quiet buttons.
+- Balanced the "Choose the level of resort presence" heading for mobile.
+- Demoted Standard Price styling and emphasized Westin Partner Price in a la carte unit pricing.
+- Added migration `20260828193000_proposal_selections.sql` for `proposal_selections`.
+- Updated the public Westin proposal request API to save selected package direction, notes, disclosure acknowledgement, included items, standard price, and Westin Partner Price before emailing Monica.
+- Added protected Studio proposal-selection APIs: `/api/studio/proposals` and `/api/studio/proposals/[id]`.
+- Rebuilt Studio → Proposals to show submitted selections and a **Create Estimate** action.
+- Extended `/studio/estimates/new?proposal_selection_id=<id>` so the existing estimate builder preloads the selected Westin package, venue, event date, corporate event type, line item, price, and notes.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright at `390px` confirmed Package B request scrolls down, selects B, updates submit text to `Submit B Direction`, shows guidance, has no horizontal overflow, and has no console/page errors.
+- Confirmed unauthenticated `/api/studio/proposals` returns `401`.
+
+### Follow-Up
+- Apply `supabase/migrations/20260828193000_proposal_selections.sql` in Blue Luna Supabase before testing the full live Studio inbox and estimate handoff.
+
+---
+
 ## Session: August 28, 2026 — Westin proposal final mobile CTA polish
 **AI:** Codex
 **Worked on:** Shawn reviewed the live iPhone view and caught final presentation issues at the top and bottom of the proposal page.

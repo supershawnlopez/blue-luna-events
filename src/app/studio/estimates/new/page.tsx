@@ -192,6 +192,16 @@ function TopSaveIndicator({ status }: { status: SaveStatus }) {
   )
 }
 
+function ProposalNotice({ text }: { text: string }) {
+  return (
+    <div style={{ maxWidth: '500px', margin: '0 auto', padding: '16px 24px 0' }}>
+      <div style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.28)', borderRadius: '12px', padding: '12px 14px' }}>
+        <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.78)', lineHeight: 1.5, margin: 0 }}>{text}</p>
+      </div>
+    </div>
+  )
+}
+
 type CatalogItem = {
   id: string
   label: string
@@ -199,6 +209,52 @@ type CatalogItem = {
   pricing_type: 'flat' | 'per_unit'
   price: number
   unit: string | null
+}
+
+type ProposalSelection = {
+  id: string
+  client_name: string | null
+  client_email: string | null
+  client_phone: string | null
+  event_type: EventTypeId | null
+  event_date: string | null
+  venue: string | null
+  package_name: string
+  partner_price: number
+  standard_price: number
+  included_items: { title: string; detail?: string }[] | null
+  notes: string | null
+}
+
+function stateFromProposalSelection(selection: ProposalSelection): State {
+  const included = Array.isArray(selection.included_items) ? selection.included_items : []
+  const description = included
+    .map(item => item.detail ? `${item.title}: ${item.detail}` : item.title)
+    .join('\n')
+  const notes = [
+    `${selection.package_name} selected from Westin proposal.`,
+    `Westin Partner Price: $${Number(selection.partner_price || 0).toLocaleString()}.`,
+    `Standard Price: $${Number(selection.standard_price || 0).toLocaleString()}.`,
+    selection.notes ? `Client notes: ${selection.notes}` : '',
+  ].filter(Boolean).join('\n')
+
+  return {
+    step: selection.client_email ? 'items' : 'client',
+    client: {
+      name: selection.client_name ?? '',
+      email: selection.client_email ?? '',
+      phone: selection.client_phone ?? '',
+      event_date: selection.event_date ?? '',
+      venue: selection.venue ?? '',
+      notes,
+    },
+    eventTypeId: selection.event_type ?? 'corporate',
+    items: [{
+      label: selection.package_name,
+      description,
+      price: Number(selection.partner_price || 0),
+    }],
+  }
 }
 
 export default function NewEstimate() {
@@ -219,7 +275,7 @@ function NewEstimateInner() {
   // "In Progress" row) means load that real server draft instead — this is
   // what makes an in-progress estimate reachable from a different device.
   const [initial] = useState(() => {
-    const hasPrefillParams = ['name', 'email', 'phone', 'event_date', 'venue'].some(k => searchParams.get(k))
+    const hasPrefillParams = ['name', 'email', 'phone', 'event_date', 'venue', 'proposal_selection_id'].some(k => searchParams.get(k))
     const urlDraftId = searchParams.get('draft')
     if (hasPrefillParams) return { state: INITIAL, restored: false, draftId: null as string | null, loadingDraft: false }
     if (urlDraftId) return { state: INITIAL, restored: false, draftId: urlDraftId, loadingDraft: true }
@@ -238,6 +294,8 @@ function NewEstimateInner() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState<{ id: string; shareToken: string } | null>(null)
   const [copied, setCopied] = useState(false)
+  const [proposalSelectionId] = useState(() => searchParams.get('proposal_selection_id'))
+  const [proposalNotice, setProposalNotice] = useState('')
 
   const [catalogItems, setCatalogItems] = useState<CatalogItem[]>([])
   const [itemCatalogId, setItemCatalogId] = useState('')
@@ -252,6 +310,23 @@ function NewEstimateInner() {
   useEffect(() => {
     fetch('/api/studio/catalog').then(r => r.ok ? r.json() : []).then(d => setCatalogItems(Array.isArray(d) ? d : []))
   }, [])
+
+  useEffect(() => {
+    if (!proposalSelectionId) return
+    fetch(`/api/studio/proposals/${proposalSelectionId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then((selection: ProposalSelection | null) => {
+        if (!selection) {
+          setProposalNotice('Could not load that proposal selection. You can still build the estimate manually.')
+          return
+        }
+        window.localStorage.removeItem(DRAFT_KEY)
+        window.localStorage.removeItem(DRAFT_ID_KEY)
+        dispatch({ type: 'HYDRATE', state: stateFromProposalSelection(selection) })
+        setProposalNotice(`${selection.package_name} was loaded from the Westin proposal. Confirm the recipient email, adjust anything needed, then send the official estimate.`)
+      })
+      .catch(() => setProposalNotice('Could not load that proposal selection. You can still build the estimate manually.'))
+  }, [proposalSelectionId])
 
   // Pre-fill from a lead-email deep link (?name=&email=&phone=&event_date=&venue=)
   useEffect(() => {
@@ -448,6 +523,13 @@ function NewEstimateInner() {
         })
     if (res.ok) {
       const data = await res.json()
+      if (proposalSelectionId && data.id) {
+        fetch(`/api/studio/proposals/${proposalSelectionId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'estimate_created', estimate_id: data.id }),
+        }).catch(() => {})
+      }
       window.localStorage.removeItem(DRAFT_KEY)
       window.localStorage.removeItem(DRAFT_ID_KEY)
       setSaved({ id: data.id, shareToken: data.share_token })
@@ -523,6 +605,7 @@ function NewEstimateInner() {
           </div>
         </div>
         {draftRestored && <DraftRestoredBanner onDiscard={discardDraft} />}
+        {proposalNotice && <ProposalNotice text={proposalNotice} />}
         <TopSaveIndicator status={saveStatus} />
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '28px 24px 0' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
@@ -559,7 +642,7 @@ function NewEstimateInner() {
               .est-client-input::placeholder { color: rgba(255,255,255,0.32); font-style: italic; }
             `}</style>
             <button
-              onClick={() => dispatch({ type: 'SET_STEP', step: 'event' })}
+              onClick={() => dispatch({ type: 'SET_STEP', step: state.eventTypeId && state.items.length > 0 ? 'items' : 'event' })}
               disabled={!valid}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
@@ -568,7 +651,7 @@ function NewEstimateInner() {
                 cursor: valid ? 'pointer' : 'not-allowed', marginTop: '8px',
               }}
             >
-              Choose Event Type <ArrowRight size={16} />
+              {state.eventTypeId && state.items.length > 0 ? 'Review Items' : 'Choose Event Type'} <ArrowRight size={16} />
             </button>
           </div>
         </div>
@@ -592,6 +675,7 @@ function NewEstimateInner() {
           </div>
         </div>
         {draftRestored && <DraftRestoredBanner onDiscard={discardDraft} />}
+        {proposalNotice && <ProposalNotice text={proposalNotice} />}
         <TopSaveIndicator status={saveStatus} />
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '28px 24px 0', display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '10px' }}>
           {CONFIGURATOR_EVENT_TYPES.map(et => (
@@ -633,6 +717,7 @@ function NewEstimateInner() {
           </div>
         </div>
         {draftRestored && <DraftRestoredBanner onDiscard={discardDraft} />}
+        {proposalNotice && <ProposalNotice text={proposalNotice} />}
 
         <div style={{ maxWidth: '500px', margin: '0 auto', padding: '20px 24px 0' }}>
           {state.items.length > 0 && (
