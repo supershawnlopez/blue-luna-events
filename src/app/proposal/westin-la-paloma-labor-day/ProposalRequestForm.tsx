@@ -17,22 +17,20 @@ export default function ProposalRequestForm() {
   const [selectionPulse, setSelectionPulse] = useState(false)
   const selectedPackage = westinProposal.packages.find(pkg => pkg.id === selectedPackageId) ?? westinProposal.packages[0]
 
-  function choosePackage(packageId: string, guided = false) {
+  function choosePackage(packageId: string) {
     const pkg = westinProposal.packages.find(item => item.id === packageId)
     if (!pkg) return
     setSelectedPackageId(packageId)
     setMessage('')
     setSelectionPulse(false)
     window.setTimeout(() => setSelectionPulse(true), 20)
-    if (guided) {
-      setSelectionGuidance(`${pkg.name.split(' - ')[0]} has been marked. Please review the notes below, then confirm your selection.`)
-    }
+    setSelectionGuidance(`${pkg.name.split(' - ')[0]} is selected. Add any additional notes below, then confirm your selection.`)
   }
 
   useEffect(() => {
     function handlePackageSelected(event: Event) {
       const packageId = (event as CustomEvent<{ packageId?: string }>).detail?.packageId
-      if (packageId) choosePackage(packageId, true)
+      if (packageId) choosePackage(packageId)
     }
 
     window.addEventListener('westin-package-selected', handlePackageSelected)

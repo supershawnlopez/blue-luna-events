@@ -69,6 +69,15 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin proposal launch polish)
+
+- ✅ **Studio Proposals empty state softened.** Missing/no package selections now reads like an empty inbox instead of a red error.
+- ✅ **Proposal guidance copy fixed.** Package guidance now says to add any additional notes below and confirm the selection.
+- ✅ **Bottom selector sync fixed.** Changing from C to B/A at the bottom updates both the guidance text and submit button.
+- Verified: clean `npm run build`; clean `git diff --check` except normal Windows line-ending warnings.
+
+---
+
 ## DONE (2026-08-28 — Proposal selection to estimate handoff)
 
 - ✅ **Client package-card requests now work.** Tapping Package B/B+/C scrolls to the bottom selector, selects the correct package, shows guidance, and updates the submit button to that package.

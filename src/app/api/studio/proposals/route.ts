@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false })
 
   if (error) {
-    if (error.code === '42P01') return NextResponse.json([])
+    if (error.code === '42P01' || error.code === 'PGRST205') return NextResponse.json([])
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 

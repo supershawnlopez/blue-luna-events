@@ -13,6 +13,22 @@
 
 ---
 
+## Session: August 28, 2026 — Westin proposal final launch polish
+**AI:** Codex + team direction
+**Worked on:** Shawn caught two last proposal-launch issues from iPhone/PWA testing: Studio looked broken when no selections were available, and the client guidance text could stay on the previous package after switching selections at the bottom.
+
+### Completed This Session
+- Updated Studio Proposals so an unavailable/missing proposal-selection table is treated as an empty selections inbox, not a red error state.
+- Changed Studio empty copy to explain that package selections will appear after the client submits a direction.
+- Updated proposal guidance copy to say, "Add any additional notes below, then confirm your selection."
+- Fixed bottom selector behavior so changing packages updates both the guidance text and submit button.
+
+### Verification
+- `npm run build` passed clean.
+- `git diff --check` passed aside from normal Windows line-ending warnings.
+
+---
+
 ## Session: August 28, 2026 — proposal selection to estimate handoff
 **AI:** Codex + team direction
 **Worked on:** Shawn approved the team recommendation to keep the Westin flow in proposal state first, save the selected package direction, and let Monica convert that selection into an official Studio estimate/payment link after review.

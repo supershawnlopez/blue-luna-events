@@ -2,6 +2,23 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin proposal final launch polish
+
+Shawn caught two final live issues before sending the proposal: Monica's Studio PWA showed a red "Could not load proposal selections" message, and the client-facing bottom package guidance could stay stuck on the previous package after changing from C to B/A.
+
+**Shipped in code:** Studio Proposals now treats a missing/not-yet-applied `proposal_selections` table as an empty selections inbox and uses calm copy instead of a red error. The empty state now tells Monica no package selections have been submitted yet and that submitted directions will appear there for estimate creation. The proposal form guidance now updates every time the client chooses A/B/B+/C, whether they select from the top package cards or the bottom selector.
+
+**Client wording:** changed the guidance to `B is selected. Add any additional notes below, then confirm your selection.` This matches the optional notes box and avoids implying there are separate notes the client must review.
+
+Verified locally with `npm run build` clean and `git diff --check` clean aside from normal Windows line-ending warnings.
+
+**Shawn, test this after deploy:**
+1. Open Studio → Proposals in Monica's PWA and confirm the selections area no longer looks broken if there are no submissions yet.
+2. Open the Westin proposal, tap Package C at the top, then switch to B or A at the bottom.
+3. Confirm the guidance text and submit button always match the selected package.
+
+---
+
 ## 2026-08-28: Proposal selections now hand off into Studio estimates
 
 Shawn approved the team's next-build direction: keep the Westin page in proposal state, guide the client after selecting a package, save the selected package direction for Monica, and let Monica move it into the official estimate/payment system only after review.

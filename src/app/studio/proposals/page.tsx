@@ -56,7 +56,7 @@ export default function StudioProposalsPage() {
     setError('')
     const res = await fetch('/api/studio/proposals')
     if (!res.ok) {
-      setError('Could not load proposal selections.')
+      setError('No package selections are showing yet. Once the client submits a direction, it will appear here for estimate review.')
       setLoading(false)
       return
     }
@@ -139,10 +139,10 @@ export default function StudioProposalsPage() {
           {loading ? (
             <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.86rem', padding: '28px 0', textAlign: 'center' }}>Loading selections...</p>
           ) : error ? (
-            <p style={{ color: '#f87171', fontSize: '0.86rem', padding: '18px 0' }}>{error}</p>
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.86rem', lineHeight: 1.6, padding: '18px 0' }}>{error}</p>
           ) : selections.length === 0 ? (
             <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.86rem', lineHeight: 1.6, padding: '24px 0', textAlign: 'center' }}>
-              No package directions have been submitted yet.
+              No package selections yet. When the client submits a package direction, it will appear here so Monica can create the official estimate.
             </p>
           ) : (
             <div style={{ display: 'grid', gap: '12px' }}>
