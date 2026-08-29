@@ -47,6 +47,15 @@ function formatQuantity(quantity: number, unitLabel: string) {
   return `${quantity} ${Math.abs(quantity) === 1 ? singularLabels[unitLabel] ?? unitLabel : unitLabel}`
 }
 
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
+
 export default function ProposalRequestForm() {
   const [selectedPackageId, setSelectedPackageId] = useState('package-a')
   const [quantities, setQuantities] = useState<Quantities>(() => quantitiesForPackage('package-a'))
@@ -217,7 +226,246 @@ export default function ProposalRequestForm() {
   }
 
   function printChoices() {
-    window.print()
+    const chosenCode = packageCode(selectedPackage.name)
+    const chosenTitle = packageTitle(selectedPackage.name)
+    const includedRows = packageItems
+      .map(item => `
+        <div class="choice-row">
+          <span>${escapeHtml(formatQuantity(item.quantity, item.unitLabel))} - ${escapeHtml(item.title)}</span>
+          <strong>${escapeHtml(formatMoney(item.quantity * item.partnerUnitPrice))}</strong>
+        </div>
+      `)
+      .join('')
+    const adjustmentRows = changedItems.length > 0
+      ? changedItems
+        .map(item => `
+          <div class="choice-row">
+            <span>${item.delta > 0 ? '+' : ''}${escapeHtml(formatQuantity(item.delta, item.unitLabel))} - ${escapeHtml(item.title)}</span>
+            <strong>${escapeHtml(formatDeltaMoney(item.delta * item.partnerUnitPrice))}</strong>
+          </div>
+        `)
+        .join('')
+      : '<p class="muted">No adjustments selected. Monica can use this package as shown.</p>'
+    const noteCopy = notes.trim()
+      ? escapeHtml(notes.trim()).replace(/\n/g, '<br />')
+      : 'No additional notes added.'
+    const printWindow = window.open('', '_blank', 'width=900,height=1100')
+    if (!printWindow) {
+      window.print()
+      return
+    }
+
+    printWindow.document.write(`
+      <!doctype html>
+      <html>
+        <head>
+          <title>${escapeHtml(westinProposal.title)} - ${escapeHtml(chosenTitle)}</title>
+          <style>
+            @page { size: letter; margin: 0.5in; }
+            * { box-sizing: border-box; }
+            body {
+              color: #0d0f0f;
+              font-family: Inter, Arial, sans-serif;
+              margin: 0;
+              padding: 0;
+            }
+            .sheet {
+              width: 100%;
+            }
+            .top {
+              align-items: flex-start;
+              border-bottom: 2px solid #0d0f0f;
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 24px;
+              padding-bottom: 16px;
+            }
+            .right { text-align: right; }
+            .eyebrow {
+              color: #3a8f8f;
+              display: block;
+              font-size: 9px;
+              font-weight: 900;
+              letter-spacing: 0.16em;
+              margin-bottom: 6px;
+              text-transform: uppercase;
+            }
+            .brand {
+              display: block;
+              font-family: Georgia, 'Times New Roman', serif;
+              font-size: 27px;
+              line-height: 1;
+            }
+            .confirmation {
+              background: #f4fbfb;
+              border: 1px solid rgba(91,191,191,0.45);
+              border-radius: 16px;
+              margin-bottom: 18px;
+              padding: 18px;
+            }
+            .chosen {
+              align-items: center;
+              display: flex;
+              gap: 12px;
+              margin-bottom: 10px;
+            }
+            .code {
+              align-items: center;
+              background: #5bbfbf;
+              border-radius: 999px;
+              color: #0d0f0f;
+              display: inline-flex;
+              font-size: 13px;
+              font-weight: 900;
+              height: 34px;
+              justify-content: center;
+              min-width: 34px;
+              padding: 0 9px;
+            }
+            h1 {
+              font-size: 27px;
+              line-height: 1.05;
+              margin: 0;
+            }
+            .confirmation p,
+            .muted {
+              color: #374151;
+              font-size: 12px;
+              line-height: 1.45;
+              margin: 0;
+            }
+            .card {
+              border: 1px solid #e5e7eb;
+              border-radius: 16px;
+              margin-bottom: 16px;
+              padding: 16px 18px;
+            }
+            h2 {
+              font-size: 16px;
+              line-height: 1.2;
+              margin: 0 0 12px;
+            }
+            .choice-row {
+              align-items: baseline;
+              border-bottom: 1px solid #eef0f2;
+              display: grid;
+              gap: 16px;
+              grid-template-columns: minmax(0, 1fr) auto;
+              padding: 7px 0;
+            }
+            .choice-row:last-child {
+              border-bottom: 0;
+            }
+            .choice-row span {
+              color: #374151;
+              font-size: 12px;
+              font-weight: 700;
+              line-height: 1.35;
+            }
+            .choice-row strong {
+              font-size: 12px;
+              white-space: nowrap;
+            }
+            .total {
+              align-items: start;
+              background: #0d0f0f;
+              border-radius: 16px;
+              color: white;
+              display: grid;
+              gap: 24px;
+              grid-template-columns: minmax(0, 1fr) auto;
+              margin: 18px 0;
+              padding: 18px;
+            }
+            .total strong {
+              display: block;
+              font-size: 32px;
+              line-height: 1;
+              margin-top: 7px;
+            }
+            .savings {
+              border-left: 1px solid rgba(255,255,255,0.18);
+              padding-left: 18px;
+              text-align: right;
+            }
+            .savings strong {
+              color: #5bbfbf;
+              font-size: 21px;
+            }
+            .notes {
+              min-height: 78px;
+            }
+            .ack {
+              border-top: 1px solid #e5e7eb;
+              color: #374151;
+              font-size: 10px;
+              line-height: 1.4;
+              margin-top: 14px;
+              padding-top: 12px;
+            }
+            @media print {
+              body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            }
+          </style>
+        </head>
+        <body>
+          <main class="sheet">
+            <section class="top">
+              <div>
+                <span class="eyebrow">Blue Luna Events</span>
+                <strong class="brand">Westin La Paloma</strong>
+              </div>
+              <div class="right">
+                <span class="eyebrow">Labor Day 2026</span>
+                <strong class="brand">Package Choice Summary</strong>
+              </div>
+            </section>
+            <section class="confirmation">
+              <span class="eyebrow">This is the package you chose</span>
+              <div class="chosen">
+                <span class="code">${escapeHtml(chosenCode)}</span>
+                <h1>${escapeHtml(chosenTitle)}</h1>
+              </div>
+              <p>Package details selected for Monica to confirm before sending the invoice and payment link.</p>
+            </section>
+            <section class="card">
+              <span class="eyebrow">Your Current Package</span>
+              <h2>${escapeHtml(chosenTitle)}</h2>
+              ${includedRows}
+            </section>
+            <section class="card">
+              <span class="eyebrow">Package Adjustments</span>
+              ${adjustmentRows}
+            </section>
+            <section class="total">
+              <div>
+                <span class="eyebrow">Westin Partner Price</span>
+                <strong>${escapeHtml(formatMoney(adjustedPartnerPrice))}</strong>
+              </div>
+              <div class="savings">
+                <span class="eyebrow">Westin Partner Savings</span>
+                <strong>${escapeHtml(formatMoney(partnerSavings))}</strong>
+              </div>
+            </section>
+            <section class="card notes">
+              <span class="eyebrow">Notes for Monica</span>
+              <p class="muted">${noteCopy}</p>
+            </section>
+            <section class="ack">
+              <strong>Design + Weather Acknowledgement</strong><br />
+              Final placement is subject to venue access, setup timing, weather conditions, and safe installation requirements.
+            </section>
+          </main>
+          <script>
+            window.addEventListener('load', () => {
+              window.print()
+              window.setTimeout(() => window.close(), 500)
+            })
+          </script>
+        </body>
+      </html>
+    `)
+    printWindow.document.close()
   }
 
   return (
@@ -236,6 +484,17 @@ export default function ProposalRequestForm() {
         </div>
 
         <form onSubmit={submit} className="request-form">
+          <div className="print-choice-header" aria-hidden="true">
+            <div>
+              <span>Blue Luna Events</span>
+              <strong>Westin La Paloma</strong>
+            </div>
+            <div>
+              <span>Labor Day 2026</span>
+              <strong>Package Choice Summary</strong>
+            </div>
+          </div>
+
           <div className="package-options">
             {westinProposal.packages.map(pkg => {
               const active = pkg.id === selectedPackageId
@@ -427,6 +686,9 @@ export default function ProposalRequestForm() {
           border-radius: 24px;
           padding: var(--form-pad);
           box-shadow: 0 24px 80px rgba(0,0,0,0.24);
+        }
+        .print-choice-header {
+          display: none;
         }
         .package-options,
         .field-grid {
@@ -955,6 +1217,10 @@ export default function ProposalRequestForm() {
           }
         }
         @media print {
+          @page {
+            size: letter;
+            margin: 0.45in;
+          }
           body * {
             visibility: hidden;
           }
@@ -980,26 +1246,173 @@ export default function ProposalRequestForm() {
           #request-package .selection-guidance,
           #request-package .refine-list,
           #request-package .adjust-package,
-          #request-package .terms-check,
           #request-package .request-submit,
           #request-package .bottom-pdf,
           #request-package .form-message {
             display: none;
           }
           #request-package .request-form {
+            border: 0;
             box-shadow: none;
             padding: 0;
           }
+          #request-package .print-choice-header {
+            align-items: start;
+            border-bottom: 2px solid #0d0f0f;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+          }
+          #request-package .print-choice-header div:last-child {
+            text-align: right;
+          }
+          #request-package .print-choice-header span {
+            color: #5bbfbf;
+            display: block;
+            font-size: 9px;
+            font-weight: 900;
+            letter-spacing: 0.16em;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+          }
+          #request-package .print-choice-header strong {
+            color: #0d0f0f;
+            display: block;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 24px;
+            line-height: 1;
+          }
           #request-package .selected-summary {
-            border: 1px solid #d1d5db;
-            padding: 16px;
+            border: 0;
+            margin: 0;
+            padding: 0;
           }
           #request-package .selected-summary-top {
+            background: #f4fbfb !important;
+            border: 1px solid rgba(91,191,191,0.38);
+            border-radius: 14px;
             color: #0d0f0f !important;
+            margin-bottom: 18px;
+          }
+          #request-package .selected-summary-top div {
+            padding: 16px 18px;
+          }
+          #request-package .selected-summary-top span,
+          #request-package .selected-summary-items > span {
+            color: #3a8f8f !important;
+            font-size: 8.5px;
+          }
+          #request-package .selected-summary-top strong {
+            font-size: 22px;
+          }
+          #request-package .selected-summary-top p {
+            color: #374151;
+            font-size: 11px;
+            line-height: 1.45;
+          }
+          #request-package .selected-summary-top .package-code {
+            height: 26px;
+            min-width: 26px;
+          }
+          #request-package .summary-zone {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            margin: 0;
+            padding: 16px 18px;
+          }
+          #request-package .summary-title {
+            font-size: 16px;
+            margin-bottom: 10px;
+          }
+          #request-package .selected-summary-items ul {
+            gap: 6px;
+          }
+          #request-package .selected-summary-items li {
+            border-bottom: 1px solid #eef0f2;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            padding-bottom: 6px;
+          }
+          #request-package .selected-summary-items li:last-child {
+            border-bottom: 0;
+          }
+          #request-package .selected-summary-items li span,
+          #request-package .selected-summary-items p {
+            color: #374151;
+            font-size: 11px;
+            line-height: 1.35;
+          }
+          #request-package .selected-summary-items li strong {
+            color: #0d0f0f;
+            font-size: 11px;
+          }
+          #request-package .summary-divider {
+            margin: 13px 0;
           }
           #request-package .summary-total {
             background: #0d0f0f !important;
+            border-radius: 14px;
             color: white !important;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            margin-top: 16px;
+            padding: 16px 18px;
+          }
+          #request-package .summary-total strong {
+            font-size: 28px;
+          }
+          #request-package .summary-savings {
+            border-left: 1px solid rgba(255,255,255,0.18);
+            border-top: 0;
+            padding-left: 18px;
+            padding-top: 0;
+            text-align: right;
+          }
+          #request-package .summary-savings strong {
+            color: #5bbfbf;
+            font-size: 18px;
+          }
+          #request-package .notes-label {
+            border-top: 1px solid #e5e7eb;
+            display: block;
+            font-size: 9px;
+            letter-spacing: 0.14em;
+            margin-top: 18px;
+            padding-top: 14px;
+            text-transform: uppercase;
+          }
+          #request-package .notes-help {
+            color: #374151;
+            font-size: 11px;
+            margin-bottom: 8px;
+          }
+          #request-package textarea {
+            border: 1px solid #d1d5db !important;
+            border-radius: 12px !important;
+            min-height: 86px;
+            padding: 12px !important;
+          }
+          #request-package .terms-check {
+            border-top: 1px solid #e5e7eb;
+            color: #374151;
+            display: flex;
+            font-size: 10px;
+            line-height: 1.35;
+            margin-top: 14px;
+            padding-top: 12px;
+          }
+          #request-package .terms-check input {
+            display: none;
+          }
+          #request-package .terms-check strong {
+            color: #0d0f0f;
+            font-size: 10px;
+            margin-bottom: 3px;
+          }
+          #request-package .terms-check a {
+            display: none;
           }
         }
       `,

@@ -69,6 +69,15 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin print/save choice sheet)
+
+- ✅ **Rebuilt the print/save output.** **Print / Save Your Choices** now opens a dedicated package choice sheet instead of printing the full webpage UI.
+- ✅ **Included only decision-relevant content.** The saved sheet shows Blue Luna/Westin context, selected package, included items, adjustments, Westin Partner Price, savings, notes for Monica, and acknowledgement language.
+- ✅ **Removed web clutter from print.** Package selectors, steppers, submit button, navigation, and web-only controls are hidden from the generated sheet.
+- Verified: clean `npm run build`; Playwright QA through the exact button path confirmed selected Package B, notes, and price render in the print window; generated PDF confirmed as one Letter-size page.
+
+---
+
 ## DONE (2026-08-28 — Westin lower form package markers)
 
 - ✅ **Followed Shawn-approved Johnny/Steve direction.** Removed the redundant selected-package guidance bubble from the lower proposal form.

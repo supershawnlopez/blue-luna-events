@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin print/save choices rebuilt as dedicated PDF sheet
+
+Shawn approved fixing the **Print / Save Your Choices** output because printing the page looked bad. Team direction: the print action should generate a polished package choice sheet, not a stripped mobile webpage.
+
+**Shipped in code:** **Print / Save Your Choices** now opens a dedicated print window containing only the selected package choice summary: Blue Luna/Westin header, chosen package, included items, package adjustments, Westin Partner Price, Westin Partner Savings, notes for Monica, and design/weather acknowledgement. The printed/saved output hides package selectors, steppers, submit buttons, navigation, and web-only controls. The old page-level print CSS remains as fallback only if a popup is blocked.
+
+Verified with `npm run build` clean and Playwright QA through the exact button path. The generated print window contained the selected Package B, entered notes, and `$1,630` price. A temporary generated PDF was confirmed as `1` Letter-size page with `pdfinfo`.
+
+---
+
 ## 2026-08-28: Westin lower form package markers + selected bubble removed
 
 Shawn approved the Johnny/Steve-led direction to remove the remaining redundancy in the lower proposal form: no more `B -` / `B+ -` dash notation in the selector, and no separate teal "B is selected..." bubble above the chosen-package confirmation.

@@ -13,6 +13,24 @@
 
 ---
 
+## Session: August 28, 2026 — Westin print/save choice sheet
+**AI:** Codex following Shawn-approved team direction
+**Worked on:** Shawn approved fixing the proposal print/save output so it produces a beautiful package choice PDF instead of a bad printout of the webpage.
+
+### Completed This Session
+- Replaced the simple `window.print()` behavior with a dedicated print-window choice sheet generated from the current selected package state.
+- Included selected package, included items, package adjustments, Westin Partner Price, Westin Partner Savings, notes for Monica, and design/weather acknowledgement.
+- Hid web-only UI from the generated sheet: package selectors, steppers, buttons, navigation, and the adjustment editor.
+- Kept package data, pricing logic, API behavior, and submit behavior unchanged.
+- Left page-level print CSS as a fallback if the browser blocks the dedicated print window.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright QA tested the exact **Print / Save Your Choices** button path and confirmed the generated sheet contains Package B, the entered notes, and `$1,630`.
+- Temporary PDF QA confirmed the generated output is one Letter-size page.
+
+---
+
 ## Session: August 28, 2026 — Westin lower form package markers
 **AI:** Codex following Shawn-approved Johnny/Steve direction
 **Worked on:** Shawn approved removal of redundant selected-package language and dash-style package labels in the lower proposal form.
