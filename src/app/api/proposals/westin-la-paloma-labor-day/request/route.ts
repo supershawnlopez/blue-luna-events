@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   const acceptedDisclosures = body.acceptedDisclosures === true
 
   if (!acceptedDisclosures) {
-    return NextResponse.json({ error: 'Please review the decor notes before requesting a package.' }, { status: 400 })
+    return NextResponse.json({ error: 'Please review the decor notes before sending package details.' }, { status: 400 })
   }
 
   const db = serverClient()
@@ -137,7 +137,7 @@ function buildSelectionEmail(
           <tr>
             <td style="background:#0d0f0f;padding:30px">
               <p style="margin:0 0 8px;color:#5bbfbf;text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:800">Westin La Paloma Proposal</p>
-              <h1 style="margin:0;color:#fff;font-family:Georgia,serif;font-size:28px;line-height:1.1">Package direction selected</h1>
+              <h1 style="margin:0;color:#fff;font-family:Georgia,serif;font-size:28px;line-height:1.1">Package details selected</h1>
             </td>
           </tr>
           <tr>
@@ -150,7 +150,7 @@ function buildSelectionEmail(
               </p>
               <ul style="margin:0 0 22px;padding-left:20px;color:#374151;font-size:14px;line-height:1.6">${includes}</ul>
               ${notes ? `<div style="border-left:3px solid #5bbfbf;background:#f9fafb;padding:14px 16px;border-radius:0 10px 10px 0"><p style="margin:0;color:#374151;font-size:14px;line-height:1.6">${escapeHtml(notes)}</p></div>` : ''}
-              <p style="margin:22px 0 0;color:#667085;font-size:13px;line-height:1.6">The client acknowledged the design/weather notes before submitting this package direction.</p>
+              <p style="margin:22px 0 0;color:#667085;font-size:13px;line-height:1.6">The client acknowledged the design/weather notes before sending these package details.</p>
               <a href="${studioUrl}" style="display:inline-block;margin-top:22px;background:#5bbfbf;color:#0d0f0f;border-radius:999px;padding:13px 20px;font-size:14px;font-weight:800;text-decoration:none">${selectionId ? 'Review in Studio' : 'Open Studio Proposals'}</a>
             </td>
           </tr>

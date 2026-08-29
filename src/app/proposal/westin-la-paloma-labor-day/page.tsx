@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Download } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 import PackageRequestLink from './PackageRequestLink'
 import ProposalRequestForm from './ProposalRequestForm'
@@ -29,10 +28,6 @@ export default function WestinProposalPage() {
             </div>
             <div className="pricing-note">
               <p>{westinProposal.pricingNote}</p>
-              <a href={westinProposal.pdfPath} download>
-                <Download size={16} />
-                Download PDF
-              </a>
             </div>
           </div>
         </div>
@@ -81,7 +76,7 @@ export default function WestinProposalPage() {
         <div className="proposal-shell unit-grid">
           <div>
             <p className="proposal-kicker">Unit Pricing</p>
-            <h2>Refine the direction with Monica.</h2>
+            <h2>Make the package fit the moment.</h2>
             <p className="muted-copy">
               These unit prices keep each package easy to adjust while preserving the same Standard Price and Westin Partner Price structure.
             </p>

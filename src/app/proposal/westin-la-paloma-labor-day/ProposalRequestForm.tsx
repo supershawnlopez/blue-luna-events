@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { Check, Download, Send } from 'lucide-react'
+import { Check, Printer, Send } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
@@ -90,7 +90,7 @@ export default function ProposalRequestForm() {
     setMessage('')
     setSelectionPulse(false)
     window.setTimeout(() => setSelectionPulse(true), 20)
-    setSelectionGuidance(`${packageCode(pkg.name)} is selected. Keep reviewing, adjust anything you would like Monica to look at, then send the direction when it feels right.`)
+    setSelectionGuidance(`${packageCode(pkg.name)} is selected. Keep reviewing, adjust anything you would like included, then send the package details when it feels right.`)
     const westinWindow = window as WestinWindow
     westinWindow.__westinSelectedPackageId = packageId
     window.dispatchEvent(new CustomEvent('westin-package-state-changed', { detail: { packageId } }))
@@ -121,7 +121,7 @@ export default function ProposalRequestForm() {
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (!termsAccepted) {
-      setMessage('Please review and acknowledge the design/weather notes before submitting your package direction.')
+      setMessage('Please review and acknowledge the design/weather notes before sending your package details.')
       return
     }
 
@@ -150,13 +150,17 @@ export default function ProposalRequestForm() {
     }
 
     setStatus('sent')
-    setMessage('Package direction received. Blue Luna Events will confirm final details before preparing the official estimate and payment link.')
+    setMessage('Package details received. Blue Luna Events will confirm final details before sending the invoice and payment link.')
   }
 
   function updateQuantity(itemId: string, nextQuantity: number) {
     const quantity = Math.max(0, Math.min(40, Math.round(nextQuantity)))
     setQuantities(current => ({ ...current, [itemId]: quantity }))
     setMessage('')
+  }
+
+  function printChoices() {
+    window.print()
   }
 
   return (
@@ -170,7 +174,7 @@ export default function ProposalRequestForm() {
             Make this easy for Monica to finalize.
           </h2>
           <p className="request-copy">
-            Choose the package you like, make any small quantity changes, and leave Monica a note if there is anything you want her to review.
+            Choose the package you like, make any small quantity changes, and leave Monica a note if there is anything else she should know.
           </p>
         </div>
 
@@ -210,13 +214,13 @@ export default function ProposalRequestForm() {
               <div>
                 <span>This is the package you chose</span>
                 <strong>{selectedPackage.name}</strong>
-                <p>Keep it as shown, or adjust the quantities below for Monica to review.</p>
+                <p>Keep it as shown, or adjust the quantities below before sending your package details.</p>
               </div>
             </div>
             <div className="refine-panel">
               <div className="refine-heading">
                 <span>Fine-Tune the Details</span>
-                <p>Package quantities are pre-filled below. Adjust only what you would like Blue Luna to review before Monica prepares the official estimate.</p>
+                <p>Package quantities are pre-filled below. Adjust only what you would like included before Monica sends the invoice and payment link.</p>
               </div>
               <div className="refine-list">
                 {westinProposal.refinementItems.map(item => {
@@ -251,7 +255,7 @@ export default function ProposalRequestForm() {
                   <ul>
                     {packageItems.map(item => (
                       <li key={item.id}>
-                          <span>{formatQuantity(item.quantity, item.unitLabel)} · {item.title}</span>
+                        <span>{formatQuantity(item.quantity, item.unitLabel)} · {item.title}</span>
                         <strong>{formatMoney(item.quantity * item.partnerUnitPrice)}</strong>
                       </li>
                     ))}
@@ -260,7 +264,7 @@ export default function ProposalRequestForm() {
                   <p>No decor items selected.</p>
                 )}
                 <div className="summary-divider" />
-                <span>Changes for Monica to Review</span>
+                <span>Package Adjustments</span>
                 {changedItems.length > 0 ? (
                   <ul>
                     {changedItems.map(item => (
@@ -271,10 +275,10 @@ export default function ProposalRequestForm() {
                     ))}
                   </ul>
                 ) : (
-                  <p>No changes requested. Monica can prepare this package as shown.</p>
+                  <p>No adjustments selected. Monica can use this package as shown.</p>
                 )}
                 <div className="summary-total">
-                  <span>Updated Westin Partner Price</span>
+                  <span>Westin Partner Price</span>
                   <strong>{formatMoney(adjustedPartnerPrice)}</strong>
                 </div>
               </div>
@@ -284,7 +288,7 @@ export default function ProposalRequestForm() {
           <label className="notes-label" htmlFor="westin-proposal-notes">
             Notes for Monica
           </label>
-          <p className="notes-help">Please add any notes or changes you would like Monica to review.</p>
+          <p className="notes-help">Please add any notes or details you would like Monica to see.</p>
           <div className="field-grid">
             <textarea id="westin-proposal-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Example: We like this package but may want fewer railing clusters." rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }} />
           </div>
@@ -308,7 +312,7 @@ export default function ProposalRequestForm() {
             ].filter(Boolean).join(' ')}
           >
             {status === 'sent' ? <Check size={17} /> : <Send size={17} />}
-            {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Sent to Monica' : `Send ${packageCode(selectedPackage.name)} to Monica`}
+            {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Package Details Sent' : 'Send Package Details'}
           </button>
 
           {message && (
@@ -318,11 +322,11 @@ export default function ProposalRequestForm() {
           )}
 
           <div className="bottom-pdf">
-            <p>Need to share the proposal internally?</p>
-            <a href={westinProposal.pdfPath} download>
-              <Download size={16} />
-              Download PDF
-            </a>
+            <p>Need a copy for your team?</p>
+            <button type="button" onClick={printChoices}>
+              <Printer size={16} />
+              Print / Save Your Choices
+            </button>
           </div>
         </form>
       </div>
@@ -725,11 +729,15 @@ export default function ProposalRequestForm() {
           line-height: 1.4;
           margin: 0;
         }
-        .bottom-pdf a {
+        .bottom-pdf button {
           display: inline-flex;
           align-items: center;
           gap: 8px;
+          background: transparent;
+          border: 0;
           color: #0d0f0f;
+          cursor: pointer;
+          font: inherit;
           font-size: 0.88rem;
           font-weight: 900;
           text-decoration: none;
@@ -766,11 +774,59 @@ export default function ProposalRequestForm() {
             align-items: flex-start;
             flex-direction: column;
           }
-          .bottom-pdf a {
+          .bottom-pdf button {
             background: #f4fbfb;
             border: 1px solid rgba(91,191,191,0.45);
             border-radius: 999px;
             padding: 11px 14px;
+          }
+        }
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #request-package,
+          #request-package * {
+            visibility: visible;
+          }
+          #request-package {
+            background: white;
+            color: #0d0f0f;
+            left: 0;
+            padding: 0;
+            position: absolute;
+            top: 0;
+            width: 100%;
+          }
+          #request-package .request-shell {
+            display: block;
+            max-width: none;
+          }
+          #request-package .request-shell > div:first-child,
+          #request-package .package-options,
+          #request-package .selection-guidance,
+          #request-package .refine-heading,
+          #request-package .refine-list,
+          #request-package .terms-check,
+          #request-package .request-submit,
+          #request-package .bottom-pdf,
+          #request-package .form-message {
+            display: none;
+          }
+          #request-package .request-form {
+            box-shadow: none;
+            padding: 0;
+          }
+          #request-package .selected-summary {
+            border: 1px solid #d1d5db;
+          }
+          #request-package .selected-summary-top {
+            background: #0d0f0f !important;
+            color: white !important;
+          }
+          #request-package .summary-total {
+            background: #0d0f0f !important;
+            color: white !important;
           }
         }
       `,

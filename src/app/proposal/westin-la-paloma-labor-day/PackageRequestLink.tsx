@@ -41,7 +41,7 @@ export default function PackageRequestLink({ packageId, packageLabel }: PackageR
       </button>
       {selected && (
         <div className="package-selected-note">
-          <p>{packageLabel} is picked. Keep going through the proposal, then Monica can review any changes you make at the bottom.</p>
+          <p>{packageLabel} is picked. Keep going through the proposal, then send the package details when everything looks right.</p>
         </div>
       )}
     </div>

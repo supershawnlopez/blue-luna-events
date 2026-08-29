@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin final proposal copy and printable choices)
+
+- ✅ **Removed static top PDF download.** The proposal no longer invites the client to download a generic price sheet before choosing details.
+- ✅ **Added current-choice print/save action.** Bottom action now says **Print / Save Your Choices** and opens the browser print/save dialog for the selected package, adjusted quantities, notes area, and Westin Partner Price.
+- ✅ **Cleaned final client-facing language.** `Changes for Monica to Review` became **Package Adjustments**, `Updated Westin Partner Price` became **Westin Partner Price**, and the final CTA became **Send Package Details**.
+- ✅ **Aligned next step language.** Client-facing confirmation now says Blue Luna will send the invoice and payment link, not an estimate.
+- Verified: clean `npm run build`; Playwright mobile QA confirmed copy, top PDF removal, bottom print/save action, price update, and CTA wording.
+
+---
+
 ## DONE (2026-08-28 — Westin naming and final confirmation polish)
 
 - ✅ **Renamed the package ladder.** Package names now read `Arrival Statement`, `Resort Presence`, `Elevated Resort Presence`, and `Full Resort Experience`; the Recommended badge no longer repeats in the package title.

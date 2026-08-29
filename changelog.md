@@ -13,6 +13,25 @@
 
 ---
 
+## Session: August 28, 2026 — Westin final copy and printable choices
+**AI:** Codex
+**Worked on:** Shawn approved the functionality and asked for final copy cleanup plus a more useful PDF behavior now that the proposal has live package choices.
+
+### Completed This Session
+- Changed **Changes for Monica to Review** to **Package Adjustments**.
+- Changed **Updated Westin Partner Price** to **Westin Partner Price** to avoid the mobile wrap and simplify the label.
+- Changed the final CTA to **Send Package Details** and sent-state copy to **Package Details Sent**.
+- Replaced estimate wording with invoice/payment-link wording in the client-facing confirmation flow.
+- Removed the top static **Download PDF** button.
+- Replaced the bottom static PDF download with **Print / Save Your Choices**, which opens the browser print/save dialog for the current package details.
+- Added print CSS so the saved copy focuses on the selected package, package adjustments, notes area, and Westin Partner Price instead of the entire proposal page.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright mobile QA confirmed the top PDF button is gone, bottom print/save action exists, package adjustment copy is present, Westin Partner Price updates correctly, and the CTA reads `Send Package Details`.
+
+---
+
 ## Session: August 28, 2026 — Westin naming and final confirmation polish
 **AI:** Codex + copywriting skill
 **Worked on:** Shawn surfaced a missed message with final copy/UI direction: remove generic package names, remove Recommended redundancy, move the changing total lower, and make the bottom confirmation feel personal instead of formal.

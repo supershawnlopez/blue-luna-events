@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin proposal final copy + choice copy action
+
+Shawn approved the functional flow, then corrected the last client-facing language: avoid "changes for Monica to review," avoid estimate wording, shorten "Updated Westin Partner Price," and stop offering a static PDF at the top now that the page has selectable package details.
+
+**Shipped in code:** the bottom summary label is now **Package Adjustments**, the total label is **Westin Partner Price**, and the CTA is **Send Package Details** / **Package Details Sent**. The flow now says Monica sends the invoice and payment link, not an estimate. The top PDF download was removed. The bottom action now says **Print / Save Your Choices** and opens the browser print/save dialog so the current selected package, adjusted quantities, notes area, and price can be saved as a PDF.
+
+Verified with `npm run build` clean and Playwright mobile QA confirming the top PDF is removed, bottom print/save button exists, package adjustment copy is present, the Westin Partner Price updates to `$1,755` in the tested B + coffee shop case, and the CTA reads `Send Package Details`.
+
+---
+
 ## 2026-08-28: Westin proposal naming + confirmation copy polish
 
 Shawn flagged that the prior package names still felt generic/formal and that the bottom confirmation put the changing total too high. The corrected direction is more personal and luxury: package names should feel elevated, the Recommended badge should not repeat in the name, and the final action should sound like sending Monica a direction rather than submitting a form.
