@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin print/save choice sheet tightened to one page
+
+Shawn showed the generated choice sheet spilling the **Design + Weather Acknowledgement** onto page 2. Jony/team decision: the generated choice summary must fit on one page, with the acknowledgement under Notes on page 1 and no browser-like page clutter.
+
+**Shipped in code:** tightened the dedicated print-window template: smaller page margins, shorter header, reduced card/total spacing, smaller type in line rows, compact notes, and `break-inside` / `page-break-inside` protection on key sections. The acknowledgement remains in the main flow under Notes. No pricing, package quantities, submit behavior, or proposal UI changed.
+
+Verified with `npm run build` clean and Playwright QA through the exact **Print / Save Your Choices** button path. Generated Package A and Package C PDFs were confirmed with `pdfinfo` as `1` Letter-size page each, with price/savings and acknowledgement included.
+
+---
+
 ## 2026-08-28: Westin print/save choices rebuilt as dedicated PDF sheet
 
 Shawn approved fixing the **Print / Save Your Choices** output because printing the page looked bad. Team direction: the print action should generate a polished package choice sheet, not a stripped mobile webpage.

@@ -13,6 +13,24 @@
 
 ---
 
+## Session: August 28, 2026 — Westin print sheet one-page fix
+**AI:** Codex following Shawn-approved Jony/team direction
+**Worked on:** Shawn showed that the generated package choice PDF still spilled the design/weather acknowledgement onto page 2.
+
+### Completed This Session
+- Tightened the dedicated package choice print template to fit the default choices on one Letter-size page.
+- Moved/kept **Design + Weather Acknowledgement** in the main flow under Notes on page 1.
+- Reduced page margins, top header height, card padding, row spacing, total block padding, and notes height.
+- Added `break-inside` / `page-break-inside` protection for key print sections.
+- Left package data, pricing logic, proposal UI, API behavior, and submit behavior unchanged.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright QA generated PDFs through the exact **Print / Save Your Choices** button flow.
+- `pdfinfo` confirmed Package A and Package C generated PDFs are each one Letter-size page with acknowledgement included.
+
+---
+
 ## Session: August 28, 2026 — Westin print/save choice sheet
 **AI:** Codex following Shawn-approved team direction
 **Worked on:** Shawn approved fixing the proposal print/save output so it produces a beautiful package choice PDF instead of a bad printout of the webpage.

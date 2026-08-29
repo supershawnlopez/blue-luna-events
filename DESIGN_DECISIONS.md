@@ -36,6 +36,8 @@ Why: Venue and corporate buyers may need to share a proposal internally before M
 
 **Choice-sheet print addendum, approved 2026-08-28:** The proposal's print/save action must generate a dedicated package choice summary, not print the full webpage UI. The saved PDF should show Blue Luna/Westin context, selected package, included items, package adjustments, Westin Partner Price, Westin Partner Savings, notes for Monica, and the design/weather acknowledgement. It must hide package selectors, steppers, submit buttons, navigation, and web-only controls.
 
+**Choice-sheet one-page addendum, approved 2026-08-28:** The generated package choice summary must fit on one Letter-size page for the default package choices. The design/weather acknowledgement belongs under Notes on page 1, never orphaned onto a second page. The sheet uses tighter spacing, smaller cards, and print break protection while keeping the same visual hierarchy and content.
+
 ---
 
 ## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)

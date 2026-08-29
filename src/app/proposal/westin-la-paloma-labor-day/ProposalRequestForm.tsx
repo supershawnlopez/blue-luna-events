@@ -261,7 +261,7 @@ export default function ProposalRequestForm() {
         <head>
           <title>${escapeHtml(westinProposal.title)} - ${escapeHtml(chosenTitle)}</title>
           <style>
-            @page { size: letter; margin: 0.5in; }
+            @page { size: letter; margin: 0.38in; }
             * { box-sizing: border-box; }
             body {
               color: #0d0f0f;
@@ -277,37 +277,41 @@ export default function ProposalRequestForm() {
               border-bottom: 2px solid #0d0f0f;
               display: flex;
               justify-content: space-between;
-              margin-bottom: 24px;
-              padding-bottom: 16px;
+              margin-bottom: 16px;
+              padding-bottom: 11px;
+              break-inside: avoid;
+              page-break-inside: avoid;
             }
             .right { text-align: right; }
             .eyebrow {
               color: #3a8f8f;
               display: block;
-              font-size: 9px;
+              font-size: 8px;
               font-weight: 900;
               letter-spacing: 0.16em;
-              margin-bottom: 6px;
+              margin-bottom: 4px;
               text-transform: uppercase;
             }
             .brand {
               display: block;
               font-family: Georgia, 'Times New Roman', serif;
-              font-size: 27px;
+              font-size: 22px;
               line-height: 1;
             }
             .confirmation {
               background: #f4fbfb;
               border: 1px solid rgba(91,191,191,0.45);
-              border-radius: 16px;
-              margin-bottom: 18px;
-              padding: 18px;
+              border-radius: 14px;
+              margin-bottom: 12px;
+              padding: 13px 15px;
+              break-inside: avoid;
+              page-break-inside: avoid;
             }
             .chosen {
               align-items: center;
               display: flex;
-              gap: 12px;
-              margin-bottom: 10px;
+              gap: 10px;
+              margin-bottom: 7px;
             }
             .code {
               align-items: center;
@@ -315,96 +319,106 @@ export default function ProposalRequestForm() {
               border-radius: 999px;
               color: #0d0f0f;
               display: inline-flex;
-              font-size: 13px;
+              font-size: 11px;
               font-weight: 900;
-              height: 34px;
+              height: 28px;
               justify-content: center;
-              min-width: 34px;
-              padding: 0 9px;
+              min-width: 28px;
+              padding: 0 8px;
             }
             h1 {
-              font-size: 27px;
+              font-size: 24px;
               line-height: 1.05;
               margin: 0;
             }
             .confirmation p,
             .muted {
               color: #374151;
-              font-size: 12px;
-              line-height: 1.45;
+              font-size: 10px;
+              line-height: 1.35;
               margin: 0;
             }
             .card {
               border: 1px solid #e5e7eb;
-              border-radius: 16px;
-              margin-bottom: 16px;
-              padding: 16px 18px;
+              border-radius: 14px;
+              margin-bottom: 11px;
+              padding: 12px 14px;
+              break-inside: avoid;
+              page-break-inside: avoid;
             }
             h2 {
-              font-size: 16px;
+              font-size: 14px;
               line-height: 1.2;
-              margin: 0 0 12px;
+              margin: 0 0 8px;
             }
             .choice-row {
               align-items: baseline;
               border-bottom: 1px solid #eef0f2;
               display: grid;
-              gap: 16px;
+              gap: 14px;
               grid-template-columns: minmax(0, 1fr) auto;
-              padding: 7px 0;
+              padding: 5px 0;
             }
             .choice-row:last-child {
               border-bottom: 0;
             }
             .choice-row span {
               color: #374151;
-              font-size: 12px;
+              font-size: 10.5px;
               font-weight: 700;
               line-height: 1.35;
             }
             .choice-row strong {
-              font-size: 12px;
+              font-size: 10.5px;
               white-space: nowrap;
             }
             .total {
               align-items: start;
               background: #0d0f0f;
-              border-radius: 16px;
+              border-radius: 14px;
               color: white;
               display: grid;
-              gap: 24px;
+              gap: 18px;
               grid-template-columns: minmax(0, 1fr) auto;
-              margin: 18px 0;
-              padding: 18px;
+              margin: 12px 0;
+              padding: 13px 15px;
+              break-inside: avoid;
+              page-break-inside: avoid;
             }
             .total strong {
               display: block;
-              font-size: 32px;
+              font-size: 26px;
               line-height: 1;
-              margin-top: 7px;
+              margin-top: 5px;
             }
             .savings {
               border-left: 1px solid rgba(255,255,255,0.18);
-              padding-left: 18px;
+              padding-left: 15px;
               text-align: right;
             }
             .savings strong {
               color: #5bbfbf;
-              font-size: 21px;
+              font-size: 17px;
             }
             .notes {
-              min-height: 78px;
+              min-height: 46px;
             }
             .ack {
               border-top: 1px solid #e5e7eb;
               color: #374151;
-              font-size: 10px;
-              line-height: 1.4;
-              margin-top: 14px;
-              padding-top: 12px;
+              font-size: 9px;
+              line-height: 1.3;
+              margin-top: 8px;
+              padding-top: 8px;
+              break-inside: avoid;
+              page-break-inside: avoid;
             }
             @media print {
-              body { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+              body {
+                margin: 0;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+              }
             }
           </style>
         </head>

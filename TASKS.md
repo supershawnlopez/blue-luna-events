@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin print sheet one-page fix)
+
+- ✅ **Followed the approved Jony/team print direction.** The package choice sheet now keeps the design/weather acknowledgement on page 1 instead of orphaning it onto page 2.
+- ✅ **Tightened the print layout.** Reduced page margins, header height, card padding, row spacing, total block padding, and notes height.
+- ✅ **Added print break protection.** Key print sections now avoid internal page breaks.
+- ✅ **Kept behavior unchanged.** Package pricing, quantities, proposal UI, API behavior, and submit behavior were not changed.
+- Verified: clean `npm run build`; Playwright generated Package A and Package C print PDFs through the button flow; both confirmed as one Letter-size page with `pdfinfo`.
+
+---
+
 ## DONE (2026-08-28 — Westin print/save choice sheet)
 
 - ✅ **Rebuilt the print/save output.** **Print / Save Your Choices** now opens a dedicated package choice sheet instead of printing the full webpage UI.
