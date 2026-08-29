@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin Partner Savings added to final total
+
+Shawn clarified the savings should not appear on every line item. It belongs only beside the bottom total, next to the final Westin Partner Price, so the buyer sees the relationship value without cluttering the proposal.
+
+**Shipped in code:** the bottom summary now calculates adjusted Standard Price and adjusted Westin Partner Price from the current quantities, then shows **Westin Partner Savings** as supporting text inside the final total block. Example verified locally: Package B plus Coffee Shop shows **Westin Partner Price `$1,755`** and **Westin Partner Savings `$670`**.
+
+Verified with `npm run build` clean and Playwright mobile QA.
+
+---
+
 ## 2026-08-28: Westin proposal final copy + choice copy action
 
 Shawn approved the functional flow, then corrected the last client-facing language: avoid "changes for Monica to review," avoid estimate wording, shorten "Updated Westin Partner Price," and stop offering a static PDF at the top now that the page has selectable package details.

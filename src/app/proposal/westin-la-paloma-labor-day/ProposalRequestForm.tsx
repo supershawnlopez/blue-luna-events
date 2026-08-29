@@ -61,6 +61,11 @@ export default function ProposalRequestForm() {
     (total, item) => total + (quantities[item.id] ?? 0) * item.partnerUnitPrice,
     0,
   )
+  const adjustedStandardPrice = westinProposal.refinementItems.reduce(
+    (total, item) => total + (quantities[item.id] ?? 0) * item.standardUnitPrice,
+    0,
+  )
+  const partnerSavings = Math.max(0, adjustedStandardPrice - adjustedPartnerPrice)
   const packageItems = westinProposal.refinementItems
     .map(item => {
       const packageQuantities = item.packageQuantities as Record<string, number>
@@ -278,8 +283,14 @@ export default function ProposalRequestForm() {
                   <p>No adjustments selected. Monica can use this package as shown.</p>
                 )}
                 <div className="summary-total">
-                  <span>Westin Partner Price</span>
-                  <strong>{formatMoney(adjustedPartnerPrice)}</strong>
+                  <div>
+                    <span>Westin Partner Price</span>
+                    <strong>{formatMoney(adjustedPartnerPrice)}</strong>
+                  </div>
+                  <div className="summary-savings">
+                    <span>Westin Partner Savings</span>
+                    <strong>{formatMoney(partnerSavings)}</strong>
+                  </div>
                 </div>
               </div>
             </div>
@@ -625,7 +636,8 @@ export default function ProposalRequestForm() {
         .summary-total {
           background: #0d0f0f;
           border-radius: 14px;
-          display: flex;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
           justify-content: space-between;
           gap: 16px;
           align-items: center;
@@ -645,6 +657,19 @@ export default function ProposalRequestForm() {
           font-size: 1.38rem;
           line-height: 1;
           white-space: nowrap;
+        }
+        .summary-savings {
+          border-left: 1px solid rgba(255,255,255,0.14);
+          padding-left: 16px;
+          text-align: right;
+        }
+        .summary-savings span {
+          color: rgba(91,191,191,0.82);
+          font-size: 0.62rem;
+        }
+        .summary-savings strong {
+          color: #5bbfbf;
+          font-size: 1rem;
         }
         .notes-label {
           color: #0d0f0f;
@@ -773,6 +798,16 @@ export default function ProposalRequestForm() {
           .bottom-pdf {
             align-items: flex-start;
             flex-direction: column;
+          }
+          .summary-total {
+            grid-template-columns: 1fr;
+          }
+          .summary-savings {
+            border-left: 0;
+            border-top: 1px solid rgba(255,255,255,0.14);
+            padding-left: 0;
+            padding-top: 12px;
+            text-align: left;
           }
           .bottom-pdf button {
             background: #f4fbfb;

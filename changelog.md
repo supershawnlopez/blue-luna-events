@@ -13,6 +13,21 @@
 
 ---
 
+## Session: August 28, 2026 — Westin Partner Savings total
+**AI:** Codex
+**Worked on:** Shawn wanted the proposal to show what the Westin buyer saves from normal pricing, but only at the final total level.
+
+### Completed This Session
+- Added adjusted Standard Price calculation in the bottom proposal form.
+- Added **Westin Partner Savings** inside the final total block, beside **Westin Partner Price**.
+- Kept savings off the individual line items so the proposal stays clean and premium.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright mobile QA confirmed Package B plus Coffee Shop shows **Westin Partner Price `$1,755`** and **Westin Partner Savings `$670`**.
+
+---
+
 ## Session: August 28, 2026 — Westin final copy and printable choices
 **AI:** Codex
 **Worked on:** Shawn approved the functionality and asked for final copy cleanup plus a more useful PDF behavior now that the proposal has live package choices.

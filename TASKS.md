@@ -69,6 +69,14 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin partner savings beside final total)
+
+- ✅ **Added savings at the total level only.** The proposal now shows **Westin Partner Savings** beside the bottom **Westin Partner Price**, not on every line item.
+- ✅ **Savings updates with quantity changes.** The client-side summary calculates adjusted standard price, adjusted partner price, and savings from the current quantities.
+- Verified: clean `npm run build`; Playwright mobile QA confirmed Package B + Coffee Shop shows `$1,755` partner price and `$670` savings.
+
+---
+
 ## DONE (2026-08-28 — Westin final proposal copy and printable choices)
 
 - ✅ **Removed static top PDF download.** The proposal no longer invites the client to download a generic price sheet before choosing details.
