@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin package rows and refinement zones)
+
+- ✅ **Followed Shawn-approved Jony/team direction.** Converted the bottom A/B/B+/C selector from separate card buttons into full-width proposal rows.
+- ✅ **Added a quiet active package treatment.** The selected row now uses a soft teal wash and left accent instead of another bordered card.
+- ✅ **Gave the opened editor visual zones.** Included package details and Optional additions now sit in distinct full-width bands.
+- ✅ **Kept line items as rows.** No new nested cards were added; steppers remain right-aligned on mobile.
+- Verified: clean `npm run build`; Playwright mobile QA confirmed row selector rendering, distinct zone backgrounds, right-side steppers, section labels, and no horizontal overflow.
+
+---
+
 ## DONE (2026-08-28 — Westin refinement editor compact list)
 
 - ✅ **Followed the approved Jony/team direction.** The adjustment editor remains hidden until the client taps **Adjust Package Details**.

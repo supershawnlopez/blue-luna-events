@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin package selector rows + refinement zones
+
+Shawn approved the next Jony/team pass to reduce card stacking across the bottom proposal area and create clearer visual zones in the opened adjustment editor.
+
+**Shipped in code:** the A/B/B+/C package selector is now full-width rows inside the form instead of individual rounded cards. The active package gets a quiet teal wash with a left accent. The opened **Adjust Package Details** editor now uses full-width section bands: a pale included-items section, a slightly deeper neutral optional-additions section, and the current package summary separated below the editor. No pricing, quantity data, API behavior, or submit flow changed.
+
+Verified with `npm run build` clean and Playwright mobile QA: four package rows render, included/optional zones have distinct backgrounds, the first row stepper remains fixed on the right, section labels render, and no horizontal overflow appears.
+
+---
+
 ## 2026-08-28: Westin refinement editor compacted per Jony/team direction
 
 Shawn approved the team direction to keep the adjustment editor hidden by default but make the opened state feel much less like a long stack of nested cards. Jony's lead decision: one outer form only, light chosen-package header, compact list rows, item text on the left, plus/minus stepper fixed on the right, and rows split into **Included in this package** and **Optional additions**.

@@ -30,6 +30,8 @@ Why: Venue and corporate buyers may need to share a proposal internally before M
 
 **Refinement layout addendum, approved 2026-08-28:** The quantity editor stays hidden by default. When opened, it must be a compact two-section list, not nested cards: **Included in this package** first, **Optional additions** second. Each row keeps the item name and unit note on the left with the plus/minus stepper locked to the right, including on mobile. The chosen-package header stays light and unboxed so the outer proposal form is the only container.
 
+**Package row + refinement zone addendum, approved 2026-08-28:** The bottom proposal selector uses full-width rows inside the proposal form, not floating package cards. The selected row receives a quiet teal wash and left accent. The opened refinement editor uses full-width section bands to guide the eye: included package details use a clean pale base, optional additions use a slightly deeper neutral tint, and the current package summary stays visually separate below the editor. Individual line items remain rows, never cards.
+
 ---
 
 ## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)

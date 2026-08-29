@@ -13,6 +13,23 @@
 
 ---
 
+## Session: August 28, 2026 — Westin package rows and refinement zones
+**AI:** Codex following Shawn-approved Jony/team direction
+**Worked on:** Shawn approved the team direction to continue reducing stacked-card visual clutter in the Westin proposal bottom section.
+
+### Completed This Session
+- Converted the A/B/B+/C selector from individual rounded cards into full-width rows inside the form.
+- Added a quiet teal active state for the selected package row.
+- Changed the opened refinement editor into distinct full-width visual zones for included package details and optional additions.
+- Kept individual line items as clean rows with the quantity control on the right.
+- Left package data, pricing logic, API behavior, and submission behavior unchanged.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright mobile QA confirmed four package rows, distinct included/optional section backgrounds, right-side steppers, visible section labels, and no horizontal overflow.
+
+---
+
 ## Session: August 28, 2026 — Westin refinement editor compact list
 **AI:** Codex following Shawn-approved Jony/team direction
 **Worked on:** Shawn approved the team decision to fix the opened adjustment editor without adding new product/design decisions.

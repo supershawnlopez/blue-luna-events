@@ -95,7 +95,7 @@ export default function ProposalRequestForm() {
   const includedRefinementItems = refinementItemsWithQuantities.filter(item => item.includedQuantity > 0)
   const optionalRefinementItems = refinementItemsWithQuantities.filter(item => item.includedQuantity === 0)
   const summaryBlock = (
-    <div className="selected-summary-items">
+    <div className="selected-summary-items summary-zone">
       <span>Your Current Package</span>
       <strong className="summary-title">{packageTitle(selectedPackage.name)}</strong>
       {packageItems.length > 0 ? (
@@ -290,7 +290,7 @@ export default function ProposalRequestForm() {
               </div>
               {refinementOpen && (
                 <div className="refine-list">
-                  <div className="refine-group">
+                  <div className="refine-group included">
                     <p className="refine-group-label">Included in this package</p>
                     {includedRefinementItems.map(item => (
                       <div className={item.quantity > 0 ? 'refine-row active' : 'refine-row'} key={item.id}>
@@ -310,7 +310,7 @@ export default function ProposalRequestForm() {
                       </div>
                     ))}
                   </div>
-                  <div className="refine-group">
+                  <div className="refine-group optional">
                     <p className="refine-group-label">Optional additions</p>
                     {optionalRefinementItems.map(item => (
                       <div className={item.quantity > 0 ? 'refine-row active' : 'refine-row'} key={item.id}>
@@ -421,33 +421,43 @@ export default function ProposalRequestForm() {
           max-width: 440px;
         }
         .request-form {
+          --form-pad: 24px;
           background: white;
           color: #0d0f0f;
           border-radius: 24px;
-          padding: 24px;
+          padding: var(--form-pad);
           box-shadow: 0 24px 80px rgba(0,0,0,0.24);
         }
         .package-options,
         .field-grid {
           display: grid;
-          gap: 12px;
         }
         .package-options {
+          border-bottom: 1px solid #e5e7eb;
+          border-top: 1px solid #e5e7eb;
           margin-bottom: 22px;
+          margin-left: calc(var(--form-pad) * -1);
+          margin-right: calc(var(--form-pad) * -1);
         }
         .package-option {
           text-align: left;
-          border: 1px solid #e5e7eb;
+          border: 0;
+          border-bottom: 1px solid #e5e7eb;
           background: #fff;
-          border-radius: 14px;
-          padding: 14px 16px;
+          border-radius: 0;
+          padding: 16px var(--form-pad);
           cursor: pointer;
           color: #0d0f0f;
           font: inherit;
+          position: relative;
+          transition: background 160ms ease, box-shadow 160ms ease;
+        }
+        .package-option:last-child {
+          border-bottom: 0;
         }
         .package-option.active {
-          border: 1.5px solid #5bbfbf;
-          background: rgba(91,191,191,0.08);
+          background: linear-gradient(90deg, rgba(91,191,191,0.14), rgba(91,191,191,0.04));
+          box-shadow: inset 4px 0 0 #5bbfbf;
         }
         .package-option-main {
           display: flex;
@@ -550,15 +560,20 @@ export default function ProposalRequestForm() {
         .refine-list {
           border-top: 1px solid #eef0f2;
           display: grid;
-          padding: 14px 0 2px;
+          margin-left: calc(var(--form-pad) * -1);
+          margin-right: calc(var(--form-pad) * -1);
+          padding: 0;
         }
         .refine-group {
           display: grid;
+          padding: 18px var(--form-pad) 16px;
         }
-        .refine-group + .refine-group {
-          border-top: 1px solid #eef0f2;
-          margin-top: 12px;
-          padding-top: 12px;
+        .refine-group.included {
+          background: #fbfefe;
+        }
+        .refine-group.optional {
+          background: #f6f7f7;
+          border-top: 1px solid #e5e7eb;
         }
         .refine-group-label {
           color: #8a94a3;
@@ -576,6 +591,9 @@ export default function ProposalRequestForm() {
           align-items: center;
           border-bottom: 1px solid #eef0f2;
           padding: 10px 0;
+        }
+        .refine-row:last-child {
+          border-bottom: 0;
         }
         .refine-row.active {
           background: transparent;
@@ -628,6 +646,13 @@ export default function ProposalRequestForm() {
         }
         .selected-summary-items {
           padding: 18px 0 0;
+        }
+        .summary-zone {
+          background: #fbfbfa;
+          border-top: 1px solid #e5e7eb;
+          margin-left: calc(var(--form-pad) * -1);
+          margin-right: calc(var(--form-pad) * -1);
+          padding: 20px var(--form-pad) 0;
         }
         .selected-summary-items > span {
           color: #8a94a3;
@@ -852,8 +877,9 @@ export default function ProposalRequestForm() {
             max-width: none;
           }
           .request-form {
+            --form-pad: 18px;
             border-radius: 22px;
-            padding: 18px;
+            padding: var(--form-pad);
           }
           .package-option-main {
             align-items: flex-start;
