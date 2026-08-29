@@ -32,6 +32,8 @@ Why: Venue and corporate buyers may need to share a proposal internally before M
 
 **Package row + refinement zone addendum, approved 2026-08-28:** The bottom proposal selector uses full-width rows inside the proposal form, not floating package cards. The selected row receives a quiet teal wash and left accent. The opened refinement editor uses full-width section bands to guide the eye: included package details use a clean pale base, optional additions use a slightly deeper neutral tint, and the current package summary stays visually separate below the editor. Individual line items remain rows, never cards.
 
+**Package marker addendum, approved 2026-08-28:** The lower proposal form must not render package names with dash notation such as `B - Resort Presence` or `B+ - Elevated Resort Presence`. The package letter/code is shown inside a small circle, followed by the package title. The redundant selected-package guidance bubble is removed; the distinct **This is the package you chose** confirmation band is the single source of truth for the current package selection.
+
 ---
 
 ## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)

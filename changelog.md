@@ -13,6 +13,24 @@
 
 ---
 
+## Session: August 28, 2026 — Westin lower form package markers
+**AI:** Codex following Shawn-approved Johnny/Steve direction
+**Worked on:** Shawn approved removal of redundant selected-package language and dash-style package labels in the lower proposal form.
+
+### Completed This Session
+- Removed the teal selected-package guidance bubble from the lower form.
+- Changed the lower package selector rows to show circular `A`, `B`, `B+`, and `C` markers followed by the package title.
+- Changed the selected package confirmation to show the marker plus title instead of `B - Resort Presence`.
+- Restyled **This is the package you chose** as the single distinct confirmation band.
+- Added spacing between the package selector, confirmation band, adjust control, refinement zones, and current package summary.
+- Left pricing, package data, quantity logic, API behavior, and submit behavior unchanged.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright mobile QA confirmed the selected guidance bubble is gone, package markers render correctly, the selected marker text is visible, and no horizontal overflow appears.
+
+---
+
 ## Session: August 28, 2026 — Westin package rows and refinement zones
 **AI:** Codex following Shawn-approved Jony/team direction
 **Worked on:** Shawn approved the team direction to continue reducing stacked-card visual clutter in the Westin proposal bottom section.

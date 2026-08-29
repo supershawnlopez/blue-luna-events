@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin lower form package markers + selected bubble removed
+
+Shawn approved the Johnny/Steve-led direction to remove the remaining redundancy in the lower proposal form: no more `B -` / `B+ -` dash notation in the selector, and no separate teal "B is selected..." bubble above the chosen-package confirmation.
+
+**Shipped in code:** the lower A/B/B+/C selector now displays circular package markers followed by the package title, so `B+` no longer reads like plus/minus math. The selected-package guidance bubble was removed. The **This is the package you chose** section now acts as the single confirmation moment and has a distinct pale teal band with a matching circular selected code.
+
+Verified with `npm run build` clean and Playwright mobile QA: no `.selection-guidance` renders in the lower form, package markers are `A`, `B`, `B+`, and `C`, the selected marker text is visible, the selected confirmation band has the approved pale tone, and no horizontal overflow appears.
+
+---
+
 ## 2026-08-28: Westin package selector rows + refinement zones
 
 Shawn approved the next Jony/team pass to reduce card stacking across the bottom proposal area and create clearer visual zones in the opened adjustment editor.

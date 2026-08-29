@@ -247,7 +247,10 @@ export default function ProposalRequestForm() {
                   className={active ? 'package-option active' : 'package-option'}
                 >
                   <span className="package-option-main">
-                    <span>{pkg.name}</span>
+                    <span className="package-option-title">
+                      <span className="package-code" aria-hidden="true">{packageCode(pkg.name)}</span>
+                      <span>{packageTitle(pkg.name)}</span>
+                    </span>
                     <strong>{formatMoney(pkg.partnerPrice)}</strong>
                   </span>
                   {pkg.badge && (
@@ -260,17 +263,14 @@ export default function ProposalRequestForm() {
             })}
           </div>
 
-          {selectionGuidance && (
-            <p className="selection-guidance">
-              {selectionGuidance}
-            </p>
-          )}
-
           <div className="selected-summary">
             <div className="selected-summary-top" aria-live="polite">
               <div>
                 <span>This is the package you chose</span>
-                <strong>{selectedPackage.name}</strong>
+                <strong>
+                  <span className="package-code selected-code" aria-hidden="true">{packageCode(selectedPackage.name)}</span>
+                  {packageTitle(selectedPackage.name)}
+                </strong>
                 <p>Keep it as shown, or adjust the quantities below before sending your package details.</p>
               </div>
             </div>
@@ -435,7 +435,7 @@ export default function ProposalRequestForm() {
         .package-options {
           border-bottom: 1px solid #e5e7eb;
           border-top: 1px solid #e5e7eb;
-          margin-bottom: 22px;
+          margin-bottom: 30px;
           margin-left: calc(var(--form-pad) * -1);
           margin-right: calc(var(--form-pad) * -1);
         }
@@ -462,13 +462,39 @@ export default function ProposalRequestForm() {
         .package-option-main {
           display: flex;
           justify-content: space-between;
-          gap: 16px;
+          gap: 18px;
           align-items: center;
         }
-        .package-option-main span {
+        .package-option-title {
+          align-items: center;
+          display: flex;
+          gap: 12px;
+          min-width: 0;
+        }
+        .package-option-title > span:last-child {
           font-weight: 800;
           font-size: 0.92rem;
           line-height: 1.25;
+        }
+        .package-code {
+          align-items: center;
+          background: #0d0f0f;
+          border-radius: 999px;
+          color: #fff;
+          display: inline-flex;
+          flex: 0 0 auto;
+          font-size: 0.68rem;
+          font-weight: 900;
+          height: 30px;
+          justify-content: center;
+          letter-spacing: 0;
+          line-height: 1;
+          min-width: 30px;
+          padding: 0 8px;
+        }
+        .package-option.active .package-code {
+          background: #5bbfbf;
+          color: #0d0f0f;
         }
         .package-option-main strong {
           font-weight: 900;
@@ -527,11 +553,14 @@ export default function ProposalRequestForm() {
           margin: 0 0 18px;
         }
         .selected-summary-top {
-          border-bottom: 1px solid #e5e7eb;
+          background: #f4fbfb;
+          border: 1px solid rgba(91,191,191,0.32);
+          border-radius: 18px;
           color: #0d0f0f;
+          margin-bottom: 24px;
         }
         .selected-summary-top div {
-          padding: 0 0 16px;
+          padding: 18px;
         }
         .selected-summary-top span,
         .selected-summary-items > span {
@@ -544,9 +573,21 @@ export default function ProposalRequestForm() {
           text-transform: uppercase;
         }
         .selected-summary-top strong {
-          display: block;
+          align-items: center;
+          display: flex;
           font-size: 1.12rem;
+          gap: 12px;
           line-height: 1.25;
+        }
+        .selected-code {
+          background: #5bbfbf;
+        }
+        .selected-summary-top .package-code {
+          color: #fff;
+          display: inline-flex;
+        }
+        .selected-summary-top .selected-code {
+          color: #0d0f0f;
         }
         .selected-summary-top p {
           color: #667085;
@@ -562,6 +603,7 @@ export default function ProposalRequestForm() {
           display: grid;
           margin-left: calc(var(--form-pad) * -1);
           margin-right: calc(var(--form-pad) * -1);
+          margin-top: 22px;
           padding: 0;
         }
         .refine-group {
@@ -650,6 +692,7 @@ export default function ProposalRequestForm() {
         .summary-zone {
           background: #fbfbfa;
           border-top: 1px solid #e5e7eb;
+          margin-top: 22px;
           margin-left: calc(var(--form-pad) * -1);
           margin-right: calc(var(--form-pad) * -1);
           padding: 20px var(--form-pad) 0;
@@ -738,7 +781,7 @@ export default function ProposalRequestForm() {
         }
         .adjust-package {
           border-top: 1px solid #eef0f2;
-          padding: 16px 0 0;
+          padding: 22px 0 0;
         }
         .adjust-toggle {
           align-items: center;

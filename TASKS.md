@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin lower form package markers)
+
+- ✅ **Followed Shawn-approved Johnny/Steve direction.** Removed the redundant selected-package guidance bubble from the lower proposal form.
+- ✅ **Replaced dash package labels with circular markers.** Lower package rows now show `A`, `B`, `B+`, and `C` inside circles followed by the package title.
+- ✅ **Made the chosen package section the single confirmation moment.** It now has a distinct pale teal confirmation band with the selected package marker.
+- ✅ **Kept behavior unchanged.** Package data, pricing, quantity editing, API behavior, and submit flow were not changed.
+- Verified: clean `npm run build`; Playwright mobile QA confirmed the bubble is gone, package markers render, selected marker text is visible, and no horizontal overflow appears.
+
+---
+
 ## DONE (2026-08-28 — Westin package rows and refinement zones)
 
 - ✅ **Followed Shawn-approved Jony/team direction.** Converted the bottom A/B/B+/C selector from separate card buttons into full-width proposal rows.
