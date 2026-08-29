@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin refinement editor compact list)
+
+- ✅ **Followed the approved Jony/team direction.** The adjustment editor remains hidden until the client taps **Adjust Package Details**.
+- ✅ **Removed the nested-card feeling from the opened editor.** The chosen-package header is light, rows are compact, and the outer form is the only major container.
+- ✅ **Split the editor into two sections.** Opened rows now show **Included in this package** first and **Optional additions** second.
+- ✅ **Kept quantity controls on the right.** Mobile rows now stay two-column, with item text on the left and the plus/minus stepper fixed on the right.
+- Verified: clean `npm run build`; Playwright mobile QA confirmed 0 rows by default, 9 rows after opening, no horizontal overflow, section labels present, and Package A + Coffee Shop recalculates to `$1,490` with `$620` savings.
+
+---
+
 ## DONE (2026-08-28 — Westin refinement UI collapsed)
 
 - ✅ **Followed Jony/team direction exactly.** The item-by-item quantity editor is no longer visible by default.

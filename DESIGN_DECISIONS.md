@@ -28,6 +28,8 @@ Why: Venue and corporate buyers may need to share a proposal internally before M
 
 **Refinement addendum, approved 2026-08-28:** Proposal package cards stay clean, luxury-first, and non-transactional. Unit pricing is reference-only. Quantity editing belongs only in the bottom confirmation area under **Refine This Direction**, where the selected package pre-fills its quantities and the client can adjust counts before Monica prepares the official estimate. The UI must feel like guided proposal refinement, not a cart, bargain calculator, or self-serve checkout.
 
+**Refinement layout addendum, approved 2026-08-28:** The quantity editor stays hidden by default. When opened, it must be a compact two-section list, not nested cards: **Included in this package** first, **Optional additions** second. Each row keeps the item name and unit note on the left with the plus/minus stepper locked to the right, including on mobile. The chosen-package header stays light and unboxed so the outer proposal form is the only container.
+
 ---
 
 ## TWILIGHT ACCENT — SUBTLE ATMOSPHERE, NOT A REPLACEMENT (REVISED — 2026-07-29)

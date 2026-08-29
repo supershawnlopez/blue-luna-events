@@ -86,6 +86,56 @@ export default function ProposalRequestForm() {
       }
     })
     .filter(item => item.delta !== 0)
+  const refinementItemsWithQuantities = westinProposal.refinementItems.map(item => {
+    const packageQuantities = item.packageQuantities as Record<string, number>
+    const includedQuantity = packageQuantities[selectedPackage.id] ?? 0
+    const quantity = quantities[item.id] ?? 0
+    return { ...item, includedQuantity, quantity }
+  })
+  const includedRefinementItems = refinementItemsWithQuantities.filter(item => item.includedQuantity > 0)
+  const optionalRefinementItems = refinementItemsWithQuantities.filter(item => item.includedQuantity === 0)
+  const summaryBlock = (
+    <div className="selected-summary-items">
+      <span>Your Current Package</span>
+      <strong className="summary-title">{packageTitle(selectedPackage.name)}</strong>
+      {packageItems.length > 0 ? (
+        <ul>
+          {packageItems.map(item => (
+            <li key={item.id}>
+              <span>{formatQuantity(item.quantity, item.unitLabel)} · {item.title}</span>
+              <strong>{formatMoney(item.quantity * item.partnerUnitPrice)}</strong>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No decor items selected.</p>
+      )}
+      <div className="summary-divider" />
+      <span>Package Adjustments</span>
+      {changedItems.length > 0 ? (
+        <ul>
+          {changedItems.map(item => (
+            <li key={item.id}>
+              <span>{item.delta > 0 ? '+' : ''}{formatQuantity(item.delta, item.unitLabel)} · {item.title}</span>
+              <strong>{formatDeltaMoney(item.delta * item.partnerUnitPrice)}</strong>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No adjustments selected. Monica can use this package as shown.</p>
+      )}
+      <div className="summary-total">
+        <div>
+          <span>Westin Partner Price</span>
+          <strong>{formatMoney(adjustedPartnerPrice)}</strong>
+        </div>
+        <div className="summary-savings">
+          <span>Westin Partner Savings</span>
+          <strong>{formatMoney(partnerSavings)}</strong>
+        </div>
+      </div>
+    </div>
+  )
 
   function choosePackage(packageId: string) {
     const pkg = westinProposal.packages.find(item => item.id === packageId)
@@ -225,45 +275,7 @@ export default function ProposalRequestForm() {
               </div>
             </div>
             <div className="refine-panel">
-              <div className="selected-summary-items">
-                <span>Your Current Package</span>
-                <strong className="summary-title">{packageTitle(selectedPackage.name)}</strong>
-                {packageItems.length > 0 ? (
-                  <ul>
-                    {packageItems.map(item => (
-                      <li key={item.id}>
-                        <span>{formatQuantity(item.quantity, item.unitLabel)} · {item.title}</span>
-                        <strong>{formatMoney(item.quantity * item.partnerUnitPrice)}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No decor items selected.</p>
-                )}
-                <div className="summary-divider" />
-                <span>Package Adjustments</span>
-                {changedItems.length > 0 ? (
-                  <ul>
-                    {changedItems.map(item => (
-                      <li key={item.id}>
-                        <span>{item.delta > 0 ? '+' : ''}{formatQuantity(item.delta, item.unitLabel)} · {item.title}</span>
-                        <strong>{formatDeltaMoney(item.delta * item.partnerUnitPrice)}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>No adjustments selected. Monica can use this package as shown.</p>
-                )}
-                <div className="summary-total">
-                  <div>
-                    <span>Westin Partner Price</span>
-                    <strong>{formatMoney(adjustedPartnerPrice)}</strong>
-                  </div>
-                  <div className="summary-savings">
-                  <span>Westin Partner Savings</span>
-                  <strong>{formatMoney(partnerSavings)}</strong>
-                </div>
-              </div>
+              {!refinementOpen && summaryBlock}
               <div className="adjust-package">
                 <button
                   type="button"
@@ -278,34 +290,50 @@ export default function ProposalRequestForm() {
               </div>
               {refinementOpen && (
                 <div className="refine-list">
-                  {westinProposal.refinementItems.map(item => {
-                    const quantity = quantities[item.id] ?? 0
-                    const packageQuantities = item.packageQuantities as Record<string, number>
-                    const includedQuantity = packageQuantities[selectedPackage.id] ?? 0
-                    return (
-                      <div className={quantity > 0 ? 'refine-row active' : 'refine-row'} key={item.id}>
+                  <div className="refine-group">
+                    <p className="refine-group-label">Included in this package</p>
+                    {includedRefinementItems.map(item => (
+                      <div className={item.quantity > 0 ? 'refine-row active' : 'refine-row'} key={item.id}>
                         <div>
                           <strong>{item.title}</strong>
-                          <p>
-                            {includedQuantity > 0 ? `${includedQuantity} included in ${packageCode(selectedPackage.name)}` : 'Optional refinement'} · {item.partner}
-                          </p>
+                          <p>{item.includedQuantity} included in {packageCode(selectedPackage.name)} · {item.partner}</p>
                         </div>
                         <div className="quantity-control" aria-label={`${item.title} quantity`}>
-                          <button type="button" onClick={() => updateQuantity(item.id, quantity - 1)} aria-label={`Decrease ${item.title}`}>
+                          <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label={`Decrease ${item.title}`}>
                             -
                           </button>
-                          <span>{quantity}</span>
-                          <button type="button" onClick={() => updateQuantity(item.id, quantity + 1)} aria-label={`Increase ${item.title}`}>
+                          <span>{item.quantity}</span>
+                          <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label={`Increase ${item.title}`}>
                             +
                           </button>
                         </div>
                       </div>
-                    )
-                  })}
+                    ))}
+                  </div>
+                  <div className="refine-group">
+                    <p className="refine-group-label">Optional additions</p>
+                    {optionalRefinementItems.map(item => (
+                      <div className={item.quantity > 0 ? 'refine-row active' : 'refine-row'} key={item.id}>
+                        <div>
+                          <strong>{item.title}</strong>
+                          <p>Optional · {item.partner}</p>
+                        </div>
+                        <div className="quantity-control" aria-label={`${item.title} quantity`}>
+                          <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} aria-label={`Decrease ${item.title}`}>
+                            -
+                          </button>
+                          <span>{item.quantity}</span>
+                          <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} aria-label={`Increase ${item.title}`}>
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
+              {refinementOpen && summaryBlock}
             </div>
-          </div>
           </div>
 
           <label className="notes-label" htmlFor="westin-proposal-notes">
@@ -486,17 +514,14 @@ export default function ProposalRequestForm() {
           padding: 12px 14px;
         }
         .selected-summary {
-          border: 1px solid #e5e7eb;
-          border-radius: 16px;
           margin: 0 0 18px;
-          overflow: hidden;
         }
         .selected-summary-top {
-          background: #0d0f0f;
-          color: white;
+          border-bottom: 1px solid #e5e7eb;
+          color: #0d0f0f;
         }
         .selected-summary-top div {
-          padding: 18px;
+          padding: 0 0 16px;
         }
         .selected-summary-top span,
         .selected-summary-items > span {
@@ -510,43 +535,60 @@ export default function ProposalRequestForm() {
         }
         .selected-summary-top strong {
           display: block;
-          font-size: 1.08rem;
+          font-size: 1.12rem;
           line-height: 1.25;
         }
         .selected-summary-top p {
-          color: rgba(255,255,255,0.66);
+          color: #667085;
           font-size: 0.84rem;
           line-height: 1.45;
           margin: 8px 0 0;
         }
         .refine-panel {
           background: #fff;
-          border-top: 1px solid #e5e7eb;
         }
         .refine-list {
           border-top: 1px solid #eef0f2;
           display: grid;
+          padding: 14px 0 2px;
+        }
+        .refine-group {
+          display: grid;
+        }
+        .refine-group + .refine-group {
+          border-top: 1px solid #eef0f2;
+          margin-top: 12px;
+          padding-top: 12px;
+        }
+        .refine-group-label {
+          color: #8a94a3;
+          font-size: 0.66rem;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          line-height: 1.25;
+          margin: 0 0 4px;
+          text-transform: uppercase;
         }
         .refine-row {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 14px;
+          grid-template-columns: minmax(0, 1fr) max-content;
+          gap: 12px;
           align-items: center;
           border-bottom: 1px solid #eef0f2;
-          padding: 14px 16px;
+          padding: 10px 0;
         }
         .refine-row.active {
-          background: #fbfefe;
+          background: transparent;
         }
         .refine-row strong {
           display: block;
-          font-size: 0.9rem;
+          font-size: 0.86rem;
           line-height: 1.25;
           margin-bottom: 4px;
         }
         .refine-row p {
           color: #667085;
-          font-size: 0.78rem;
+          font-size: 0.74rem;
           font-weight: 700;
           line-height: 1.35;
           margin: 0;
@@ -557,8 +599,8 @@ export default function ProposalRequestForm() {
           border: 1px solid #e5e7eb;
           border-radius: 999px;
           display: grid;
-          grid-template-columns: 34px 36px 34px;
-          min-height: 38px;
+          grid-template-columns: 28px 30px 28px;
+          min-height: 32px;
           overflow: hidden;
         }
         .quantity-control button {
@@ -569,9 +611,9 @@ export default function ProposalRequestForm() {
           cursor: pointer;
           display: flex;
           font: inherit;
-          font-size: 1.08rem;
+          font-size: 0.95rem;
           font-weight: 900;
-          height: 38px;
+          height: 32px;
           justify-content: center;
           padding: 0;
         }
@@ -580,13 +622,12 @@ export default function ProposalRequestForm() {
         }
         .quantity-control span {
           color: #0d0f0f;
-          font-size: 0.92rem;
+          font-size: 0.84rem;
           font-weight: 900;
           text-align: center;
         }
         .selected-summary-items {
-          background: linear-gradient(180deg, #f9fbfb 0%, #ffffff 100%);
-          padding: 20px;
+          padding: 18px 0 0;
         }
         .selected-summary-items > span {
           color: #8a94a3;
@@ -631,7 +672,7 @@ export default function ProposalRequestForm() {
         }
         .summary-total {
           background: #0d0f0f;
-          border-radius: 18px;
+          border-radius: 16px;
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
           justify-content: space-between;
@@ -672,7 +713,7 @@ export default function ProposalRequestForm() {
         }
         .adjust-package {
           border-top: 1px solid #eef0f2;
-          padding: 18px 20px 20px;
+          padding: 16px 0 0;
         }
         .adjust-toggle {
           align-items: center;
@@ -698,7 +739,7 @@ export default function ProposalRequestForm() {
         }
         .adjust-package p {
           color: #667085;
-          font-size: 0.84rem;
+          font-size: 0.8rem;
           line-height: 1.45;
           margin: 10px 0 0;
         }
@@ -817,14 +858,11 @@ export default function ProposalRequestForm() {
           .package-option-main {
             align-items: flex-start;
           }
-          .selected-summary-top {
-            grid-template-columns: 1fr;
-          }
           .refine-row {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr) max-content;
           }
           .quantity-control {
-            width: max-content;
+            width: auto;
           }
           .bottom-pdf {
             align-items: flex-start;
@@ -885,10 +923,10 @@ export default function ProposalRequestForm() {
           }
           #request-package .selected-summary {
             border: 1px solid #d1d5db;
+            padding: 16px;
           }
           #request-package .selected-summary-top {
-            background: #0d0f0f !important;
-            color: white !important;
+            color: #0d0f0f !important;
           }
           #request-package .summary-total {
             background: #0d0f0f !important;

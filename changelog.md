@@ -13,6 +13,24 @@
 
 ---
 
+## Session: August 28, 2026 — Westin refinement editor compact list
+**AI:** Codex following Shawn-approved Jony/team direction
+**Worked on:** Shawn approved the team decision to fix the opened adjustment editor without adding new product/design decisions.
+
+### Completed This Session
+- Kept the quantity editor hidden by default.
+- Reworked the opened editor into **Included in this package** and **Optional additions** sections.
+- Removed nested-card styling from the opened editor rows.
+- Lightened the chosen-package header so it no longer reads as another heavy card inside the form.
+- Kept each refinement row as item text on the left and the quantity stepper on the right, including on mobile.
+- Left the pricing logic, API, submit flow, and package data unchanged.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright mobile QA confirmed 0 refinement rows visible by default, 9 rows after opening, the approved section labels, no horizontal overflow, and Package A + Coffee Shop recalculating to **$1,490** with **$620** Westin Partner Savings.
+
+---
+
 ## Session: August 28, 2026 — Westin refinement UI collapsed
 **AI:** Codex following Jony/team direction
 **Worked on:** Shawn rejected the always-visible quantity editor as not luxury enough and directed implementation of the team decision without independent product/design changes.

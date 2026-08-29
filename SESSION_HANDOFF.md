@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin refinement editor compacted per Jony/team direction
+
+Shawn approved the team direction to keep the adjustment editor hidden by default but make the opened state feel much less like a long stack of nested cards. Jony's lead decision: one outer form only, light chosen-package header, compact list rows, item text on the left, plus/minus stepper fixed on the right, and rows split into **Included in this package** and **Optional additions**.
+
+**Shipped in code:** the opened **Adjust Package Details** panel now renders two clean sections instead of one card-heavy list. Mobile no longer forces refinement rows into a one-column layout, so the quantity control stays on the right side of each line item. The selected package summary stays collapsed-first, and when editing is open the final package/adjustments total appears below the adjustment list.
+
+Verified with `npm run build` clean and Playwright mobile QA: `0` refinement rows visible by default, `9` rows after opening **Adjust Package Details**, section labels are present, no horizontal overflow, the first stepper sits at the right edge of the row, and adding Coffee Shop updates Package A to `$1,490` with `$620` Westin Partner Savings.
+
+---
+
 ## 2026-08-28: Westin refinement UI collapsed per Jony/team direction
 
 Shawn rejected the always-visible quantity editor as not luxury enough and directed that Jony lead the team. Team decision: selected package summary first, price/savings presented cleanly, and the item-by-item quantity editor hidden unless the client taps **Adjust Package Details**.
