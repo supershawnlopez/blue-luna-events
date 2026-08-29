@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { Check, Printer, Send } from 'lucide-react'
+import { Check, ChevronDown, Printer, Send } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
@@ -56,6 +56,7 @@ export default function ProposalRequestForm() {
   const [message, setMessage] = useState('')
   const [selectionGuidance, setSelectionGuidance] = useState('')
   const [selectionPulse, setSelectionPulse] = useState(false)
+  const [refinementOpen, setRefinementOpen] = useState(false)
   const selectedPackage = westinProposal.packages.find(pkg => pkg.id === selectedPackageId) ?? westinProposal.packages[0]
   const adjustedPartnerPrice = westinProposal.refinementItems.reduce(
     (total, item) => total + (quantities[item.id] ?? 0) * item.partnerUnitPrice,
@@ -92,6 +93,7 @@ export default function ProposalRequestForm() {
     const nextQuantities = quantitiesForPackage(packageId)
     setSelectedPackageId(packageId)
     setQuantities(nextQuantities)
+    setRefinementOpen(false)
     setMessage('')
     setSelectionPulse(false)
     window.setTimeout(() => setSelectionPulse(true), 20)
@@ -223,36 +225,6 @@ export default function ProposalRequestForm() {
               </div>
             </div>
             <div className="refine-panel">
-              <div className="refine-heading">
-                <span>Fine-Tune the Details</span>
-                <p>Package quantities are pre-filled below. Adjust only what you would like included before Monica sends the invoice and payment link.</p>
-              </div>
-              <div className="refine-list">
-                {westinProposal.refinementItems.map(item => {
-                  const quantity = quantities[item.id] ?? 0
-                  const packageQuantities = item.packageQuantities as Record<string, number>
-                  const includedQuantity = packageQuantities[selectedPackage.id] ?? 0
-                  return (
-                    <div className={quantity > 0 ? 'refine-row active' : 'refine-row'} key={item.id}>
-                      <div>
-                        <strong>{item.title}</strong>
-                        <p>
-                          {includedQuantity > 0 ? `${includedQuantity} included in ${packageCode(selectedPackage.name)}` : 'Optional refinement'} · {item.partner}
-                        </p>
-                      </div>
-                      <div className="quantity-control" aria-label={`${item.title} quantity`}>
-                        <button type="button" onClick={() => updateQuantity(item.id, quantity - 1)} aria-label={`Decrease ${item.title}`}>
-                          -
-                        </button>
-                        <span>{quantity}</span>
-                        <button type="button" onClick={() => updateQuantity(item.id, quantity + 1)} aria-label={`Increase ${item.title}`}>
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
               <div className="selected-summary-items">
                 <span>Your Current Package</span>
                 <strong className="summary-title">{packageTitle(selectedPackage.name)}</strong>
@@ -288,12 +260,52 @@ export default function ProposalRequestForm() {
                     <strong>{formatMoney(adjustedPartnerPrice)}</strong>
                   </div>
                   <div className="summary-savings">
-                    <span>Westin Partner Savings</span>
-                    <strong>{formatMoney(partnerSavings)}</strong>
-                  </div>
+                  <span>Westin Partner Savings</span>
+                  <strong>{formatMoney(partnerSavings)}</strong>
                 </div>
               </div>
+              <div className="adjust-package">
+                <button
+                  type="button"
+                  className={refinementOpen ? 'adjust-toggle open' : 'adjust-toggle'}
+                  onClick={() => setRefinementOpen(open => !open)}
+                  aria-expanded={refinementOpen}
+                >
+                  <span>Adjust Package Details</span>
+                  <ChevronDown size={17} />
+                </button>
+                <p>Need to add or remove a few pieces? You can adjust the package before sending it to Monica.</p>
+              </div>
+              {refinementOpen && (
+                <div className="refine-list">
+                  {westinProposal.refinementItems.map(item => {
+                    const quantity = quantities[item.id] ?? 0
+                    const packageQuantities = item.packageQuantities as Record<string, number>
+                    const includedQuantity = packageQuantities[selectedPackage.id] ?? 0
+                    return (
+                      <div className={quantity > 0 ? 'refine-row active' : 'refine-row'} key={item.id}>
+                        <div>
+                          <strong>{item.title}</strong>
+                          <p>
+                            {includedQuantity > 0 ? `${includedQuantity} included in ${packageCode(selectedPackage.name)}` : 'Optional refinement'} · {item.partner}
+                          </p>
+                        </div>
+                        <div className="quantity-control" aria-label={`${item.title} quantity`}>
+                          <button type="button" onClick={() => updateQuantity(item.id, quantity - 1)} aria-label={`Decrease ${item.title}`}>
+                            -
+                          </button>
+                          <span>{quantity}</span>
+                          <button type="button" onClick={() => updateQuantity(item.id, quantity + 1)} aria-label={`Increase ${item.title}`}>
+                            +
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
+          </div>
           </div>
 
           <label className="notes-label" htmlFor="westin-proposal-notes">
@@ -511,24 +523,8 @@ export default function ProposalRequestForm() {
           background: #fff;
           border-top: 1px solid #e5e7eb;
         }
-        .refine-heading {
-          border-bottom: 1px solid #eef0f2;
-          padding: 16px;
-        }
-        .refine-heading span {
-          color: #0d0f0f;
-          display: block;
-          font-size: 0.9rem;
-          font-weight: 900;
-          margin-bottom: 5px;
-        }
-        .refine-heading p {
-          color: #667085;
-          font-size: 0.82rem;
-          line-height: 1.45;
-          margin: 0;
-        }
         .refine-list {
+          border-top: 1px solid #eef0f2;
           display: grid;
         }
         .refine-row {
@@ -589,8 +585,8 @@ export default function ProposalRequestForm() {
           text-align: center;
         }
         .selected-summary-items {
-          background: #f9fafb;
-          padding: 16px;
+          background: linear-gradient(180deg, #f9fbfb 0%, #ffffff 100%);
+          padding: 20px;
         }
         .selected-summary-items > span {
           color: #8a94a3;
@@ -635,17 +631,18 @@ export default function ProposalRequestForm() {
         }
         .summary-total {
           background: #0d0f0f;
-          border-radius: 14px;
+          border-radius: 18px;
           display: grid;
           grid-template-columns: minmax(0, 1fr) auto;
           justify-content: space-between;
-          gap: 16px;
-          align-items: center;
-          margin-top: 18px;
-          padding: 16px;
+          gap: 22px;
+          align-items: start;
+          margin-top: 20px;
+          padding: 20px;
         }
         .summary-total span {
           color: #5bbfbf;
+          display: block;
           font-size: 0.68rem;
           font-weight: 900;
           letter-spacing: 0.12em;
@@ -654,8 +651,10 @@ export default function ProposalRequestForm() {
         }
         .summary-total strong {
           color: white;
-          font-size: 1.38rem;
+          display: block;
+          font-size: 1.9rem;
           line-height: 1;
+          margin-top: 8px;
           white-space: nowrap;
         }
         .summary-savings {
@@ -669,7 +668,39 @@ export default function ProposalRequestForm() {
         }
         .summary-savings strong {
           color: #5bbfbf;
-          font-size: 1rem;
+          font-size: 1.25rem;
+        }
+        .adjust-package {
+          border-top: 1px solid #eef0f2;
+          padding: 18px 20px 20px;
+        }
+        .adjust-toggle {
+          align-items: center;
+          background: #fff;
+          border: 1px solid rgba(91,191,191,0.42);
+          border-radius: 999px;
+          color: #0d0f0f;
+          cursor: pointer;
+          display: inline-flex;
+          font: inherit;
+          font-size: 0.88rem;
+          font-weight: 900;
+          gap: 8px;
+          justify-content: center;
+          padding: 12px 16px;
+        }
+        .adjust-toggle svg {
+          color: #3a8f8f;
+          transition: transform 160ms ease;
+        }
+        .adjust-toggle.open svg {
+          transform: rotate(180deg);
+        }
+        .adjust-package p {
+          color: #667085;
+          font-size: 0.84rem;
+          line-height: 1.45;
+          margin: 10px 0 0;
         }
         .notes-label {
           color: #0d0f0f;
@@ -840,8 +871,8 @@ export default function ProposalRequestForm() {
           #request-package .request-shell > div:first-child,
           #request-package .package-options,
           #request-package .selection-guidance,
-          #request-package .refine-heading,
           #request-package .refine-list,
+          #request-package .adjust-package,
           #request-package .terms-check,
           #request-package .request-submit,
           #request-package .bottom-pdf,

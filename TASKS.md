@@ -69,6 +69,16 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin refinement UI collapsed)
+
+- ✅ **Followed Jony/team direction exactly.** The item-by-item quantity editor is no longer visible by default.
+- ✅ **Put summary first.** Bottom card now leads with selected package, included items, package adjustments, Westin Partner Price, and Westin Partner Savings.
+- ✅ **Added one secondary edit control.** **Adjust Package Details** opens the quantity editor only when the client needs it.
+- ✅ **Fixed total/savings layout.** Price and savings no longer collide on mobile.
+- Verified: clean `npm run build`; Playwright mobile QA confirmed 0 refinement rows by default, 9 after opening the panel, summary-before-editor order, and live price/savings updates.
+
+---
+
 ## DONE (2026-08-28 — Westin partner savings beside final total)
 
 - ✅ **Added savings at the total level only.** The proposal now shows **Westin Partner Savings** beside the bottom **Westin Partner Price**, not on every line item.

@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin refinement UI collapsed per Jony/team direction
+
+Shawn rejected the always-visible quantity editor as not luxury enough and directed that Jony lead the team. Team decision: selected package summary first, price/savings presented cleanly, and the item-by-item quantity editor hidden unless the client taps **Adjust Package Details**.
+
+**Shipped in code:** the long refinement list is collapsed by default. The bottom card now shows the chosen package, included items, any package adjustments, Westin Partner Price, Westin Partner Savings, then a single **Adjust Package Details** control with helper copy. Opening that control reveals the existing quantity editor; changing quantities still updates the summary and total.
+
+Verified with `npm run build` clean and Playwright mobile QA: `0` refinement rows visible by default, `9` rows after opening **Adjust Package Details**, summary appears before the edit control, and adding Coffee Shop updates Package A from `$1,365 / $570 savings` to `$1,490 / $620 savings`.
+
+---
+
 ## 2026-08-28: Westin Partner Savings added to final total
 
 Shawn clarified the savings should not appear on every line item. It belongs only beside the bottom total, next to the final Westin Partner Price, so the buyer sees the relationship value without cluttering the proposal.

@@ -13,6 +13,23 @@
 
 ---
 
+## Session: August 28, 2026 — Westin refinement UI collapsed
+**AI:** Codex following Jony/team direction
+**Worked on:** Shawn rejected the always-visible quantity editor as not luxury enough and directed implementation of the team decision without independent product/design changes.
+
+### Completed This Session
+- Collapsed the item-by-item quantity editor by default.
+- Moved selected package summary, package adjustments, Westin Partner Price, and Westin Partner Savings above the edit control.
+- Added **Adjust Package Details** as the single secondary control to reveal quantity editing.
+- Kept the existing quantity logic and trusted server pricing path unchanged.
+- Fixed the bottom price/savings layout so the amount no longer overlaps the label on mobile.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright mobile QA confirmed the refinement list is hidden by default, opens to 9 rows, summary appears before the edit control, and adding Coffee Shop updates the price/savings correctly.
+
+---
+
 ## Session: August 28, 2026 — Westin Partner Savings total
 **AI:** Codex
 **Worked on:** Shawn wanted the proposal to show what the Westin buyer saves from normal pricing, but only at the final total level.
