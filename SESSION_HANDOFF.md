@@ -2,6 +2,16 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 28, 2026 — Codex*
 
+## 2026-08-28: Westin proposal naming + confirmation copy polish
+
+Shawn flagged that the prior package names still felt generic/formal and that the bottom confirmation put the changing total too high. The corrected direction is more personal and luxury: package names should feel elevated, the Recommended badge should not repeat in the name, and the final action should sound like sending Monica a direction rather than submitting a form.
+
+**Shipped in code:** package names changed to **A - Arrival Statement**, **B - Resort Presence**, **B+ - Elevated Resort Presence**, and **C - Full Resort Experience**. Bottom confirmation now says **This is the package you chose**, **Fine-Tune the Details**, **Your Current Package**, **Changes for Monica to Review**, and shows **Updated Westin Partner Price** below the current package/changes summary. The notes area now has visible guidance: `Please add any notes or changes you would like Monica to review.` Submit now reads `Send B to Monica`, etc.
+
+Verified with `npm run build` clean and Playwright mobile QA confirming old package names are gone, the updated total appears at the bottom summary, singular labels render correctly (`+1 zone`), visible notes guidance is present, and the submit flow still succeeds.
+
+---
+
 ## 2026-08-28: Westin proposal quantity refinement approved
 
 Shawn approved the team recommendation to stop treating the Westin proposal as add-only enhancements and instead let the buyer refine the selected package at the bottom confirmation step. Steve/Jony direction: package cards stay clean and luxury-first; unit pricing stays reference-only; quantity editing happens only in the final review panel so the proposal feels guided, not like a cart.

@@ -35,7 +35,7 @@ export const westinProposal = {
   packages: [
     {
       id: 'package-a',
-      name: 'A - Essential Wow Package',
+      name: 'A - Arrival Statement',
       standardPrice: 1935,
       partnerPrice: 1365,
       includes: [
@@ -46,7 +46,7 @@ export const westinProposal = {
     },
     {
       id: 'package-b',
-      name: 'B - Recommended Resort Accent',
+      name: 'B - Resort Presence',
       badge: 'Recommended',
       standardPrice: 2250,
       partnerPrice: 1630,
@@ -58,7 +58,7 @@ export const westinProposal = {
     },
     {
       id: 'package-b-plus',
-      name: 'B+ - Expanded Resort Accent',
+      name: 'B+ - Elevated Resort Presence',
       badge: 'Best Visual Value',
       standardPrice: 2950,
       partnerPrice: 2130,
@@ -69,7 +69,7 @@ export const westinProposal = {
     },
     {
       id: 'package-c',
-      name: 'C - Full Labor Day Resort Look',
+      name: 'C - Full Resort Experience',
       standardPrice: 3345,
       partnerPrice: 2425,
       includes: [

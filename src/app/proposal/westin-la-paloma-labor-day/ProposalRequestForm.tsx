@@ -22,6 +22,31 @@ function quantitiesForPackage(packageId: string): Quantities {
   )
 }
 
+function packageCode(packageName: string) {
+  return packageName.split(' - ')[0]
+}
+
+function packageTitle(packageName: string) {
+  return packageName.replace(/^[^-]+ - /, '')
+}
+
+function formatDeltaMoney(value: number) {
+  if (value === 0) return formatMoney(0)
+  return `${value > 0 ? '+' : '-'}${formatMoney(Math.abs(value))}`
+}
+
+function formatQuantity(quantity: number, unitLabel: string) {
+  const singularLabels: Record<string, string> = {
+    columns: 'column',
+    centerpieces: 'centerpiece',
+    treatments: 'treatment',
+    clusters: 'cluster',
+    desks: 'desk',
+    zones: 'zone',
+  }
+  return `${quantity} ${Math.abs(quantity) === 1 ? singularLabels[unitLabel] ?? unitLabel : unitLabel}`
+}
+
 export default function ProposalRequestForm() {
   const [selectedPackageId, setSelectedPackageId] = useState('package-a')
   const [quantities, setQuantities] = useState<Quantities>(() => quantitiesForPackage('package-a'))
@@ -36,7 +61,25 @@ export default function ProposalRequestForm() {
     (total, item) => total + (quantities[item.id] ?? 0) * item.partnerUnitPrice,
     0,
   )
-  const adjustedItems = westinProposal.refinementItems.filter(item => (quantities[item.id] ?? 0) > 0)
+  const packageItems = westinProposal.refinementItems
+    .map(item => {
+      const packageQuantities = item.packageQuantities as Record<string, number>
+      return { ...item, quantity: packageQuantities[selectedPackage.id] ?? 0 }
+    })
+    .filter(item => item.quantity > 0)
+  const changedItems = westinProposal.refinementItems
+    .map(item => {
+      const packageQuantities = item.packageQuantities as Record<string, number>
+      const packageQuantity = packageQuantities[selectedPackage.id] ?? 0
+      const quantity = quantities[item.id] ?? 0
+      return {
+        ...item,
+        packageQuantity,
+        quantity,
+        delta: quantity - packageQuantity,
+      }
+    })
+    .filter(item => item.delta !== 0)
 
   function choosePackage(packageId: string) {
     const pkg = westinProposal.packages.find(item => item.id === packageId)
@@ -47,7 +90,7 @@ export default function ProposalRequestForm() {
     setMessage('')
     setSelectionPulse(false)
     window.setTimeout(() => setSelectionPulse(true), 20)
-    setSelectionGuidance(`${pkg.name.split(' - ')[0]} is selected. Continue reviewing the proposal, refine quantities if needed, add any notes for Monica, then confirm your direction.`)
+    setSelectionGuidance(`${packageCode(pkg.name)} is selected. Keep reviewing, adjust anything you would like Monica to look at, then send the direction when it feels right.`)
     const westinWindow = window as WestinWindow
     westinWindow.__westinSelectedPackageId = packageId
     window.dispatchEvent(new CustomEvent('westin-package-state-changed', { detail: { packageId } }))
@@ -121,13 +164,13 @@ export default function ProposalRequestForm() {
       <div className="request-shell">
         <div>
           <p className="request-kicker">
-            Select a Package
+            Your Package
           </p>
           <h2>
-            Choose a package direction.
+            Make this easy for Monica to finalize.
           </h2>
           <p className="request-copy">
-            Choose the package that fits the direction best. Blue Luna Events will confirm final placement, timing, and logistics before preparing the official estimate and payment link.
+            Choose the package you like, make any small quantity changes, and leave Monica a note if there is anything you want her to review.
           </p>
         </div>
 
@@ -165,17 +208,14 @@ export default function ProposalRequestForm() {
           <div className="selected-summary">
             <div className="selected-summary-top" aria-live="polite">
               <div>
-                <span>Selected Direction</span>
+                <span>This is the package you chose</span>
                 <strong>{selectedPackage.name}</strong>
-              </div>
-              <div>
-                <span>Adjusted Westin Partner Price</span>
-                <strong>{formatMoney(adjustedPartnerPrice)}</strong>
+                <p>Keep it as shown, or adjust the quantities below for Monica to review.</p>
               </div>
             </div>
             <div className="refine-panel">
               <div className="refine-heading">
-                <span>Refine This Direction</span>
+                <span>Fine-Tune the Details</span>
                 <p>Package quantities are pre-filled below. Adjust only what you would like Blue Luna to review before Monica prepares the official estimate.</p>
               </div>
               <div className="refine-list">
@@ -188,7 +228,7 @@ export default function ProposalRequestForm() {
                       <div>
                         <strong>{item.title}</strong>
                         <p>
-                          {includedQuantity > 0 ? `${includedQuantity} included in ${selectedPackage.name.split(' - ')[0]}` : 'Optional refinement'} · {item.partner}
+                          {includedQuantity > 0 ? `${includedQuantity} included in ${packageCode(selectedPackage.name)}` : 'Optional refinement'} · {item.partner}
                         </p>
                       </div>
                       <div className="quantity-control" aria-label={`${item.title} quantity`}>
@@ -205,28 +245,48 @@ export default function ProposalRequestForm() {
                 })}
               </div>
               <div className="selected-summary-items">
-                <span>Current Direction</span>
-                {adjustedItems.length > 0 ? (
+                <span>Your Current Package</span>
+                <strong className="summary-title">{packageTitle(selectedPackage.name)}</strong>
+                {packageItems.length > 0 ? (
                   <ul>
-                    {adjustedItems.map(item => {
-                      const quantity = quantities[item.id] ?? 0
-                      return (
-                        <li key={item.id}>
-                          <span>{quantity} {item.unitLabel} · {item.title}</span>
-                          <strong>{formatMoney(quantity * item.partnerUnitPrice)}</strong>
-                        </li>
-                      )
-                    })}
+                    {packageItems.map(item => (
+                      <li key={item.id}>
+                          <span>{formatQuantity(item.quantity, item.unitLabel)} · {item.title}</span>
+                        <strong>{formatMoney(item.quantity * item.partnerUnitPrice)}</strong>
+                      </li>
+                    ))}
                   </ul>
                 ) : (
                   <p>No decor items selected.</p>
                 )}
+                <div className="summary-divider" />
+                <span>Changes for Monica to Review</span>
+                {changedItems.length > 0 ? (
+                  <ul>
+                    {changedItems.map(item => (
+                      <li key={item.id}>
+                        <span>{item.delta > 0 ? '+' : ''}{formatQuantity(item.delta, item.unitLabel)} · {item.title}</span>
+                        <strong>{formatDeltaMoney(item.delta * item.partnerUnitPrice)}</strong>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>No changes requested. Monica can prepare this package as shown.</p>
+                )}
+                <div className="summary-total">
+                  <span>Updated Westin Partner Price</span>
+                  <strong>{formatMoney(adjustedPartnerPrice)}</strong>
+                </div>
               </div>
             </div>
           </div>
 
+          <label className="notes-label" htmlFor="westin-proposal-notes">
+            Notes for Monica
+          </label>
+          <p className="notes-help">Please add any notes or changes you would like Monica to review.</p>
           <div className="field-grid">
-            <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Optional notes or changes for Blue Luna to review" rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }} />
+            <textarea id="westin-proposal-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Example: We like this package but may want fewer railing clusters." rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }} />
           </div>
 
           <label className="terms-check">
@@ -248,7 +308,7 @@ export default function ProposalRequestForm() {
             ].filter(Boolean).join(' ')}
           >
             {status === 'sent' ? <Check size={17} /> : <Send size={17} />}
-            {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Package Direction Sent' : `Submit ${selectedPackage.name.split(' - ')[0]} Direction for Review`}
+            {status === 'sending' ? 'Sending...' : status === 'sent' ? 'Sent to Monica' : `Send ${packageCode(selectedPackage.name)} to Monica`}
           </button>
 
           {message && (
@@ -407,12 +467,9 @@ export default function ProposalRequestForm() {
         .selected-summary-top {
           background: #0d0f0f;
           color: white;
-          display: grid;
-          gap: 1px;
-          grid-template-columns: 1fr 0.82fr;
         }
         .selected-summary-top div {
-          padding: 16px;
+          padding: 18px;
         }
         .selected-summary-top span,
         .selected-summary-items > span {
@@ -426,14 +483,14 @@ export default function ProposalRequestForm() {
         }
         .selected-summary-top strong {
           display: block;
-          font-size: 0.98rem;
+          font-size: 1.08rem;
           line-height: 1.25;
         }
-        .selected-summary-top div:last-child {
-          background: rgba(91,191,191,0.12);
-        }
-        .selected-summary-top div:last-child strong {
-          font-size: 1.28rem;
+        .selected-summary-top p {
+          color: rgba(255,255,255,0.66);
+          font-size: 0.84rem;
+          line-height: 1.45;
+          margin: 8px 0 0;
         }
         .refine-panel {
           background: #fff;
@@ -523,6 +580,13 @@ export default function ProposalRequestForm() {
         .selected-summary-items > span {
           color: #8a94a3;
         }
+        .summary-title {
+          color: #0d0f0f;
+          display: block;
+          font-size: 0.98rem;
+          line-height: 1.25;
+          margin: 0 0 12px;
+        }
         .selected-summary-items p,
         .selected-summary-items ul {
           color: #667085;
@@ -548,6 +612,48 @@ export default function ProposalRequestForm() {
         .selected-summary-items li strong {
           color: #0d0f0f;
           white-space: nowrap;
+        }
+        .summary-divider {
+          background: #e5e7eb;
+          height: 1px;
+          margin: 16px 0;
+        }
+        .summary-total {
+          background: #0d0f0f;
+          border-radius: 14px;
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          align-items: center;
+          margin-top: 18px;
+          padding: 16px;
+        }
+        .summary-total span {
+          color: #5bbfbf;
+          font-size: 0.68rem;
+          font-weight: 900;
+          letter-spacing: 0.12em;
+          line-height: 1.25;
+          text-transform: uppercase;
+        }
+        .summary-total strong {
+          color: white;
+          font-size: 1.38rem;
+          line-height: 1;
+          white-space: nowrap;
+        }
+        .notes-label {
+          color: #0d0f0f;
+          display: block;
+          font-size: 0.78rem;
+          font-weight: 900;
+          margin: 0 0 8px;
+        }
+        .notes-help {
+          color: #667085;
+          font-size: 0.84rem;
+          line-height: 1.45;
+          margin: -2px 0 10px;
         }
         .request-submit {
           width: 100%;

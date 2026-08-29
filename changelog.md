@@ -13,6 +13,25 @@
 
 ---
 
+## Session: August 28, 2026 — Westin naming and final confirmation polish
+**AI:** Codex + copywriting skill
+**Worked on:** Shawn surfaced a missed message with final copy/UI direction: remove generic package names, remove Recommended redundancy, move the changing total lower, and make the bottom confirmation feel personal instead of formal.
+
+### Completed This Session
+- Renamed packages to **A - Arrival Statement**, **B - Resort Presence**, **B+ - Elevated Resort Presence**, and **C - Full Resort Experience**.
+- Kept the Recommended/Best Visual Value badges as badges only, not repeated in package names.
+- Changed bottom confirmation language from formal selection phrasing to **This is the package you chose**, **Fine-Tune the Details**, **Your Current Package**, and **Changes for Monica to Review**.
+- Moved **Updated Westin Partner Price** into the lower summary below current package and changes.
+- Added visible notes guidance for Monica, separate from the placeholder.
+- Changed the final CTA to `Send B to Monica` style wording.
+- Fixed singular quantity labels such as `1 treatment` and `+1 zone`.
+
+### Verification
+- `npm run build` passed clean.
+- Playwright mobile QA confirmed old names are gone, the bottom total appears after adjustments, notes guidance is visible, singular quantity text is correct, and submit still succeeds.
+
+---
+
 ## Session: August 28, 2026 — Westin package quantity refinement
 **AI:** Codex + approved team direction
 **Worked on:** Shawn and Monica approved the Steve/Jony-led recommendation to let the Westin buyer refine a selected package without cheapening the proposal or turning the package cards into a build-your-own cart.

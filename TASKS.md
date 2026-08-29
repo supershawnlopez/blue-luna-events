@@ -69,6 +69,15 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-28 — Westin naming and final confirmation polish)
+
+- ✅ **Renamed the package ladder.** Package names now read `Arrival Statement`, `Resort Presence`, `Elevated Resort Presence`, and `Full Resort Experience`; the Recommended badge no longer repeats in the package title.
+- ✅ **Moved the active total into the bottom summary.** The changing price now appears under the current package and Monica-review changes, where the client is adjusting quantities.
+- ✅ **Made the bottom copy more human.** Replaced formal language like `Selected Direction` / `Submit B Direction for Review` with `This is the package you chose`, `Fine-Tune the Details`, `Notes for Monica`, and `Send B to Monica`.
+- Verified: clean `npm run build`; Playwright mobile QA confirmed the new names/copy, visible notes guidance, bottom total, singular quantity labels, and submit flow.
+
+---
+
 ## DONE (2026-08-28 — Westin package quantity refinement)
 
 - ✅ **Replaced add-only proposal upgrades with guided refinement.** The Westin proposal now keeps package cards clean and moves quantity editing to the bottom **Refine This Direction** panel.
