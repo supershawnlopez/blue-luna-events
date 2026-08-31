@@ -47,7 +47,7 @@ export default function WestinProposalPage() {
 
           <div className="package-grid">
             {westinProposal.packages.map(pkg => (
-              <article key={pkg.id} className={pkg.badge === 'Recommended' ? 'package-card featured' : 'package-card'}>
+              <article key={pkg.id} data-package-id={pkg.id} className={pkg.badge === 'Recommended' ? 'package-card featured' : 'package-card'}>
                 <div className="package-top">
                   <div>
                     {pkg.badge && <span>{pkg.badge}</span>}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Check, ChevronDown, Printer, Send } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
@@ -186,9 +186,59 @@ export default function ProposalRequestForm() {
     return () => window.clearTimeout(timeout)
   }, [selectionPulse])
 
+  // Log what the recipient actually changes in the quantity editor — this is
+  // the strongest "here is exactly what I want" signal Monica can get before
+  // a formal submit. Debounced so a burst of +/- taps logs once, when they
+  // settle, and only when the net result differs from the package baseline.
+  const lastAdjustSig = useRef('')
+  useEffect(() => {
+    if (!refinementOpen) return
+    const timer = window.setTimeout(() => {
+      const changes = westinProposal.refinementItems
+        .map(item => {
+          const base = (item.packageQuantities as Record<string, number>)[selectedPackageId] ?? 0
+          const to = quantities[item.id] ?? 0
+          return { title: item.title, unitLabel: item.unitLabel, from: base, to }
+        })
+        .filter(change => change.from !== change.to)
+      const sig = JSON.stringify(changes)
+      if (sig === lastAdjustSig.current) return
+      lastAdjustSig.current = sig
+      if (changes.length > 0) {
+        trackProposalEvent('quantity_adjusted', {
+          packageId: selectedPackageId,
+          changes,
+          adjustedPartnerPrice,
+        })
+      }
+    }, 2500)
+    return () => window.clearTimeout(timer)
+  }, [quantities, selectedPackageId, refinementOpen, adjustedPartnerPrice])
+
+  // Capture typed notes even if they never hit send — an abandoned note is
+  // often the clearest statement of what they're unsure about.
+  const notesRef = useRef('')
+  const statusRef = useRef<Status>('idle')
+  useEffect(() => { notesRef.current = notes }, [notes])
+  useEffect(() => { statusRef.current = status }, [status])
+  useEffect(() => {
+    const flush = () => {
+      const text = notesRef.current.trim()
+      if (text && statusRef.current !== 'sent') {
+        trackProposalEvent('notes_entered', { text: text.slice(0, 1000), final: true }, { beacon: true })
+      }
+    }
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [])
+
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    trackProposalEvent('submit_click', { packageId: selectedPackage.id })
+    trackProposalEvent('submit_click', {
+      packageId: selectedPackage.id,
+      hasNotes: notes.trim().length > 0,
+      termsAccepted,
+    })
     if (!termsAccepted) {
       setMessage('Please review and acknowledge the design/weather notes before sending your package details.')
       return
@@ -623,7 +673,20 @@ export default function ProposalRequestForm() {
           </label>
           <p className="notes-help">Please add any notes or details you would like Monica to see.</p>
           <div className="field-grid">
-            <textarea id="westin-proposal-notes" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Example: We like this package but may want fewer railing clusters." rows={4} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }} />
+            <textarea
+              id="westin-proposal-notes"
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              onBlur={() => {
+                const text = notes.trim()
+                if (text && status !== 'sent') {
+                  trackProposalEvent('notes_entered', { text: text.slice(0, 1000), packageId: selectedPackageId })
+                }
+              }}
+              placeholder="Example: We like this package but may want fewer railing clusters."
+              rows={4}
+              style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.5 }}
+            />
           </div>
 
           <label className="terms-check">

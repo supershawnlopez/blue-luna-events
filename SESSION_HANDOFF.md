@@ -2,6 +2,23 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: August 31, 2026 — Claude Code*
 
+## 2026-08-31 (later): Westin proposal tracking — second pass
+
+Shawn confirmed the first pass worked and asked to add anything else worth knowing, for two reasons: read which way the recipient is leaning, and pressure-test whether the proposal system's design actually works.
+
+**Added:**
+- **Per-package dwell time** — how many seconds each package card was actually on screen. Studio shows "Weighed most: Resort Presence (1m), Full Resort Experience (20s)" — tells you what he's really considering even if he never taps a button.
+- **Quantity changes** — if he opens Adjust Package Details and changes columns 4 → 6, Studio shows the exact before/after per item plus his adjusted price. Debounced so a burst of taps logs once when he settles. This is the strongest "here's exactly what I want" signal short of a formal submit.
+- **Typed notes, even if never sent** — captured on blur and on leaving the page. Shows in Studio as "Note they typed (not sent)". An abandoned note is often the clearest statement of what they're unsure about.
+- **Scroll funnel** — expanded from 2 marks to 4 (Package options → Unit pricing → Design/weather notes → Package form) plus Submitted. Studio shows "Furthest point: Unit pricing" so you can see where people stall.
+- **Device + visit number** — each visit is labeled "Visit 2 · Phone".
+
+**Deliberately left out** (told Shawn): JS error logging, rage-click detection, mouse heatmaps — overkill for a single proposal, and noise more than signal.
+
+Verified `npm run build` clean. New event types added to the ingest allowlist: `package_dwell`, `quantity_adjusted`, `notes_entered`.
+
+---
+
 ## 2026-08-31: Westin proposal — recipient activity tracking + open alerts
 
 Shawn sent the Westin La Paloma proposal link to his contact Matthew and asked how he'd know if Matthew opened it, how long he stayed, and what he clicked. Before today: the page logged only anonymous site-wide visits with nothing shown in Studio. Confirmed from the database that Matthew opened it at **10:58 AM AZ on Aug 31** (single view, no other pages).

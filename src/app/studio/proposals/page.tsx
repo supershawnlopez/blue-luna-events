@@ -28,11 +28,15 @@ type ProposalSelection = {
 
 type ProposalActivitySession = {
   sessionId: string
+  visitNumber: number
+  device: string | null
   firstSeen: string
   lastSeen: string
   activeSeconds: number
-  reachedWeatherNotes: boolean
-  reachedForm: boolean
+  furthest: { mark: string; label: string } | null
+  dwell: { packageId: string; name: string; seconds: number }[]
+  latestNote: string | null
+  latestAdjustment: { changes: { title: string; unitLabel: string; from: number; to: number }[]; adjustedPartnerPrice?: number } | null
   submitted: boolean
   actions: { type: string; label: string; at: string; detail?: string }[]
 }
@@ -186,13 +190,49 @@ export default function StudioProposalsPage() {
                   <article key={session.sessionId} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
                       <div>
-                        <p style={{ color: 'white', fontSize: '0.88rem', fontWeight: 700, margin: '0 0 3px' }}>{timeLabel(session.firstSeen)}</p>
-                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.76rem', margin: 0 }}>{durationLabel(session.activeSeconds)}</p>
+                        <p style={{ color: 'white', fontSize: '0.88rem', fontWeight: 700, margin: '0 0 3px' }}>
+                          Visit {session.visitNumber} · {timeLabel(session.firstSeen)}
+                        </p>
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.76rem', margin: 0 }}>
+                          {durationLabel(session.activeSeconds)}{session.device ? ` · ${session.device}` : ''}
+                        </p>
                       </div>
                       {session.submitted && (
                         <span style={{ color: '#22c55e', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.28)', borderRadius: '999px', padding: '5px 9px', fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Submitted</span>
                       )}
                     </div>
+
+                    {session.dwell.length > 0 && (
+                      <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: '0.78rem', lineHeight: 1.5, margin: '12px 0 0' }}>
+                        <span style={{ color: 'rgba(255,255,255,0.4)' }}>Weighed most: </span>
+                        {session.dwell.slice(0, 2).map((d, i) => (
+                          <span key={d.packageId}>{i > 0 ? ', ' : ''}{d.name} ({durationLabel(d.seconds).replace(' on page', '')})</span>
+                        ))}
+                      </p>
+                    )}
+
+                    {session.latestAdjustment && session.latestAdjustment.changes.length > 0 && (
+                      <div style={{ background: 'rgba(91,191,191,0.08)', border: '1px solid rgba(91,191,191,0.2)', borderRadius: '10px', padding: '10px 12px', marginTop: '12px' }}>
+                        <p style={{ color: '#5BBFBF', fontSize: '0.64rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 6px' }}>Quantities they changed</p>
+                        {session.latestAdjustment.changes.map((c, i) => (
+                          <p key={i} style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.78rem', lineHeight: 1.5, margin: 0 }}>
+                            {c.title}: {c.from} → <strong style={{ color: 'white' }}>{c.to}</strong> {c.unitLabel}
+                          </p>
+                        ))}
+                        {typeof session.latestAdjustment.adjustedPartnerPrice === 'number' && session.latestAdjustment.adjustedPartnerPrice > 0 && (
+                          <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: '0.74rem', margin: '6px 0 0' }}>
+                            Their adjusted price: ${session.latestAdjustment.adjustedPartnerPrice.toLocaleString()}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {session.latestNote && (
+                      <div style={{ borderLeft: '2px solid #5BBFBF', paddingLeft: '12px', marginTop: '12px' }}>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.64rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 4px' }}>Note they typed{session.submitted ? '' : ' (not sent)'}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem', lineHeight: 1.55, margin: 0, whiteSpace: 'pre-wrap' }}>{session.latestNote}</p>
+                      </div>
+                    )}
 
                     <div style={{ display: 'grid', gap: '6px', marginTop: '12px' }}>
                       {session.actions.map((action, i) => (
@@ -206,11 +246,7 @@ export default function StudioProposalsPage() {
                     </div>
 
                     <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', lineHeight: 1.5, margin: '12px 0 0' }}>
-                      {session.reachedForm
-                        ? 'Scrolled all the way to the package form.'
-                        : session.reachedWeatherNotes
-                          ? 'Scrolled to the design/weather notes.'
-                          : 'Stayed near the top of the proposal.'}
+                      Furthest point: {session.furthest ? session.furthest.label : 'Top of the proposal'}
                     </p>
                   </article>
                 ))}

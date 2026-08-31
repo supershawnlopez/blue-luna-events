@@ -13,6 +13,23 @@
 
 ---
 
+## Session: August 31, 2026 (later) — Westin proposal tracking, second pass
+**AI:** Claude Code, Shawn asked to expand tracking after confirming the first pass worked.
+
+### Completed This Session
+- Per-package dwell time (IntersectionObserver, enter/exit accounting, flushed on heartbeat + hide + pagehide).
+- `quantity_adjusted` — debounced (2.5s) effect on the quantity editor, logs net changes vs package baseline + adjusted price.
+- `notes_entered` — textarea onBlur + a pagehide flush, so typed-but-unsent notes are captured. Also `hasNotes`/`termsAccepted` added to `submit_click`.
+- Scroll funnel expanded to 4 milestones (`saw_packages`, `saw_unit_pricing`, `viewed_weather_notes`, `reached_package_form`) + submitted; Studio shows furthest point reached.
+- `view` metadata gains `device`; Studio labels each visit "Visit N · Phone/Desktop".
+- Studio → Proposals activity panel rebuilt to show: weighed-most packages, exact quantity changes + adjusted price, typed note (flagged if not sent), furthest funnel point.
+- Ingest allowlist extended: `package_dwell`, `quantity_adjusted`, `notes_entered`.
+
+### Verification
+- `npm run build` passed clean.
+
+---
+
 ## Session: August 31, 2026 — Westin proposal recipient activity tracking
 **AI:** Claude Code following Shawn-approved Marcus/Priya/Angela direction
 **Worked on:** Shawn sent the Westin proposal link to a contact and needed to see opens, time on page, and clicks. Confirmed from `site_visits` the recipient opened it 10:58 AM AZ on Aug 31.
