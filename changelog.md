@@ -13,6 +13,21 @@
 
 ---
 
+## Session: August 30, 2026 — Client estimate copy: accept vs. deposit
+**AI:** Claude Code following Shawn-approved Angela/Steve/Jony/Priya team direction
+**Worked on:** Monica flagged that the client estimate page told the client accepting the estimate "locks in your date." It doesn't — the deposit does. False expectation at the worst moment.
+
+### Completed This Session
+- Pre-accept subtitle on `/q/[token]` changed to: "Review your selections below. Accept your estimate when everything looks right — then a deposit locks in your event date." (Option A from the team meeting.)
+- Post-accept banner (accepted, deposit not yet paid) changed for consistency to: "Estimate accepted 🎉 One last step — your deposit locks in your event date."
+- Confirmed the estimate email and the PDF do not carry date-lock language — no change needed there.
+- No logic, pricing, accept flow, or payment behavior touched — copy only.
+
+### Verification
+- `npm run build` passed clean (`✓ Compiled successfully`).
+
+---
+
 ## Session: August 28, 2026 — Westin print sheet one-page fix
 **AI:** Codex following Shawn-approved Jony/team direction
 **Worked on:** Shawn showed that the generated package choice PDF still spilled the design/weather acknowledgement onto page 2.

@@ -217,7 +217,7 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
               ? "You're all paid up — thank you!"
               : accepted
                 ? 'Review your remaining balance below. Monica will confirm final details as your date approaches.'
-                : "Review your selections below. When you're ready, accept your estimate to lock in your date."}
+                : "Review your selections below. Accept your estimate when everything looks right — then a deposit locks in your event date."}
           </p>
         </div>
 
@@ -243,7 +243,7 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
         {accepted && !hasPaidAnything && (
           <div style={{ background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.25)', borderRadius: '12px', padding: '14px 18px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
             <PartyPopper size={18} color="#5BBFBF" />
-            <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>{isFullPaymentDue ? `You're all set! Complete your ${fmt(paymentAmount)} payment below.` : "You're all set! Ready to lock in your date? Pay your deposit below."}</p>
+            <p style={{ fontSize: '0.85rem', color: '#0D0F0F', fontWeight: 600, margin: 0 }}>{isFullPaymentDue ? `You're all set! Complete your ${fmt(paymentAmount)} payment below.` : "Estimate accepted 🎉 One last step — your deposit locks in your event date."}</p>
           </div>
         )}
 

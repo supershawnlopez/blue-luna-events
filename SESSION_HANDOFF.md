@@ -1,6 +1,28 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 28, 2026 — Codex*
+*Last updated: August 30, 2026 — Claude Code*
+
+## 2026-08-30: Client estimate copy — "accept" no longer implies the date is locked
+
+Monica flagged that when Monica sends a client their estimate link, the page said: "When you're ready, accept your estimate to lock in your date." That's wrong — accepting only means the client agrees to the quote. The **deposit** is what locks the date. It set a false expectation right at the decision moment.
+
+Team meeting held (Angela leading the client-facing estimate page, Steve final approval, Jony on tone, Priya on policy accuracy). Shawn chose Option A.
+
+**Shipped in code (copy only, `/q/[token]` client estimate page):**
+- Pre-accept line is now: "Review your selections below. Accept your estimate when everything looks right — then a deposit locks in your event date."
+- Post-accept banner (accepted, deposit not yet paid) is now: "Estimate accepted 🎉 One last step — your deposit locks in your event date."
+- The estimate email and the PDF were checked — neither used date-lock language, so nothing changed there.
+- No pricing, accept flow, payment logic, or UI structure touched.
+
+Verified with `npm run build` clean.
+
+**Shawn, test this:**
+1. Open a client estimate link (`/q/...`) that hasn't been accepted yet — the line under the greeting should say accepting is step one and the **deposit** is what locks the date.
+2. Accept it (check the terms box first) — the confirmation banner should say "Estimate accepted 🎉 One last step — your deposit locks in your event date," then the Pay Deposit button.
+3. Confirm nothing about the totals, deposit amount, or payment still works exactly as before.
+
+---
+
 
 ## 2026-08-28: Westin print/save choice sheet tightened to one page
 

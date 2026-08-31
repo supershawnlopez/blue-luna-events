@@ -15,6 +15,10 @@
 
 ## CORE PRODUCT DECISIONS
 
+**[2026-08-30] — Client estimate page: accepting the estimate does NOT lock the date. The deposit does. Copy must reflect that.**
+Approved by: Shawn + Angela Ahrendts + Steve Jobs + Jony Ive + Priya Nair
+Why: Monica flagged that the `/q/[token]` page told clients "accept your estimate to lock in your date." Accepting only means the client agrees to the quote; the 50% deposit is what actually secures the event date. Attaching the date-lock promise to acceptance sets a false expectation at the decision moment and could be disputed later. Approved wording (Option A) — pre-accept: "Review your selections below. Accept your estimate when everything looks right — then a deposit locks in your event date." Post-accept banner: "Estimate accepted 🎉 One last step — your deposit locks in your event date." The mental model to protect everywhere: review → accept (I agree) → deposit (my date is mine). Never let the accept step imply the deposit step's outcome.
+
 **[2026-08-28] — Resort/corporate proposals are digital proposal pages first; estimates/payment links come after Monica confirms final details.**
 Approved by: Shawn + Steve Jobs + Jony Ive + Angela Ahrendts + Craig Federighi + Priya Nair
 Why: Westin La Paloma needs a luxury presentation path, not a normal estimate-first workflow. The client should be able to review a polished private proposal page, download a PDF for internal sharing, and request a package. That request becomes a Studio lead; Monica then confirms final placement, timing, venue access, taxes/fees if needed, and sends the official estimate/payment link. Proposals stay separate from payment records so the estimate remains the legal/money source of truth.
