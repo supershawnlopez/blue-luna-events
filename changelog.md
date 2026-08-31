@@ -13,6 +13,25 @@
 
 ---
 
+## Session: August 31, 2026 — Westin proposal recipient activity tracking
+**AI:** Claude Code following Shawn-approved Marcus/Priya/Angela direction
+**Worked on:** Shawn sent the Westin proposal link to a contact and needed to see opens, time on page, and clicks. Confirmed from `site_visits` the recipient opened it 10:58 AM AZ on Aug 31.
+
+### Completed This Session
+- New `proposal_events` table — applied live via Supabase Management API; migration file `20260831000000_proposal_events.sql`.
+- `ProposalActivityTracker` component on `/proposal/westin-la-paloma-labor-day`: `view` on open, `heartbeat` every 15s with accumulated tab-visible seconds, final `sendBeacon` on leave, scroll marks for the weather notes and package form.
+- Click tracking on existing controls: package look/select (top cards + form), Adjust Package Details, Print/Save, terms acknowledgement, submit. `submitted` also logged server-side in the request route.
+- Internal Studio opens excluded client-side (`?preview=studio` / `/studio` referrer) and server-side (`/studio` referer header).
+- `sendPush` to Monica on first open of a session and on submit.
+- New `GET /api/studio/proposals/activity` (session-grouped, deduped, active-seconds = max heartbeat) + `POST /api/proposals/westin-la-paloma-labor-day/activity` ingest.
+- Studio → Proposals gains a **Recipient Activity** panel: total opens, last open, per-visit timeline with duration + actions + scroll depth.
+
+### Verification
+- `npm run build` passed clean (`✓ Compiled successfully`, 50/50 pages, all new routes present).
+- Not yet verified against a real open — test steps in SESSION_HANDOFF.
+
+---
+
 ## Session: August 30, 2026 — Client estimate copy: accept vs. deposit
 **AI:** Claude Code following Shawn-approved Angela/Steve/Jony/Priya team direction
 **Worked on:** Monica flagged that the client estimate page told the client accepting the estimate "locks in your date." It doesn't — the deposit does. False expectation at the worst moment.

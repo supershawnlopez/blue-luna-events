@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { SITE_CONFIG } from '@/lib/config'
 import { serverClient } from '@/lib/supabase'
+import { sendPush } from '@/lib/push'
 import { westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 
 export const dynamic = 'force-dynamic'
@@ -103,6 +104,31 @@ export async function POST(req: Request) {
       }
       return NextResponse.json({ error: 'Could not send package selection.' }, { status: 500 })
     }
+  }
+
+  try {
+    await db.from('proposal_events').insert([{
+      proposal_slug: westinProposal.slug,
+      session_id: typeof body.sessionId === 'string' ? body.sessionId.slice(0, 100) : null,
+      type: 'submitted',
+      metadata: {
+        packageId: selectedPackage.id,
+        packageName: selectedPackage.name,
+        partnerPrice: adjustedPartnerPrice,
+      },
+    }])
+  } catch (err) {
+    console.error('proposal submitted event insert failed:', err)
+  }
+
+  try {
+    await sendPush(
+      '🎉 Westin package selected',
+      `${selectedPackage.name} — $${adjustedPartnerPrice.toLocaleString()} Westin Partner Price`,
+      '/studio/proposals',
+    )
+  } catch (err) {
+    console.error('proposal submit push failed:', err)
   }
 
   return NextResponse.json({ ok: true, selectionId: selection?.id ?? null })

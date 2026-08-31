@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { trackProposalEvent } from '@/lib/proposalActivity'
 
 type PackageRequestLinkProps = {
   packageId: string
@@ -16,6 +17,7 @@ export default function PackageRequestLink({ packageId, packageLabel }: PackageR
   const selected = selectedPackageId === packageId
 
   function requestPackage() {
+    trackProposalEvent('package_selected', { packageId, location: 'top_card' })
     const westinWindow = window as WestinWindow
     westinWindow.__westinSelectedPackageId = packageId
     window.dispatchEvent(new CustomEvent('westin-package-selected', { detail: { packageId } }))

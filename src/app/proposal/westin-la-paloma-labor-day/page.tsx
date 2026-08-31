@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 import PackageRequestLink from './PackageRequestLink'
 import ProposalRequestForm from './ProposalRequestForm'
+import ProposalActivityTracker from './ProposalActivityTracker'
 
 export const metadata: Metadata = {
   title: 'Labor Day at Westin La Paloma | Blue Luna Events',
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 export default function WestinProposalPage() {
   return (
     <main className="westin-proposal">
+      <ProposalActivityTracker />
       <section className="proposal-hero">
         <div className="proposal-shell">
           <div className="proposal-client-mark">

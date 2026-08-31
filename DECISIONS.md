@@ -15,6 +15,10 @@
 
 ## CORE PRODUCT DECISIONS
 
+**[2026-08-31] — Public proposal pages track recipient engagement (opens, time on page, clicks), shown in Studio, with a phone alert on open.**
+Approved by: Shawn (live) + Marcus Webb + Priya Nair + Angela Ahrendts
+Why: Shawn sends a proposal link (e.g. Westin La Paloma to a single contact) and needs to know if it was opened, how engaged the reader is, and what they looked at — the same visibility estimates already have. Design: a `proposal_events` table logs anonymous per-session activity; a client tracker fires `view` + 15s `heartbeat`s carrying accumulated *tab-visible* seconds + scroll marks; existing controls (package select, adjust panel, print, terms, submit) log click events. Internal Studio previews are excluded both client-side (`?preview=studio` / `/studio` referrer) and server-side (`/studio` referer) so the data stays honest. Monica gets a PWA push on first open of a session and on submit. Studio → Proposals shows a per-visit timeline. The link stays a single shared URL for now (not per-recipient tokenized) — acceptable because in practice one link goes to one contact; revisit if proposals start going to multiple recipients at once.
+
 **[2026-08-30] — Client estimate page: accepting the estimate does NOT lock the date. The deposit does. Copy must reflect that.**
 Approved by: Shawn + Angela Ahrendts + Steve Jobs + Jony Ive + Priya Nair
 Why: Monica flagged that the `/q/[token]` page told clients "accept your estimate to lock in your date." Accepting only means the client agrees to the quote; the 50% deposit is what actually secures the event date. Attaching the date-lock promise to acceptance sets a false expectation at the decision moment and could be disputed later. Approved wording (Option A) — pre-accept: "Review your selections below. Accept your estimate when everything looks right — then a deposit locks in your event date." Post-accept banner: "Estimate accepted 🎉 One last step — your deposit locks in your event date." The mental model to protect everywhere: review → accept (I agree) → deposit (my date is mine). Never let the accept step imply the deposit step's outcome.

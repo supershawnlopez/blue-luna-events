@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
-import { Check, Copy, Download, ExternalLink, FileText, RefreshCw } from 'lucide-react'
+import { Activity, Check, Copy, Download, ExternalLink, FileText, RefreshCw } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
 
@@ -26,9 +26,34 @@ type ProposalSelection = {
   estimate_id: string | null
 }
 
+type ProposalActivitySession = {
+  sessionId: string
+  firstSeen: string
+  lastSeen: string
+  activeSeconds: number
+  reachedWeatherNotes: boolean
+  reachedForm: boolean
+  submitted: boolean
+  actions: { type: string; label: string; at: string; detail?: string }[]
+}
+
+type ProposalActivity = {
+  sessions: ProposalActivitySession[]
+  totalOpens: number
+  lastOpen: string | null
+}
+
 function timeLabel(iso: string) {
   const d = new Date(iso)
   return d.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+}
+
+function durationLabel(seconds: number) {
+  if (!seconds || seconds < 1) return 'under a minute'
+  if (seconds < 60) return `${seconds}s on page`
+  const mins = Math.floor(seconds / 60)
+  const rem = seconds % 60
+  return rem ? `${mins}m ${rem}s on page` : `${mins}m on page`
 }
 
 export default function StudioProposalsPage() {
@@ -36,6 +61,8 @@ export default function StudioProposalsPage() {
   const [selections, setSelections] = useState<ProposalSelection[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [activity, setActivity] = useState<ProposalActivity | null>(null)
+  const [activityLoading, setActivityLoading] = useState(true)
   const proposalUrl = typeof window === 'undefined'
     ? '/proposal/westin-la-paloma-labor-day'
     : `${window.location.origin}/proposal/westin-la-paloma-labor-day`
@@ -65,8 +92,20 @@ export default function StudioProposalsPage() {
     setLoading(false)
   }
 
+  async function loadActivity() {
+    setActivityLoading(true)
+    try {
+      const res = await fetch('/api/studio/proposals/activity')
+      if (res.ok) setActivity(await res.json())
+    } catch {
+      /* leave activity null */
+    }
+    setActivityLoading(false)
+  }
+
   useEffect(() => {
     loadSelections()
+    loadActivity()
   }, [])
 
   return (
@@ -125,12 +164,68 @@ export default function StudioProposalsPage() {
         </div>
 
         <section style={{ marginTop: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <Activity size={15} color="#5BBFBF" />
+            <p style={{ color: '#5BBFBF', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', margin: 0 }}>Recipient Activity</p>
+          </div>
+
+          {activityLoading ? (
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '0.86rem', padding: '18px 0' }}>Loading activity…</p>
+          ) : !activity || activity.totalOpens === 0 ? (
+            <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: '0.86rem', lineHeight: 1.6, padding: '14px 0' }}>
+              No one has opened the proposal link yet. When they do, you&apos;ll get a phone alert and every visit will show here — how long they stayed and what they looked at. Your own opens from this screen are not counted.
+            </p>
+          ) : (
+            <>
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', lineHeight: 1.6, margin: '0 0 14px' }}>
+                Opened <strong style={{ color: 'white' }}>{activity.totalOpens}×</strong>
+                {activity.lastOpen && <> · last {timeLabel(activity.lastOpen)}</>}
+              </p>
+              <div style={{ display: 'grid', gap: '10px' }}>
+                {activity.sessions.map(session => (
+                  <article key={session.sessionId} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', alignItems: 'flex-start' }}>
+                      <div>
+                        <p style={{ color: 'white', fontSize: '0.88rem', fontWeight: 700, margin: '0 0 3px' }}>{timeLabel(session.firstSeen)}</p>
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.76rem', margin: 0 }}>{durationLabel(session.activeSeconds)}</p>
+                      </div>
+                      {session.submitted && (
+                        <span style={{ color: '#22c55e', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.28)', borderRadius: '999px', padding: '5px 9px', fontSize: '0.62rem', fontWeight: 800, textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Submitted</span>
+                      )}
+                    </div>
+
+                    <div style={{ display: 'grid', gap: '6px', marginTop: '12px' }}>
+                      {session.actions.map((action, i) => (
+                        <div key={i} style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+                          <span style={{ color: '#5BBFBF', fontSize: '0.7rem', flexShrink: 0 }}>{timeLabel(action.at).split(', ').pop()}</span>
+                          <span style={{ color: 'rgba(255,255,255,0.72)', fontSize: '0.8rem', lineHeight: 1.4 }}>
+                            {action.label}{action.detail ? <span style={{ color: 'rgba(255,255,255,0.5)' }}> — {action.detail}</span> : null}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.72rem', lineHeight: 1.5, margin: '12px 0 0' }}>
+                      {session.reachedForm
+                        ? 'Scrolled all the way to the package form.'
+                        : session.reachedWeatherNotes
+                          ? 'Scrolled to the design/weather notes.'
+                          : 'Stayed near the top of the proposal.'}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </>
+          )}
+        </section>
+
+        <section style={{ marginTop: '28px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', marginBottom: '12px' }}>
             <div>
               <p style={{ color: '#5BBFBF', fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', margin: '0 0 4px' }}>Selections</p>
               <h2 style={{ color: 'white', fontSize: '1.1rem', lineHeight: 1.2, margin: 0 }}>Ready for estimate review</h2>
             </div>
-            <button type="button" onClick={loadSelections} style={secondaryButton}>
+            <button type="button" onClick={() => { loadSelections(); loadActivity() }} style={secondaryButton}>
               <RefreshCw size={14} />
               Refresh
             </button>

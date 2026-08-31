@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { Check, ChevronDown, Printer, Send } from 'lucide-react'
 import { formatMoney, westinProposal } from '@/lib/proposals/westinLaPalomaLaborDay'
+import { getProposalSessionId, trackProposalEvent } from '@/lib/proposalActivity'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
@@ -146,9 +147,10 @@ export default function ProposalRequestForm() {
     </div>
   )
 
-  function choosePackage(packageId: string) {
+  function choosePackage(packageId: string, userInitiated = false) {
     const pkg = westinProposal.packages.find(item => item.id === packageId)
     if (!pkg) return
+    if (userInitiated) trackProposalEvent('package_selected', { packageId, location: 'form' })
     const nextQuantities = quantitiesForPackage(packageId)
     setSelectedPackageId(packageId)
     setQuantities(nextQuantities)
@@ -186,6 +188,7 @@ export default function ProposalRequestForm() {
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    trackProposalEvent('submit_click', { packageId: selectedPackage.id })
     if (!termsAccepted) {
       setMessage('Please review and acknowledge the design/weather notes before sending your package details.')
       return
@@ -205,6 +208,7 @@ export default function ProposalRequestForm() {
         })),
         notes,
         acceptedDisclosures: termsAccepted,
+        sessionId: getProposalSessionId(),
       }),
     })
 
@@ -226,6 +230,7 @@ export default function ProposalRequestForm() {
   }
 
   function printChoices() {
+    trackProposalEvent('pdf_print', { packageId: selectedPackage.id, packageName: selectedPackage.name })
     const chosenCode = packageCode(selectedPackage.name)
     const chosenTitle = packageTitle(selectedPackage.name)
     const includedRows = packageItems
@@ -516,7 +521,7 @@ export default function ProposalRequestForm() {
                 <button
                   type="button"
                   key={pkg.id}
-                  onClick={() => choosePackage(pkg.id)}
+                  onClick={() => choosePackage(pkg.id, true)}
                   className={active ? 'package-option active' : 'package-option'}
                 >
                   <span className="package-option-main">
@@ -553,7 +558,11 @@ export default function ProposalRequestForm() {
                 <button
                   type="button"
                   className={refinementOpen ? 'adjust-toggle open' : 'adjust-toggle'}
-                  onClick={() => setRefinementOpen(open => !open)}
+                  onClick={() => {
+                    const next = !refinementOpen
+                    if (next) trackProposalEvent('adjust_opened', { packageId: selectedPackageId })
+                    setRefinementOpen(next)
+                  }}
                   aria-expanded={refinementOpen}
                 >
                   <span>Adjust Package Details</span>
@@ -618,7 +627,14 @@ export default function ProposalRequestForm() {
           </div>
 
           <label className="terms-check">
-            <input type="checkbox" checked={termsAccepted} onChange={e => setTermsAccepted(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={termsAccepted}
+              onChange={e => {
+                setTermsAccepted(e.target.checked)
+                if (e.target.checked) trackProposalEvent('terms_acknowledged')
+              }}
+            />
             <span>
               <strong>Design + Weather Acknowledgement</strong>
               I reviewed the design/weather notes and understand final placement is subject to venue access, setup timing, and safe installation conditions.

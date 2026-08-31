@@ -1,6 +1,31 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 30, 2026 — Claude Code*
+*Last updated: August 31, 2026 — Claude Code*
+
+## 2026-08-31: Westin proposal — recipient activity tracking + open alerts
+
+Shawn sent the Westin La Paloma proposal link to his contact Matthew and asked how he'd know if Matthew opened it, how long he stayed, and what he clicked. Before today: the page logged only anonymous site-wide visits with nothing shown in Studio. Confirmed from the database that Matthew opened it at **10:58 AM AZ on Aug 31** (single view, no other pages).
+
+Team direction (Marcus/Priya/Angela, Shawn approved live): build lightweight engagement tracking on the proposal page, surfaced in Studio, with a phone alert on open.
+
+**Shipped in code:**
+- New `proposal_events` table (**already applied live** via Supabase Management API + migration file `20260831000000_proposal_events.sql`).
+- `ProposalActivityTracker` on the proposal page logs: `view` on open, `heartbeat` every 15s carrying **accumulated active (tab-visible) seconds**, a final beacon on leave, and scroll marks for reaching the design/weather notes and the package form.
+- Click tracking wired into the existing controls: looking at / selecting a package (top cards + form), opening **Adjust Package Details**, **Print / Save Your Choices**, acknowledging the design/weather notes, and hitting send. The successful submit also logs `submitted` server-side.
+- Internal opens are excluded both ways: the client suppresses tracking when `?preview=studio` or the referrer is `/studio`, and the API drops anything with a `/studio` referer. So Monica/Shawn opening it from Studio never pollutes the data.
+- **Phone push to Monica** the first time a new session opens the proposal ("👀 Westin proposal opened — [time]"), and on submit ("🎉 Westin package selected"). Requires Monica's installed Studio PWA + notifications enabled; the Studio panel works regardless.
+- New **Recipient Activity** panel at the top of **Studio → Proposals**: "Opened N× · last [time]", then per visit — when, how long on page, each action taken, and how far they scrolled.
+
+Verified with `npm run build` clean. Not yet verified against a real open — see test steps.
+
+**Shawn, test this after deploy:**
+1. Open Studio → Proposals. The new **Recipient Activity** panel should say no one's opened it yet (your earlier opens from Studio don't count) — or show Matthew's activity if he's been back.
+2. On your **phone**, from a normal browser (not from Studio), open the proposal link. Wait ~20 seconds, scroll to the bottom, tap a package, open "Adjust Package Details," then close the tab.
+3. Back in Studio → Proposals → Refresh. You should see that visit: time on page, "Looked at a package," "Opened package adjustments," and "Scrolled all the way to the package form."
+4. If Monica's Studio PWA has notifications on, she should get a "👀 Westin proposal opened" push within a few seconds of step 2.
+
+---
+
 
 ## 2026-08-30: Client estimate copy — "accept" no longer implies the date is locked
 
