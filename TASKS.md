@@ -69,6 +69,23 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-08-31 — Westin proposal recipient activity tracking)
+- Shawn sent the proposal link to a contact; needed opens / time on page / clicks visible.
+- New `proposal_events` table (applied live via Supabase Management API — token `sbp_d2f0…7868` works for Blue Luna, contrary to the 403 note in NOW #3; those 3 pending migrations could likely be applied the same way).
+- `ProposalActivityTracker` + click tracking on existing controls; internal Studio previews excluded both ways.
+- Push to Monica on first open of a session and on submit.
+- New Recipient Activity panel in Studio → Proposals (per-visit timeline: duration, actions, scroll depth).
+- Commit `f1b618b0`, deployed `READY` on Vercel. Migration file `20260831000000_proposal_events.sql`.
+- Owner for verification: Shawn (real-device test — see SESSION_HANDOFF).
+
+---
+
+## DONE (2026-08-30 — Client estimate copy: accept vs. deposit)
+- Pre-accept line no longer implies accepting locks the date; deposit does. Post-accept banner tightened to match.
+- Commit `79070777`, deployed `READY`. Copy only.
+
+---
+
 ## DONE (2026-08-28 — Westin print sheet one-page fix)
 
 - ✅ **Followed the approved Jony/team print direction.** The package choice sheet now keeps the design/weather acknowledgement on page 1 instead of orphaning it onto page 2.
