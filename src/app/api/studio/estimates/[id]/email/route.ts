@@ -113,6 +113,16 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ error: sendError.message }, { status: 500 })
   }
 
+  // Emailing it to the client IS sending it — a draft that's been emailed
+  // should never still read as "Draft" in the Estimates list.
+  if (est.status === 'draft') {
+    try {
+      await supabase.from('estimates').update({ status: 'sent' }).eq('id', params.id)
+    } catch (err) {
+      console.error('Failed to mark estimate as sent:', err)
+    }
+  }
+
   try {
     await logEstimateActivity({
       estimateId: params.id,

@@ -444,6 +444,18 @@ function EstimateDetailInner() {
     }
   }
 
+  // Once Monica has actually handed the client a way in — emailed it, or
+  // copied the share link to send herself — it's no longer a "Draft".
+  async function markSentIfDraft() {
+    if (!est || est.status !== 'draft') return
+    const res = await fetch(`/api/studio/estimates/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'sent' }),
+    })
+    if (res.ok) setEst(await res.json())
+  }
+
   async function sendEmail() {
     setEmailSending(true)
     setEmailSent(null)
@@ -451,6 +463,7 @@ function EstimateDetailInner() {
     const data = await res.json()
     if (res.ok) {
       setEmailSent(data.sentTo)
+      markSentIfDraft()
       fetch(`/api/studio/estimates/${id}/activity`).then(r => r.ok && r.json()).then(a => a && setActivity(a))
     }
     setEmailSending(false)
@@ -461,6 +474,7 @@ function EstimateDetailInner() {
     navigator.clipboard.writeText(`${window.location.origin}/q/${est.share_token}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+    markSentIfDraft()
   }
 
   // Lets Monica offer the same client a different mix of items (more/less)

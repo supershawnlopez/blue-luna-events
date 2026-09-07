@@ -10,7 +10,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const supabase = serverClient()
   const { data: est, error: findError } = await supabase
     .from('estimates')
-    .select('id, accepted_at, lead_id, client_name')
+    .select('id, accepted_at, lead_id, client_name, status')
     .eq('share_token', params.token)
     .single()
 
@@ -18,9 +18,11 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
 
   if (est.accepted_at) return NextResponse.json({ accepted_at: est.accepted_at })
 
+  // If the client is accepting it, it was obviously sent — keep `status`
+  // honest even if it was still sitting at 'draft'.
   const { data, error } = await supabase
     .from('estimates')
-    .update({ accepted_at: new Date().toISOString() })
+    .update({ accepted_at: new Date().toISOString(), ...(est.status === 'draft' ? { status: 'sent' } : {}) })
     .eq('id', est.id)
     .select('accepted_at')
     .single()
