@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronDown, Copy, Files, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag, Pencil, X } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
-import { labelForAddOn, labelForEventType } from '@/lib/config'
+import { labelForAddOn, labelForEventType, CONFIGURATOR_EVENT_TYPES } from '@/lib/config'
 import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
 type Estimate = {
@@ -142,6 +142,7 @@ function EstimateDetailInner() {
   const [dName, setDName] = useState('')
   const [dEmail, setDEmail] = useState('')
   const [dPhone, setDPhone] = useState('')
+  const [dEventType, setDEventType] = useState('')
   const [dEventDate, setDEventDate] = useState('')
   const [dVenue, setDVenue] = useState('')
   const [dNotes, setDNotes] = useState('')
@@ -177,6 +178,7 @@ function EstimateDetailInner() {
       setDName(data.client_name ?? '')
       setDEmail(data.client_email ?? '')
       setDPhone(data.client_phone ?? '')
+      setDEventType(data.event_type ?? '')
       setDEventDate(data.event_date ?? '')
       setDVenue(data.venue ?? '')
       setDNotes(data.notes ?? '')
@@ -257,6 +259,7 @@ function EstimateDetailInner() {
         client_name: dName,
         client_email: dEmail,
         client_phone: dPhone || null,
+        event_type: dEventType || null,
         event_date: dEventDate || null,
         venue: dVenue || null,
         notes: dNotes || null,
@@ -595,20 +598,33 @@ function EstimateDetailInner() {
                 { label: 'Client Name', value: dName, set: setDName, type: 'text' },
                 { label: 'Email', value: dEmail, set: setDEmail, type: 'email' },
                 { label: 'Phone', value: dPhone, set: setDPhone, type: 'tel' },
+                { label: 'Event Type', value: dEventType, set: setDEventType, type: 'select' },
                 { label: 'Event Date', value: dEventDate, set: setDEventDate, type: 'date' },
                 { label: 'Venue', value: dVenue, set: setDVenue, type: 'text' },
                 { label: 'Notes', value: dNotes, set: setDNotes, type: 'text' },
               ].map(f => (
                 <div key={f.label}>
                   <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '4px' }}>{f.label}</label>
-                  <input
-                    type={f.type} value={f.value} onChange={e => f.set(e.target.value)}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.85rem', color: 'white', boxSizing: 'border-box' }}
-                  />
+                  {f.type === 'select' ? (
+                    <select
+                      value={f.value} onChange={e => f.set(e.target.value)}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.85rem', color: 'white', boxSizing: 'border-box', appearance: 'none' }}
+                    >
+                      <option value="" style={{ background: '#0D0F0F' }}>Select an event type…</option>
+                      {CONFIGURATOR_EVENT_TYPES.map(et => (
+                        <option key={et.id} value={et.id} style={{ background: '#0D0F0F' }}>{et.label}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type={f.type} value={f.value} onChange={e => f.set(e.target.value)}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.85rem', color: 'white', boxSizing: 'border-box' }}
+                    />
+                  )}
                 </div>
               ))}
               <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                <button onClick={() => { setDetailsOpen(false); setDName(est.client_name); setDEmail(est.client_email); setDPhone(est.client_phone ?? ''); setDEventDate(est.event_date ?? ''); setDVenue(est.venue ?? ''); setDNotes(est.notes ?? '') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>Cancel</button>
+                <button onClick={() => { setDetailsOpen(false); setDName(est.client_name); setDEmail(est.client_email); setDPhone(est.client_phone ?? ''); setDEventType(est.event_type ?? ''); setDEventDate(est.event_date ?? ''); setDVenue(est.venue ?? ''); setDNotes(est.notes ?? '') }} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>Cancel</button>
                 <button onClick={saveDetails} disabled={saving || !dName || !dEmail} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
               </div>
             </div>
