@@ -5,7 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronLeft, ChevronDown, Copy, Files, Check, ExternalLink, Download, Mail, Plus, Trash2, Tag, Pencil, X } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
-import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
+import { computeBalance, computeLinePrice, lineItemSavings, customItemsNetTotal, type EstimatePayment, type CustomItem } from '@/lib/estimateBalance'
 import { labelForAddOn, labelForEventType, CONFIGURATOR_EVENT_TYPES } from '@/lib/config'
 import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
@@ -32,8 +32,6 @@ type Estimate = {
   deposit_value?: number | null
   accepted_at?: string | null
 }
-
-type CustomItem = { label: string; description?: string; price: number }
 
 type CatalogItem = {
   id: string
@@ -156,6 +154,9 @@ function EstimateDetailInner() {
   const [newItemDescription, setNewItemDescription] = useState('')
   const [newItemPrice, setNewItemPrice] = useState('')
   const [newItemQty, setNewItemQty] = useState('')
+  const [newItemDiscType, setNewItemDiscType] = useState<'percent' | 'flat'>('percent')
+  const [newItemDiscValue, setNewItemDiscValue] = useState('')
+  const [newItemDiscNote, setNewItemDiscNote] = useState('')
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null)
   const [itemSheetOpen, setItemSheetOpen] = useState(false)
   const [catalogPickerOpen, setCatalogPickerOpen] = useState(false)
@@ -271,7 +272,32 @@ function EstimateDetailInner() {
   }
 
   function calcSelectionTotal(): number {
-    return selCustomItems.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
+    return customItemsNetTotal(selCustomItems)
+  }
+
+  // Turn the current item-sheet fields into a stored CustomItem. When there's
+  // no per-line discount we store the plain {label, description, price} shape
+  // so undiscounted lines stay identical to how they've always been saved.
+  function buildItemFromForm(): CustomItem | null {
+    const listPrice = parseFloat(newItemPrice)
+    if (!newItemLabel.trim() || !listPrice || listPrice <= 0) return null
+    const label = newItemLabel.trim()
+    const description = newItemDescription.trim() || undefined
+    const discValue = parseFloat(newItemDiscValue)
+    const hasDiscount = discValue > 0
+    if (!hasDiscount) {
+      return { label, description, price: Math.round(listPrice * 100) / 100 }
+    }
+    const price = computeLinePrice({ price: listPrice, listPrice, discountType: newItemDiscType, discountValue: discValue })
+    return {
+      label,
+      description,
+      listPrice: Math.round(listPrice * 100) / 100,
+      discountType: newItemDiscType,
+      discountValue: discValue,
+      discountNote: newItemDiscNote.trim() || null,
+      price,
+    }
   }
 
   // Package/add-ons are eliminated from this editor going forward (team call,
@@ -286,7 +312,7 @@ function EstimateDetailInner() {
   // nothing local left to discard once every change is already saved.
   async function persistItems(items: CustomItem[]) {
     setSaving(true)
-    const total = items.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
+    const total = customItemsNetTotal(items)
     const res = await fetch(`/api/studio/estimates/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -305,6 +331,9 @@ function EstimateDetailInner() {
     setNewItemDescription('')
     setNewItemPrice('')
     setNewItemQty('')
+    setNewItemDiscType('percent')
+    setNewItemDiscValue('')
+    setNewItemDiscNote('')
     setEditingItemIndex(null)
     setItemSheetOpen(false)
   }
@@ -318,6 +347,7 @@ function EstimateDetailInner() {
     setNewItemCatalogId(catalogId)
     const item = catalogItems.find(c => c.id === catalogId)
     if (!item) { setNewItemLabel(''); setNewItemDescription(''); setNewItemPrice(''); setNewItemQty(''); return }
+    setNewItemDiscValue(''); setNewItemDiscNote('')
     setNewItemLabel(item.label)
     setNewItemDescription(item.description ?? '')
     if (item.pricing_type === 'per_unit') {
@@ -338,9 +368,8 @@ function EstimateDetailInner() {
   }
 
   function saveItem() {
-    const price = parseFloat(newItemPrice)
-    if (!newItemLabel.trim() || !price || price <= 0) return
-    const item = { label: newItemLabel.trim(), description: newItemDescription.trim() || undefined, price }
+    const item = buildItemFromForm()
+    if (!item) return
     const next = editingItemIndex !== null
       ? selCustomItems.map((it, i) => i === editingItemIndex ? item : it)
       : [...selCustomItems, item]
@@ -354,8 +383,11 @@ function EstimateDetailInner() {
     setNewItemCatalogId('')
     setNewItemLabel(it.label)
     setNewItemDescription(it.description ?? '')
-    setNewItemPrice(String(it.price))
+    setNewItemPrice(String(it.listPrice ?? it.price))
     setNewItemQty('')
+    setNewItemDiscType(it.discountType === 'flat' ? 'flat' : 'percent')
+    setNewItemDiscValue(it.discountValue ? String(it.discountValue) : '')
+    setNewItemDiscNote(it.discountNote ?? '')
     setEditingItemIndex(index)
     setItemSheetOpen(true)
   }
@@ -368,6 +400,13 @@ function EstimateDetailInner() {
   }
 
   const selectedCatalogItem = catalogItems.find(c => c.id === newItemCatalogId)
+
+  // Live preview of the per-line discount inside the item sheet.
+  const itemFormList = parseFloat(newItemPrice) || 0
+  const itemFormDiscValue = parseFloat(newItemDiscValue) || 0
+  const itemFormNet = itemFormDiscValue > 0
+    ? computeLinePrice({ price: itemFormList, listPrice: itemFormList, discountType: newItemDiscType, discountValue: itemFormDiscValue })
+    : itemFormList
 
   async function addPayment() {
     const amount = parseFloat(paymentAmount)
@@ -652,17 +691,30 @@ function EstimateDetailInner() {
               {addOns.map((a, i) => (
                 <p key={i} style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: '4px 0' }}>+ {labelForAddOn(a)}</p>
               ))}
-              {(est.custom_items ?? []).map((it, i) => (
-                <div key={`c${i}`} style={{ margin: '4px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ minWidth: 0, marginRight: '10px' }}>
-                    <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>+ {it.label}</p>
-                    {it.description && (
-                      <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>{it.description}</p>
-                    )}
+              {(est.custom_items ?? []).map((it, i) => {
+                const saved = lineItemSavings(it)
+                return (
+                  <div key={`c${i}`} style={{ margin: '4px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ minWidth: 0, marginRight: '10px' }}>
+                      <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>+ {it.label}</p>
+                      {it.description && (
+                        <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.3)', margin: '2px 0 0' }}>{it.description}</p>
+                      )}
+                      {saved > 0 && (
+                        <p style={{ fontSize: '0.72rem', color: '#5BBFBF', margin: '2px 0 0' }}>
+                          You save {fmt(saved)}{it.discountNote ? ` — ${it.discountNote}` : ''}
+                        </p>
+                      )}
+                    </div>
+                    <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                      {saved > 0 && (
+                        <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', textDecoration: 'line-through', display: 'block' }}>${Number(it.listPrice ?? it.price).toLocaleString()}</span>
+                      )}
+                      <span style={{ color: '#5BBFBF', fontWeight: 600, fontSize: '0.82rem' }}>${Number(it.price).toLocaleString()}</span>
+                    </div>
                   </div>
-                  <span style={{ color: '#5BBFBF', fontWeight: 600, fontSize: '0.82rem', flexShrink: 0 }}>${Number(it.price).toLocaleString()}</span>
-                </div>
-              ))}
+                )
+              })}
               {!est.package_name && addOns.length === 0 && (est.custom_items ?? []).length === 0 && (
                 <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>Nothing added yet.</p>
               )}
@@ -686,7 +738,12 @@ function EstimateDetailInner() {
                       )}
                     </button>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                      <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>${Number(it.price).toLocaleString()}</p>
+                      <div style={{ textAlign: 'right' }}>
+                        {lineItemSavings(it) > 0 && (
+                          <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through', margin: 0 }}>${Number(it.listPrice ?? it.price).toLocaleString()}</p>
+                        )}
+                        <p style={{ fontSize: '0.82rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>${Number(it.price).toLocaleString()}</p>
+                      </div>
                       <button onClick={() => editCustomItem(i)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '2px' }}>
                         <Pencil size={13} />
                       </button>
@@ -719,6 +776,18 @@ function EstimateDetailInner() {
 
         {/* Pricing + Discount */}
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', overflow: 'hidden', marginBottom: '16px' }}>
+          {balance.lineDiscountAmount > 0 && (
+            <>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between' }}>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Item value</p>
+                <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', margin: 0 }}>{fmt(balance.grossSubtotal)}</p>
+              </div>
+              <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between' }}>
+                <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Line-item savings</p>
+                <p style={{ fontSize: '0.9rem', fontWeight: 600, color: '#5BBFBF', margin: 0 }}>-{fmt(balance.lineDiscountAmount)}</p>
+              </div>
+            </>
+          )}
           <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between' }}>
             <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Subtotal</p>
             <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', margin: 0 }}>{fmt(balance.subtotal)}</p>
@@ -978,12 +1047,36 @@ function EstimateDetailInner() {
                 </div>
               )}
               <div>
-                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Price</label>
+                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Full Price / Value</label>
                 <input
                   type="number" inputMode="decimal" placeholder="$" value={newItemPrice}
                   onChange={e => setNewItemPrice(e.target.value)}
                   style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
                 />
+              </div>
+
+              {/* Optional per-line discount — leave blank for a full-price line */}
+              <div>
+                <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Discount This Line (optional)</label>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  <button type="button" onClick={() => setNewItemDiscType('percent')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: newItemDiscType === 'percent' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.12)', background: newItemDiscType === 'percent' ? 'rgba(91,191,191,0.1)' : 'transparent', color: newItemDiscType === 'percent' ? '#5BBFBF' : 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>% off</button>
+                  <button type="button" onClick={() => setNewItemDiscType('flat')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: newItemDiscType === 'flat' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.12)', background: newItemDiscType === 'flat' ? 'rgba(91,191,191,0.1)' : 'transparent', color: newItemDiscType === 'flat' ? '#5BBFBF' : 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>$ off</button>
+                </div>
+                <input
+                  type="number" inputMode="decimal" placeholder={newItemDiscType === 'percent' ? 'e.g. 20' : 'e.g. 100'} value={newItemDiscValue}
+                  onChange={e => setNewItemDiscValue(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box', marginBottom: '8px' }}
+                />
+                <input
+                  type="text" placeholder="Reason — loyal client, package deal… (client sees this)" value={newItemDiscNote}
+                  onChange={e => setNewItemDiscNote(e.target.value)}
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                />
+                {itemFormDiscValue > 0 && itemFormList > 0 && (
+                  <p style={{ fontSize: '0.8rem', color: '#5BBFBF', margin: '10px 0 0', fontWeight: 600 }}>
+                    Value {fmt(itemFormList)} · {newItemDiscType === 'percent' ? `${itemFormDiscValue}% off` : `${fmt(itemFormDiscValue)} off`} · Client pays {fmt(itemFormNet)}
+                  </p>
+                )}
               </div>
             </div>
 

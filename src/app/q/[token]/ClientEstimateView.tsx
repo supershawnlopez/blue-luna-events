@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { loadStripe } from '@stripe/stripe-js'
 import { Check, Copy, CreditCard, Download, MessageCircle, Phone, PartyPopper } from 'lucide-react'
 import { SITE_CONFIG, labelForAddOn, labelForEventType } from '@/lib/config'
-import { computeBalance, type EstimatePayment } from '@/lib/estimateBalance'
+import { computeBalance, lineItemSavings, type EstimatePayment, type CustomItem } from '@/lib/estimateBalance'
 import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
 type Estimate = {
@@ -16,7 +16,7 @@ type Estimate = {
   venue?: string
   package_name?: string
   add_ons?: string
-  custom_items?: { label: string; description?: string; price: number }[]
+  custom_items?: CustomItem[]
   quoted_total: number
   discount_type?: string | null
   discount_value?: number | null
@@ -287,17 +287,30 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
                 <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>Add-on</p>
               </div>
             ))}
-            {customItems.map((it, i) => (
-              <div key={`c${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '12px 20px', borderBottom: i < customItems.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
-                <div style={{ minWidth: 0, marginRight: '12px' }}>
-                  <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>{it.label}</p>
-                  {it.description && (
-                    <p style={{ fontSize: '12px', color: '#9CA3AF', margin: '2px 0 0' }}>{it.description}</p>
-                  )}
+            {customItems.map((it, i) => {
+              const saved = lineItemSavings(it)
+              return (
+                <div key={`c${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '12px 20px', borderBottom: i < customItems.length - 1 ? '1px solid #F3F4F6' : 'none' }}>
+                  <div style={{ minWidth: 0, marginRight: '12px' }}>
+                    <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>{it.label}</p>
+                    {it.description && (
+                      <p style={{ fontSize: '12px', color: '#9CA3AF', margin: '2px 0 0' }}>{it.description}</p>
+                    )}
+                    {saved > 0 && (
+                      <p style={{ fontSize: '12px', color: '#3A8F8F', margin: '3px 0 0', fontWeight: 600 }}>
+                        You save {fmt(saved)}{it.discountNote ? ` — ${it.discountNote}` : ''}
+                      </p>
+                    )}
+                  </div>
+                  <div style={{ flexShrink: 0, textAlign: 'right' }}>
+                    {saved > 0 && (
+                      <span style={{ fontSize: '12px', color: '#9CA3AF', textDecoration: 'line-through', display: 'block' }}>{fmt(Number(it.listPrice ?? it.price))}</span>
+                    )}
+                    <span style={{ fontSize: '13px', color: saved > 0 ? '#0D0F0F' : '#9CA3AF', fontWeight: saved > 0 ? 700 : 400 }}>{fmt(it.price)}</span>
+                  </div>
                 </div>
-                <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0, flexShrink: 0 }}>{fmt(it.price)}</p>
-              </div>
-            ))}
+              )
+            })}
             {!est.package_name && addOns.length === 0 && customItems.length === 0 && (
               <div style={{ padding: '14px 20px' }}>
                 <p style={{ fontSize: '13px', color: '#9CA3AF', margin: 0 }}>Custom {docLabel.toLowerCase()} — see pricing below.</p>
@@ -311,18 +324,29 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
           <div style={{ padding: '4px 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #F3F4F6' }}>
               <p style={{ fontSize: '14px', fontWeight: 600, color: '#0D0F0F', margin: 0 }}>Subtotal</p>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: '#0D0F0F', margin: 0 }}>{fmt(balance.subtotal)}</p>
+              <p style={{ fontSize: '15px', fontWeight: 600, color: '#0D0F0F', margin: 0 }}>{fmt(balance.grossSubtotal)}</p>
             </div>
+            {balance.lineDiscountAmount > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #F3F4F6' }}>
+                <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>Your savings</p>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: '#3A8F8F', margin: 0 }}>-{fmt(balance.lineDiscountAmount)}</p>
+              </div>
+            )}
             {balance.discountAmount > 0 && (
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #F3F4F6' }}>
                 <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>Discount{est.discount_note ? ` — ${est.discount_note}` : ''}</p>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#5BBFBF', margin: 0 }}>-{fmt(balance.discountAmount)}</p>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: '#3A8F8F', margin: 0 }}>-{fmt(balance.discountAmount)}</p>
               </div>
             )}
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 20px', borderBottom: '1px solid #F3F4F6' }}>
               <p style={{ fontSize: '14px', fontWeight: 700, color: '#0D0F0F', margin: 0 }}>Total</p>
               <p style={{ fontSize: '18px', fontWeight: 700, color: '#0D0F0F', margin: 0 }}>{fmt(balance.finalTotal)}</p>
             </div>
+            {balance.totalSavings > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '10px 20px', borderBottom: '1px solid #F3F4F6' }}>
+                <p style={{ fontSize: '12.5px', fontWeight: 600, color: '#3A8F8F', margin: 0 }}>You&apos;re saving {fmt(balance.totalSavings)} with Monica</p>
+              </div>
+            )}
             {hasPaidAnything && (
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 20px', borderBottom: '1px solid #F3F4F6' }}>
                 <p style={{ fontSize: '13px', color: '#374151', margin: 0 }}>Paid so far</p>

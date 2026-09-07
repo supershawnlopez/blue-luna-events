@@ -26,6 +26,7 @@ type Estimate = {
   share_token: string
   discount_type?: string | null
   discount_value?: number | null
+  custom_items?: import('@/lib/estimateBalance').CustomItem[] | null
   accepted_at?: string | null
   total_paid: number
   deleted_at?: string | null
@@ -280,7 +281,7 @@ export default function EstimatesList() {
             {visible.map(({ est, balance, accepted }, i) => {
               const inProgress = isInProgress(est)
               const s = STATUS_STYLES[displayStatus(est, accepted, balance)]
-              const hasDiscount = balance.discountAmount > 0
+              const hasDiscount = balance.totalSavings > 0
               const fromTab = encodeURIComponent(tab)
               const href = inProgress ? `/studio/estimates/new?draft=${est.id}&fromTab=${fromTab}` : `/studio/estimates/${est.id}?fromTab=${fromTab}`
               const confirming = confirmingId === est.id
@@ -336,7 +337,7 @@ export default function EstimatesList() {
                       <div style={{ textAlign: 'right', flexShrink: 0 }}>
                         {hasDiscount ? (
                           <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', justifyContent: 'flex-end', marginBottom: '2px' }}>
-                            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through' }}>{fmt(balance.subtotal)}</span>
+                            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through' }}>{fmt(balance.grossSubtotal)}</span>
                             <span style={{ fontSize: '1rem', fontWeight: 700, color: 'white' }}>{fmt(balance.finalTotal)}</span>
                           </div>
                         ) : (

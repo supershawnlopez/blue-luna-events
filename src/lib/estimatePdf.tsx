@@ -1,7 +1,7 @@
 import React from 'react'
 import { renderToBuffer, Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
 import { SITE_CONFIG, labelForAddOn, labelForEventType } from '@/lib/config'
-import { computeBalance, type EstimateForBalance, type EstimatePayment } from '@/lib/estimateBalance'
+import { computeBalance, lineItemSavings, type EstimateForBalance, type EstimatePayment, type CustomItem } from '@/lib/estimateBalance'
 import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
 
 const styles = StyleSheet.create({
@@ -13,7 +13,9 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
   rowLabel: { fontSize: 10, color: '#374151' },
   rowSub: { fontSize: 8, color: '#9CA3AF', marginTop: 2 },
+  rowSave: { fontSize: 8, color: '#3A8F8F', marginTop: 2 },
   rowValue: { fontSize: 10, color: '#0D0F0F', fontWeight: 500 },
+  rowWas: { fontSize: 8, color: '#9CA3AF', textDecoration: 'line-through' },
   totalRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderTopWidth: 1, borderTopColor: '#0D0F0F', marginTop: 4 },
   totalLabel: { fontSize: 12, fontWeight: 700 },
   totalValue: { fontSize: 12, fontWeight: 700 },
@@ -33,7 +35,7 @@ export type EstimateRow = EstimateForBalance & {
   venue?: string | null
   package_name?: string | null
   add_ons?: string | null
-  custom_items?: { label: string; description?: string; price: number }[] | null
+  custom_items?: CustomItem[] | null
   discount_note?: string | null
   accepted_at?: string | null
   created_at: string
@@ -89,25 +91,36 @@ function buildDoc(est: EstimateRow, payments: EstimatePayment[]) {
           React.createElement(Text, { style: styles.rowValue }, 'Add-on')
         )
       ),
-      ...customItems.map((it, i) =>
-        React.createElement(View, { key: `c${i}`, style: styles.row },
+      ...customItems.map((it, i) => {
+        const saved = lineItemSavings(it)
+        return React.createElement(View, { key: `c${i}`, style: styles.row },
           React.createElement(View, {},
             React.createElement(Text, { style: styles.rowLabel }, it.label),
-            ...(it.description ? [React.createElement(Text, { key: 'sub', style: styles.rowSub }, it.description)] : [])
+            ...(it.description ? [React.createElement(Text, { key: 'sub', style: styles.rowSub }, it.description)] : []),
+            ...(saved > 0 ? [React.createElement(Text, { key: 'sv', style: styles.rowSave }, `You save ${fmt(saved)}${it.discountNote ? ` — ${it.discountNote}` : ''}`)] : [])
           ),
-          React.createElement(Text, { style: styles.rowValue }, fmt(it.price))
+          React.createElement(View, { style: { alignItems: 'flex-end' } },
+            ...(saved > 0 ? [React.createElement(Text, { key: 'was', style: styles.rowWas }, fmt(Number(it.listPrice ?? it.price)))] : []),
+            React.createElement(Text, { style: styles.rowValue }, fmt(it.price))
+          )
         )
-      ),
+      }),
 
       React.createElement(Text, { style: styles.sectionLabel }, 'Pricing'),
       React.createElement(View, { style: styles.row },
         React.createElement(Text, { style: styles.rowLabel }, 'Subtotal'),
-        React.createElement(Text, { style: styles.rowValue }, fmt(balance.subtotal))
+        React.createElement(Text, { style: styles.rowValue }, fmt(balance.grossSubtotal))
       ),
+      ...(balance.lineDiscountAmount > 0 ? [
+        React.createElement(View, { key: 'lsave', style: styles.row },
+          React.createElement(Text, { style: styles.rowLabel }, 'Your savings'),
+          React.createElement(Text, { style: { ...styles.rowValue, color: '#3A8F8F' } }, `-${fmt(balance.lineDiscountAmount)}`)
+        )
+      ] : []),
       ...(balance.discountAmount > 0 ? [
         React.createElement(View, { key: 'disc', style: styles.row },
           React.createElement(Text, { style: styles.rowLabel }, `Discount${est.discount_note ? ` (${est.discount_note})` : ''}`),
-          React.createElement(Text, { style: { ...styles.rowValue, color: '#5BBFBF' } }, `-${fmt(balance.discountAmount)}`)
+          React.createElement(Text, { style: { ...styles.rowValue, color: '#3A8F8F' } }, `-${fmt(balance.discountAmount)}`)
         )
       ] : []),
       React.createElement(View, { style: styles.totalRow },

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronDown, ArrowRight, Check, Copy, ExternalLink, Plus, Trash2, Pencil } from 'lucide-react'
 import { CONFIGURATOR_EVENT_TYPES, type EventTypeId } from '@/lib/config'
 import { formatPrice } from '@/lib/pricing'
+import { computeLinePrice, lineItemSavings, customItemsNetTotal, type CustomItem } from '@/lib/estimateBalance'
 
 type Step = 'client' | 'event' | 'items'
 
@@ -18,7 +19,7 @@ type ClientInfo = {
   notes: string
 }
 
-type LineItem = { label: string; description?: string; price: number }
+type LineItem = CustomItem
 
 type State = {
   step: Step
@@ -119,7 +120,7 @@ function stateFromEstimate(data: {
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
 async function persistDraft(state: State, id: string | null, leadId: string | null): Promise<string | null> {
-  const total = state.items.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
+  const total = customItemsNetTotal(state.items)
   const body: Record<string, unknown> = {
     client_name: state.client.name,
     client_email: state.client.email,
@@ -303,6 +304,9 @@ function NewEstimateInner() {
   const [itemDescription, setItemDescription] = useState('')
   const [itemPrice, setItemPrice] = useState('')
   const [itemQty, setItemQty] = useState('')
+  const [itemDiscType, setItemDiscType] = useState<'percent' | 'flat'>('percent')
+  const [itemDiscValue, setItemDiscValue] = useState('')
+  const [itemDiscNote, setItemDiscNote] = useState('')
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [itemSheetOpen, setItemSheetOpen] = useState(false)
   const [catalogPickerOpen, setCatalogPickerOpen] = useState(false)
@@ -420,10 +424,18 @@ function NewEstimateInner() {
     setDraftRestored(false)
   }
 
-  const total = state.items.reduce((sum, it) => sum + (Number(it.price) || 0), 0)
+  const total = customItemsNetTotal(state.items)
+  const grossTotal = state.items.reduce((sum, it) => sum + (Number(it.listPrice ?? it.price) || 0), 0)
+  const lineSavings = Math.round((grossTotal - total) * 100) / 100
   const deposit = Math.round(total * 0.5)
   const balance = total - deposit
   const selectedCatalogItem = catalogItems.find(c => c.id === itemCatalogId)
+
+  const itemFormList = parseFloat(itemPrice) || 0
+  const itemFormDiscValue = parseFloat(itemDiscValue) || 0
+  const itemFormNet = itemFormDiscValue > 0
+    ? computeLinePrice({ price: itemFormList, listPrice: itemFormList, discountType: itemDiscType, discountValue: itemFormDiscValue })
+    : itemFormList
 
   function resetItemForm() {
     setItemCatalogId('')
@@ -431,6 +443,9 @@ function NewEstimateInner() {
     setItemDescription('')
     setItemPrice('')
     setItemQty('')
+    setItemDiscType('percent')
+    setItemDiscValue('')
+    setItemDiscNote('')
     setEditingIndex(null)
     setItemSheetOpen(false)
   }
@@ -444,6 +459,7 @@ function NewEstimateInner() {
     setItemCatalogId(catalogId)
     const item = catalogItems.find(c => c.id === catalogId)
     if (!item) { setItemLabel(''); setItemDescription(''); setItemPrice(''); setItemQty(''); return }
+    setItemDiscValue(''); setItemDiscNote('')
     setItemLabel(item.label)
     setItemDescription(item.description ?? '')
     if (item.pricing_type === 'per_unit') {
@@ -464,9 +480,21 @@ function NewEstimateInner() {
   }
 
   function saveItem() {
-    const price = parseFloat(itemPrice)
-    if (!itemLabel.trim() || !price || price <= 0) return
-    const item = { label: itemLabel.trim(), description: itemDescription.trim() || undefined, price }
+    const listPrice = parseFloat(itemPrice)
+    if (!itemLabel.trim() || !listPrice || listPrice <= 0) return
+    const label = itemLabel.trim()
+    const description = itemDescription.trim() || undefined
+    const discValue = parseFloat(itemDiscValue)
+    const item: LineItem = discValue > 0
+      ? {
+          label, description,
+          listPrice: Math.round(listPrice * 100) / 100,
+          discountType: itemDiscType,
+          discountValue: discValue,
+          discountNote: itemDiscNote.trim() || null,
+          price: computeLinePrice({ price: listPrice, listPrice, discountType: itemDiscType, discountValue: discValue }),
+        }
+      : { label, description, price: Math.round(listPrice * 100) / 100 }
     if (editingIndex !== null) {
       dispatch({ type: 'UPDATE_ITEM', index: editingIndex, item })
     } else {
@@ -480,8 +508,11 @@ function NewEstimateInner() {
     setItemCatalogId('')
     setItemLabel(it.label)
     setItemDescription(it.description ?? '')
-    setItemPrice(String(it.price))
+    setItemPrice(String(it.listPrice ?? it.price))
     setItemQty('')
+    setItemDiscType(it.discountType === 'flat' ? 'flat' : 'percent')
+    setItemDiscValue(it.discountValue ? String(it.discountValue) : '')
+    setItemDiscNote(it.discountNote ?? '')
     setEditingIndex(index)
     setItemSheetOpen(true)
   }
@@ -729,7 +760,12 @@ function NewEstimateInner() {
                     {it.description && <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>{it.description}</p>}
                   </button>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
-                    <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>${Number(it.price).toLocaleString()}</p>
+                    <div style={{ textAlign: 'right' }}>
+                      {lineItemSavings(it) > 0 && (
+                        <p style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.3)', textDecoration: 'line-through', margin: 0 }}>${Number(it.listPrice ?? it.price).toLocaleString()}</p>
+                      )}
+                      <p style={{ fontSize: '0.85rem', fontWeight: 700, color: '#5BBFBF', margin: 0 }}>${Number(it.price).toLocaleString()}</p>
+                    </div>
                     <button onClick={() => editItem(i)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '2px' }}>
                       <Pencil size={14} />
                     </button>
@@ -762,6 +798,9 @@ function NewEstimateInner() {
               <div>
                 <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Total</p>
                 <p style={{ fontSize: '1.5rem', fontWeight: 700, color: 'white' }}>{formatPrice(total)}</p>
+                {lineSavings > 0 && (
+                  <p style={{ fontSize: '0.72rem', color: '#5BBFBF', margin: '2px 0 0' }}>Client saves {formatPrice(lineSavings)}</p>
+                )}
               </div>
               <div style={{ textAlign: 'right' }}>
                 <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '2px' }}>Deposit (50%)</p>
@@ -852,12 +891,36 @@ function NewEstimateInner() {
                   </div>
                 )}
                 <div>
-                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Price</label>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Full Price / Value</label>
                   <input
                     type="number" inputMode="decimal" placeholder="$" value={itemPrice}
                     onChange={e => setItemPrice(e.target.value)}
                     style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
                   />
+                </div>
+
+                {/* Optional per-line discount — leave blank for a full-price line */}
+                <div>
+                  <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Discount This Line (optional)</label>
+                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <button type="button" onClick={() => setItemDiscType('percent')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: itemDiscType === 'percent' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.12)', background: itemDiscType === 'percent' ? 'rgba(91,191,191,0.1)' : 'transparent', color: itemDiscType === 'percent' ? '#5BBFBF' : 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>% off</button>
+                    <button type="button" onClick={() => setItemDiscType('flat')} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: itemDiscType === 'flat' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.12)', background: itemDiscType === 'flat' ? 'rgba(91,191,191,0.1)' : 'transparent', color: itemDiscType === 'flat' ? '#5BBFBF' : 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>$ off</button>
+                  </div>
+                  <input
+                    type="number" inputMode="decimal" placeholder={itemDiscType === 'percent' ? 'e.g. 20' : 'e.g. 100'} value={itemDiscValue}
+                    onChange={e => setItemDiscValue(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box', marginBottom: '8px' }}
+                  />
+                  <input
+                    type="text" placeholder="Reason — loyal client, package deal… (client sees this)" value={itemDiscNote}
+                    onChange={e => setItemDiscNote(e.target.value)}
+                    style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '12px 14px', fontSize: '16px', color: 'white', boxSizing: 'border-box' }}
+                  />
+                  {itemFormDiscValue > 0 && itemFormList > 0 && (
+                    <p style={{ fontSize: '0.8rem', color: '#5BBFBF', margin: '10px 0 0', fontWeight: 600 }}>
+                      Value {formatPrice(itemFormList)} · {itemDiscType === 'percent' ? `${itemFormDiscValue}% off` : `${formatPrice(itemFormDiscValue)} off`} · Client pays {formatPrice(itemFormNet)}
+                    </p>
+                  )}
                 </div>
               </div>
 
