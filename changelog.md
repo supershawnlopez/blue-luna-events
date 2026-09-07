@@ -13,6 +13,21 @@
 
 ---
 
+## Session: September 7, 2026 — Event type editable on an existing estimate
+**AI:** Claude Code. Shawn flagged this as an urgent fix.
+
+### Completed This Session
+- `/studio/estimates/[id]` Details editor: added an **Event Type** `<select>` (between Phone and Event Date), options from `CONFIGURATOR_EVENT_TYPES` (same six as the New Estimate wizard). Wired into `load()`, `saveDetails()` (`event_type`), and the Cancel reset. API PATCH already allowed `event_type` — no backend change.
+- Empty/non-matching stored value falls back to a "Select an event type…" placeholder option.
+
+### Verification
+- `npm run build` passed clean.
+
+### Commit
+- `6f16abfa` — pushed to `main`.
+
+---
+
 ## Session: August 31, 2026 (later) — Westin proposal tracking, second pass
 **AI:** Claude Code, Shawn asked to expand tracking after confirming the first pass worked.
 

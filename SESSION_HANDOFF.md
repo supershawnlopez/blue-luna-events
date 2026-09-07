@@ -1,6 +1,21 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: August 31, 2026 — Claude Code*
+*Last updated: September 7, 2026 — Claude Code*
+
+## 2026-09-07: Event type is now editable on an existing estimate
+
+Shawn flagged an urgent gap: Monica opens a draft estimate (example: Jessica Ross, actually a corporate event), taps **Edit** on the Details card, and can change client name / email / phone / event date / venue / notes — but there was **no way to change the event type**. A mislabeled estimate couldn't be corrected without rebuilding it.
+
+**Shipped in code (`/studio/estimates/[id]` Details editor):** added an **Event Type** dropdown to that editor, between Phone and Event Date. It offers the same six types as the New Estimate wizard (Quinceañera, Graduation, Wedding, Birthday, Baby Shower, Corporate) so the label everywhere else and package matching stay consistent. Saves through the existing PATCH — `event_type` was already an allowed field, this was purely a missing UI control. If a draft's stored type doesn't match one of the six (e.g. a free-text value carried in from a lead), the dropdown shows "Select an event type…" until Monica picks one.
+
+Verified `npm run build` clean. Commit `6f16abfa`, pushed to `main`.
+
+**Shawn, test this after deploy:**
+1. Studio → Estimates → open Jessica Ross (or any draft) → tap **Edit** on the Details card.
+2. You should now see an **Event Type** dropdown. Pick **Corporate**, tap **Save**.
+3. The Details card should now show "Event: Corporate" and it should stick after a reload.
+
+---
 
 ## 2026-08-31 (later): Westin proposal tracking — second pass
 
