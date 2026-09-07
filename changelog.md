@@ -13,18 +13,26 @@
 
 ---
 
-## Session: September 7, 2026 — Event type editable on an existing estimate
-**AI:** Claude Code. Shawn flagged this as an urgent fix.
+## Session: September 7, 2026 — Estimate editing: event type, line discounts, status
+**AI:** Claude Code. Shawn flagged all three.
 
-### Completed This Session
-- `/studio/estimates/[id]` Details editor: added an **Event Type** `<select>` (between Phone and Event Date), options from `CONFIGURATOR_EVENT_TYPES` (same six as the New Estimate wizard). Wired into `load()`, `saveDetails()` (`event_type`), and the Cancel reset. API PATCH already allowed `event_type` — no backend change.
-- Empty/non-matching stored value falls back to a "Select an event type…" placeholder option.
+### Event type editable on an existing estimate (`6f16abfa`)
+- `/studio/estimates/[id]` Details editor: added an **Event Type** `<select>` (between Phone and Event Date), options from `CONFIGURATOR_EVENT_TYPES`. Wired into `load()`, `saveDetails()`, Cancel reset. API PATCH already allowed `event_type`. Non-matching stored value → "Select an event type…" placeholder.
+
+### Per-line-item discounts (`23e618e1`)
+- Team meeting held (Steve/Priya/Angela/Jony/Marcus). Shawn approved the direction + 4 open calls: stacking (line first, then estimate-level), per-line reason required-if-used, combined client savings line, `%/$` toggle entry.
+- `estimateBalance.ts`: `CustomItem` gains optional `listPrice` / `discountType` / `discountValue` / `discountNote`; `price` remains the FINAL net per-line amount. New: `computeLinePrice`, `lineItemSavings`, `customItemsNetTotal`. `computeBalance` returns `grossSubtotal`, `lineDiscountAmount`, `totalSavings`.
+- Item sheet (wizard + detail editor): "Full Price / Value" + "Discount This Line" block (`%/$` toggle, value, reason) + live "Client pays $X" preview.
+- Client `/q` page + `estimatePdf.tsx`: per-line struck value / saving+reason / price; "Your savings" row; "You're saving $X with Monica" line. Estimates list struck price now uses `grossSubtotal`, shows when `totalSavings > 0`.
+- Undiscounted lines still persist as plain `{label, description, price}` — backward compatible.
+- `quoted_total` stays net → Stripe / checkout / receipts untouched.
+
+### "Draft" status fix (`075e1e6d`)
+- `status` was only set to `'sent'` by the wizard's "Get Share Link" button. Now: emailing, copying the share link, or a client accepting flips `draft → sent`.
+- One-time backfill via Supabase Management API: 10 delivered estimates moved `draft → sent` (query gated on `accepted_at` OR a payment OR an `estimate_sent` activity row, `quoted_total > 0`).
 
 ### Verification
-- `npm run build` passed clean.
-
-### Commit
-- `6f16abfa` — pushed to `main`.
+- `npm run build` clean after each.
 
 ---
 

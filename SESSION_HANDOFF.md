@@ -2,6 +2,33 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: September 7, 2026 — Claude Code*
 
+## 2026-09-07: Per-line-item discounts + "Draft" status fix
+
+### Per-line-item discounts (team meeting held, Shawn approved)
+Monica can now discount an individual line item, on top of the existing single estimate-level discount.
+
+- In the **Add / Edit Item** sheet (both the New Estimate wizard and the estimate detail editor) the price field is now **"Full Price / Value"**, followed by an optional **"Discount This Line"** block: a `% off / $ off` toggle, a value, and a **reason** (the client sees the reason). Live preview: "Value $600 · 20% off · Client pays $480."
+- The client's `/q/…` page and the PDF now show, per discounted line: the **full value struck through**, the **saving** (with the reason), and the **price**. Then a **"Your savings"** subtotal, the estimate-level discount as its own row if set, and a **"You're saving $X with Monica"** line by the total.
+- Stacking: per-line discounts come off first, then the estimate-level discount applies to the reduced subtotal.
+- Math lives in `src/lib/estimateBalance.ts` (`computeLinePrice`, `lineItemSavings`, `customItemsNetTotal`; `computeBalance` now also returns `grossSubtotal`, `lineDiscountAmount`, `totalSavings`). `quoted_total` stays the **net** line total, so Stripe / receipts / balance math are untouched. Undiscounted lines keep the old `{label, description, price}` shape — fully backward compatible.
+- Commits `23e618e1` (feature), preceded by the event-type fix `6f16abfa`.
+
+### "Draft" status fix
+The Estimates list showed **"Draft"** for estimates that had really been emailed / link-shared / accepted / even paid, because `status` was only set to `'sent'` by the wizard's "Get Share Link" button (rarely used — Monica builds in the detail editor and copies the link).
+
+- Emailing an estimate, copying its share link, or a client accepting it now flips a `'draft'` estimate to `'sent'`.
+- **One-time backfill applied live** via Supabase: 10 already-delivered estimates (Nereida, Jessica Ross, Lauren Munsey, all 4 Katie Atkins packages, both Ava invoices, Daniella, Monica) moved `draft → sent`. Only genuine untouched drafts remain (e.g. "Katie Atkins (Original)", $4,859, never sent).
+- Commit `075e1e6d`.
+
+**Shawn, test this after deploy:**
+1. **Line discount:** open an estimate → Line Items → Edit → Add/Edit an item → set "20% off" + a reason → the preview shows "Client pays $X". Save.
+2. Open that estimate's client link (`/q/…`) → the line shows the old price struck through, "You save $X — {reason}", and the new price; near the total you see "Your savings" and "You're saving $X with Monica."
+3. Add an estimate-level discount too (Add Discount) → confirm it comes off *after* the line savings and the total is right.
+4. Download the PDF → same value/saving/price layout.
+5. **Status:** open Estimates → the list should no longer show "Draft" on Jessica Ross, Nereida, Lauren Munsey, the Katie Atkins packages, etc. — they should read "Sent" (or their accepted/paid status). Note: if Jessica Ross was emailed but you didn't mean to send it yet, tell me and I'll add a manual "move back to draft" control.
+
+---
+
 ## 2026-09-07: Event type is now editable on an existing estimate
 
 Shawn flagged an urgent gap: Monica opens a draft estimate (example: Jessica Ross, actually a corporate event), taps **Edit** on the Details card, and can change client name / email / phone / event date / venue / notes — but there was **no way to change the event type**. A mislabeled estimate couldn't be corrected without rebuilding it.
