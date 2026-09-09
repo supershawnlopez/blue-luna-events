@@ -1,6 +1,25 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: September 7, 2026 — Claude Code*
+*Last updated: September 9, 2026 — Codex*
+
+## 2026-09-09: Urgent estimate deposit percentage fix
+
+Shawn found that an estimate deposit override could get stuck showing **Deposit due at checkout is $0** after switching the checkout deposit percentage back and forth. This was urgent before sending the next Ava invoice.
+
+**Shipped in code:**
+- Studio estimate detail page now has quick deposit presets: **25% / 50% / 75% / 100%**.
+- Monica can still type a custom percent or flat dollar deposit.
+- Percent deposits are capped at 100%; flat deposits are capped at the current invoice total.
+- The Studio API now validates deposit updates server-side and rejects zero / invalid deposit values instead of saving bad data that can make checkout read as $0.
+
+Verified `npm run build` clean.
+
+**Shawn, test this after deploy:**
+1. Open the invoice in Studio → Deposit settings.
+2. Tap **100%**, save, and confirm "Deposit due at checkout" equals the full invoice total.
+3. Switch back to **50%**, save, then switch to **100%** again to confirm it no longer gets stuck at $0.
+
+---
 
 ## 2026-09-07: Per-line-item discounts + "Draft" status fix
 

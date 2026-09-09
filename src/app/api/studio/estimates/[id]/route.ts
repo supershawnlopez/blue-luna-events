@@ -28,6 +28,32 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   for (const key of allowed) {
     if (key in body) update[key] = body[key]
   }
+
+  if ('deposit_type' in update || 'deposit_value' in update) {
+    const type = update.deposit_type
+    const value = update.deposit_value
+    const clearingToDefault = (type == null || type === '') && (value == null || value === '')
+
+    if (!clearingToDefault) {
+      if (type !== 'percent' && type !== 'flat') {
+        return NextResponse.json({ error: 'Deposit type must be percent or flat' }, { status: 400 })
+      }
+
+      const numericValue = Number(value)
+      if (!Number.isFinite(numericValue) || numericValue <= 0) {
+        return NextResponse.json({ error: 'Deposit value must be greater than zero' }, { status: 400 })
+      }
+      if (type === 'percent' && numericValue > 100) {
+        return NextResponse.json({ error: 'Deposit percent cannot be more than 100' }, { status: 400 })
+      }
+
+      update.deposit_value = numericValue
+    } else {
+      update.deposit_type = null
+      update.deposit_value = null
+    }
+  }
+
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
   }

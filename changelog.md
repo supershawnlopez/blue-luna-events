@@ -13,6 +13,19 @@
 
 ---
 
+## Session: September 9, 2026 — Urgent deposit percent presets + zero-value guard
+**AI:** Codex. Shawn flagged an urgent invoice issue before sending the next Ava invoice.
+
+### Completed This Session
+- `/studio/estimates/[id]`: added deposit preset buttons for **25% / 50% / 75% / 100%** while keeping custom percent / flat amount entry.
+- Deposit save now normalizes values before PATCH: percent deposits cap at 100%, flat deposits cap at the invoice total, and invalid / zero values cannot be submitted.
+- `PATCH /api/studio/estimates/[id]`: added server-side validation so deposit updates cannot silently persist a zero / invalid checkout deposit.
+
+### Verification
+- `npm run build` passed clean.
+
+---
+
 ## Session: September 7, 2026 — Estimate editing: event type, line discounts, status
 **AI:** Claude Code. Shawn flagged all three.
 

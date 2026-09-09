@@ -69,6 +69,14 @@ Exit criteria for Phase 1:
 
 ---
 
+## DONE (2026-09-09 — Estimate deposit percent presets)
+- Fixed urgent Studio estimate deposit override issue where the checkout deposit could get stuck at $0 after changing the percent.
+- Added quick preset buttons for 25%, 50%, 75%, and 100%; custom percent / flat deposit entry still works.
+- Added server-side validation so zero / invalid deposit settings cannot be persisted through the Studio estimate PATCH endpoint.
+- Verification: `npm run build` passed clean.
+
+---
+
 ## DONE (2026-08-31 — Westin proposal recipient activity tracking)
 - Shawn sent the proposal link to a contact; needed opens / time on page / clicks visible.
 - New `proposal_events` table (applied live via Supabase Management API — token `sbp_d2f0…7868` works for Blue Luna, contrary to the 403 note in NOW #3; those 3 pending migrations could likely be applied the same way).
