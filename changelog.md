@@ -13,6 +13,20 @@
 
 ---
 
+## Session: September 9, 2026 — Full-discount invoice total guard
+**AI:** Codex. Shawn showed a Studio invoice where subtotal was $1,260 but total / amount owed / deposit were all $0.
+
+### Completed This Session
+- Identified the cause: the live University of Arizona estimate had a 100% estimate-level discount, so the deposit was being calculated against a real final total of $0.
+- Live data fix: cleared that accidental full discount on the matching estimate only; verified total $1,260, amount owed $1,260, default 50% deposit $630.
+- `/studio/estimates/[id]`: discount editor now previews the discount amount, warns when a discount wipes out the full invoice, and disables Save for that case.
+- `PATCH /api/studio/estimates/[id]`: rejects 100% percent discounts and flat discounts greater than/equal to the invoice subtotal.
+
+### Verification
+- `npm run build` passed clean.
+
+---
+
 ## Session: September 9, 2026 — Urgent deposit percent presets + zero-value guard
 **AI:** Codex. Shawn flagged an urgent invoice issue before sending the next Ava invoice.
 

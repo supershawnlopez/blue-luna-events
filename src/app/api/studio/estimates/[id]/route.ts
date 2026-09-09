@@ -54,6 +54,41 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
   }
 
+  if ('discount_type' in update || 'discount_value' in update) {
+    const type = update.discount_type
+    const value = update.discount_value
+    const clearingDiscount = (type == null || type === '') && (value == null || value === '')
+
+    if (!clearingDiscount) {
+      if (type !== 'percent' && type !== 'flat') {
+        return NextResponse.json({ error: 'Discount type must be percent or flat' }, { status: 400 })
+      }
+
+      const numericValue = Number(value)
+      if (!Number.isFinite(numericValue) || numericValue <= 0) {
+        return NextResponse.json({ error: 'Discount value must be greater than zero' }, { status: 400 })
+      }
+      if (type === 'percent' && numericValue >= 100) {
+        return NextResponse.json({ error: 'Discount percent cannot remove the full invoice total' }, { status: 400 })
+      }
+
+      const subtotal =
+        'quoted_total' in update
+          ? Number(update.quoted_total)
+          : Number((await supabase.from('estimates').select('quoted_total').eq('id', params.id).single()).data?.quoted_total)
+      if (type === 'flat' && Number.isFinite(subtotal) && subtotal > 0 && numericValue >= subtotal) {
+        return NextResponse.json({ error: 'Discount amount cannot remove the full invoice total' }, { status: 400 })
+      }
+
+      update.discount_value = numericValue
+      update.discount_note = typeof update.discount_note === 'string' ? update.discount_note.trim() || null : update.discount_note ?? null
+    } else {
+      update.discount_type = null
+      update.discount_value = null
+      update.discount_note = null
+    }
+  }
+
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
   }

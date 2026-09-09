@@ -2,6 +2,25 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: September 9, 2026 — Codex*
 
+## 2026-09-09: Full-discount invoice total fix
+
+Shawn sent a screenshot where Studio showed subtotal **$1,260**, discount **-$1,260**, total **$0**, amount owed **$0**, and deposit at 50% still showing **$0**. The deposit code was not the cause; the estimate had an accidental **100% estimate-level discount**, so the payment math was correctly calculating from a zero invoice total.
+
+**Live data fixed:**
+- Corrected the matching live estimate: **University of Arizona**, event date **2026-10-02**, subtotal **$1,260**.
+- Cleared its accidental 100% estimate-level discount.
+- Verified the record now computes as total **$1,260**, amount owed **$1,260**, default 50% deposit **$630**.
+
+**Shipped in code:**
+- Discount editor now previews "Discount would be: $X".
+- Studio warns when an existing discount removes the full invoice total.
+- Save is disabled when a discount would wipe out the entire invoice.
+- API rejects 100% percent discounts and flat discounts greater than/equal to the invoice subtotal.
+
+Verified `npm run build` clean.
+
+---
+
 ## 2026-09-09: Urgent estimate deposit percentage fix
 
 Shawn found that an estimate deposit override could get stuck showing **Deposit due at checkout is $0** after switching the checkout deposit percentage back and forth. This was urgent before sending the next Ava invoice.

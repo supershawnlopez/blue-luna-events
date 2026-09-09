@@ -75,6 +75,12 @@ Exit criteria for Phase 1:
 - Added server-side validation so zero / invalid deposit settings cannot be persisted through the Studio estimate PATCH endpoint.
 - Verification: `npm run build` passed clean.
 
+## DONE (2026-09-09 — Full-discount invoice total guard)
+- Fixed the live University of Arizona estimate shown in Shawn's screenshot: accidental 100% estimate-level discount cleared; total/amount owed restored to $1,260 and 50% deposit to $630.
+- Added Studio discount preview + warning when a discount wipes out the full invoice.
+- Added UI and API guards so full-total discounts cannot be saved accidentally.
+- Verification: `npm run build` passed clean.
+
 ---
 
 ## DONE (2026-08-31 — Westin proposal recipient activity tracking)

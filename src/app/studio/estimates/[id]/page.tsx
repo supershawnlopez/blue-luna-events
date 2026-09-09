@@ -196,20 +196,23 @@ function EstimateDetailInner() {
   useEffect(() => { load() }, [load])
 
   async function saveDiscount() {
-    setSaving(true)
     const value = parseFloat(discountValue)
-    await fetch(`/api/studio/estimates/${id}`, {
+    if (!Number.isFinite(value) || value <= 0) return
+    const normalizedValue = discountType === 'percent' ? Math.min(value, 99.99) : Math.min(value, Math.max(0, balance.subtotal - 0.01))
+    if (normalizedValue <= 0) return
+    setSaving(true)
+    const res = await fetch(`/api/studio/estimates/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        discount_type: value > 0 ? discountType : null,
-        discount_value: value > 0 ? value : null,
-        discount_note: value > 0 ? discountNote : null,
+        discount_type: discountType,
+        discount_value: normalizedValue,
+        discount_note: discountNote,
       }),
     })
-    await load()
+    if (res.ok) await load()
     setSaving(false)
-    setDiscountOpen(false)
+    if (res.ok) setDiscountOpen(false)
   }
 
   async function clearDiscount() {
@@ -527,6 +530,15 @@ function EstimateDetailInner() {
 
   const addOns = parseAddOns(est.add_ons)
   const balance = computeBalance(est, payments)
+  const discountInput = parseFloat(discountValue)
+  const discountPreview = Number.isFinite(discountInput) && discountInput > 0
+    ? discountType === 'percent'
+      ? Math.round(balance.subtotal * (discountInput / 100) * 100) / 100
+      : Math.min(discountInput, balance.subtotal)
+    : 0
+  const discountWouldZeroInvoice = discountPreview >= balance.subtotal && balance.subtotal > 0
+  const canSaveDiscount = !saving && Number.isFinite(discountInput) && discountInput > 0 && !discountWouldZeroInvoice
+  const hasFullInvoiceDiscount = balance.discountAmount >= balance.subtotal && balance.subtotal > 0
   const accepted = isAccepted(est, balance.totalPaid)
   const docLabel = getDocumentLabel(accepted, balance)
   const fromTab = searchParams.get('fromTab')
@@ -810,6 +822,11 @@ function EstimateDetailInner() {
             <p style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)', margin: 0 }}>Subtotal</p>
             <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', margin: 0 }}>{fmt(balance.subtotal)}</p>
           </div>
+          {hasFullInvoiceDiscount && (
+            <div style={{ padding: '12px 18px', borderBottom: '1px solid rgba(251,191,36,0.18)', background: 'rgba(251,191,36,0.08)' }}>
+              <p style={{ fontSize: '0.82rem', lineHeight: 1.45, color: '#fbbf24', margin: 0, fontWeight: 700 }}>This discount removes the full invoice total. Edit or delete the discount before sending so payment can be collected.</p>
+            </div>
+          )}
           {balance.discountAmount > 0 && (
             <div style={{ padding: '14px 18px', borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
@@ -850,10 +867,21 @@ function EstimateDetailInner() {
                 <button onClick={() => setDiscountType('flat')} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: discountType === 'flat' ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.12)', background: discountType === 'flat' ? 'rgba(91,191,191,0.1)' : 'transparent', color: discountType === 'flat' ? '#5BBFBF' : 'rgba(255,255,255,0.6)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>$</button>
               </div>
               <input
-                type="number" placeholder={discountType === 'percent' ? 'e.g. 10' : 'e.g. 50'} value={discountValue}
-                onChange={e => setDiscountValue(e.target.value)}
+                type="number" min="0" max={discountType === 'percent' ? 99.99 : undefined} placeholder={discountType === 'percent' ? 'e.g. 10' : 'e.g. 50'} value={discountValue}
+                onChange={e => {
+                  const next = e.target.value
+                  if (discountType === 'percent' && Number(next) >= 100) {
+                    setDiscountValue('99')
+                    return
+                  }
+                  setDiscountValue(next)
+                }}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', padding: '10px 12px', fontSize: '0.9rem', color: 'white', marginBottom: '8px', boxSizing: 'border-box' }}
               />
+              <p style={{ fontSize: '0.78rem', color: discountWouldZeroInvoice ? '#fbbf24' : 'rgba(255,255,255,0.4)', margin: '0 0 8px', lineHeight: 1.4 }}>
+                Discount would be: <strong style={{ color: discountWouldZeroInvoice ? '#fbbf24' : 'rgba(255,255,255,0.7)' }}>{fmt(discountPreview)}</strong>
+                {discountWouldZeroInvoice ? ' — cannot remove the full invoice total.' : ''}
+              </p>
               <input
                 type="text" placeholder="Note — birthday discount, friend discount..." value={discountNote}
                 onChange={e => setDiscountNote(e.target.value)}
@@ -861,7 +889,7 @@ function EstimateDetailInner() {
               />
               <div style={{ display: 'flex', gap: '8px' }}>
                 <button onClick={() => setDiscountOpen(false)} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.06)', border: 'none', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', cursor: 'pointer' }}>Cancel</button>
-                <button onClick={saveDiscount} disabled={saving} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: '#5BBFBF', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}>Save</button>
+                <button onClick={saveDiscount} disabled={!canSaveDiscount} style={{ flex: 1, padding: '10px', borderRadius: '8px', background: canSaveDiscount ? '#5BBFBF' : 'rgba(91,191,191,0.35)', border: 'none', color: '#0D0F0F', fontWeight: 700, fontSize: '0.82rem', cursor: canSaveDiscount ? 'pointer' : 'not-allowed' }}>Save</button>
               </div>
             </div>
           )}
