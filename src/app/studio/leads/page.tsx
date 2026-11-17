@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Phone, Mail, MessageSquare, Flame, Sun, Snowflake, X, FileText, ChevronRight, Users } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
-import { labelForEventType } from '@/lib/config'
+import { labelForEventType, HONOREE_RELATIONS, labelForRelation } from '@/lib/config'
 import { LOST_REASONS, lostReasonLabel, STAGE_LABELS, type Stage } from '@/lib/lifecycle'
 
 type Lead = {
@@ -34,6 +34,23 @@ type Lead = {
   lost_reason?: string | null
   lost_note?: string | null
   lost_by?: 'client' | 'monica' | null
+  // Who the celebration is for (inquiry form, or Claude's guess from their notes)
+  honoree_relation?: string | null
+  honoree_name?: string | null
+  honoree_milestone?: string | null
+  honoree_date?: string | null
+  honoree_confirmed?: boolean
+}
+
+type HonoreeForm = { relation: string; name: string; milestone: string; date: string }
+
+// What the date means depends on the party.
+function honoreeDateLabel(eventType?: string | null) {
+  const t = (eventType ?? '').toLowerCase()
+  if (t.includes('baby')) return "Baby's due date"
+  if (t.includes('wedding') || t.includes('bridal')) return 'Wedding date'
+  if (t.includes('birthday') || t.includes('quince')) return 'Their birthday'
+  return 'Date to remember'
 }
 
 type LeadView = 'active' | 'not_now'
@@ -74,6 +91,8 @@ function StudioLeadsInner() {
   const [pickingReason, setPickingReason] = useState(false)
   const [reasonNote, setReasonNote] = useState('')
   const [reasonError, setReasonError] = useState('')
+  const [honoreeEdit, setHonoreeEdit] = useState<HonoreeForm | null>(null)
+  const [honoreeSaving, setHonoreeSaving] = useState(false)
   const [activeLead, setActiveLead] = useState<Lead | null>(null)
   const [confirmDeleteLead, setConfirmDeleteLead] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -137,7 +156,23 @@ function StudioLeadsInner() {
     setReasonNote('')
   }
 
+  async function saveHonoree(id: string, patch: Record<string, string | null>) {
+    setHonoreeSaving(true)
+    const res = await fetch(`/api/studio/leads/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    })
+    setHonoreeSaving(false)
+    if (!res.ok) return
+    const saved = await res.json()
+    setLeads(prev => prev.map(l => l.id === id ? { ...l, ...saved } : l))
+    setActiveLead(prev => prev && prev.id === id ? { ...prev, ...saved } : prev)
+    setHonoreeEdit(null)
+  }
+
   function closeSheet() {
+    setHonoreeEdit(null)
     setActiveLead(null)
     setConfirmDeleteLead(false)
     setPickingReason(false)
@@ -335,6 +370,79 @@ function StudioLeadsInner() {
                 )
               })}
             </div>
+
+            {/* Who it's for — feeds the personal follow-up emails ("Lily's
+                17th is coming up"). A guess from their notes shows as such
+                until Monica confirms or fixes it. */}
+            <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Who It&apos;s For</p>
+            {!honoreeEdit ? (
+              <div style={{ marginBottom: '22px' }}>
+                {(activeLead.honoree_name || activeLead.honoree_relation || activeLead.honoree_milestone || activeLead.honoree_date) ? (
+                  <>
+                    {(() => {
+                      const who = [activeLead.honoree_name, labelForRelation(activeLead.honoree_relation)?.replace(/^My /, 'their ').replace(/^Me$/, 'themselves')].filter(Boolean).join(' · ')
+                      return (
+                        <p style={{ fontSize: '0.92rem', color: 'white', fontWeight: 600, margin: '0 0 3px' }}>
+                          {who || activeLead.honoree_milestone || 'Someone special'}
+                        </p>
+                      )
+                    })()}
+                    <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', margin: 0 }}>
+                      {[(activeLead.honoree_name || activeLead.honoree_relation) ? activeLead.honoree_milestone : null, activeLead.honoree_date ? `${honoreeDateLabel(activeLead.event_type)}: ${new Date(activeLead.honoree_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}` : null].filter(Boolean).join(' · ')}
+                    </p>
+                    {!activeLead.honoree_confirmed && (
+                      <p style={{ fontSize: '0.74rem', color: '#C9A96E', margin: '6px 0 0' }}>Our guess from what they wrote. Is it right?</p>
+                    )}
+                  </>
+                ) : (
+                  <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>Not filled in yet.</p>
+                )}
+                <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                  {!activeLead.honoree_confirmed && (activeLead.honoree_name || activeLead.honoree_relation || activeLead.honoree_milestone) && (
+                    <button onClick={() => saveHonoree(activeLead.id, { honoree_relation: activeLead.honoree_relation ?? null })} disabled={honoreeSaving}
+                      style={{ padding: '8px 14px', borderRadius: '999px', border: 'none', background: 'rgba(91,191,191,0.14)', color: '#5BBFBF', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer' }}>
+                      Looks right
+                    </button>
+                  )}
+                  <button onClick={() => setHonoreeEdit({ relation: activeLead.honoree_relation ?? '', name: activeLead.honoree_name ?? '', milestone: activeLead.honoree_milestone ?? '', date: activeLead.honoree_date ?? '' })}
+                    style={{ padding: '8px 14px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.14)', background: 'transparent', color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+                    {activeLead.honoree_name || activeLead.honoree_relation || activeLead.honoree_milestone || activeLead.honoree_date ? 'Edit' : 'Add'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ marginBottom: '22px', padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                  {HONOREE_RELATIONS.map(r => {
+                    const on = honoreeEdit.relation === r.id
+                    return (
+                      <button key={r.id} onClick={() => setHonoreeEdit({ ...honoreeEdit, relation: on ? '' : r.id })}
+                        style={{ padding: '8px 12px', borderRadius: '999px', border: on ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.14)', background: on ? 'rgba(91,191,191,0.12)' : 'transparent', color: on ? '#5BBFBF' : 'rgba(255,255,255,0.75)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
+                        {r.label.replace(/^My /, 'Their ').replace(/^Me$/, 'Themselves')}
+                      </button>
+                    )
+                  })}
+                </div>
+                {([
+                  ['name', 'First name (e.g. Lily)', 'text'],
+                  ['milestone', 'Milestone (e.g. Turning 16, First baby, 70th anniversary)', 'text'],
+                  ['date', honoreeDateLabel(activeLead.event_type), 'date'],
+                ] as const).map(([key, label, type]) => (
+                  <div key={key} style={{ marginBottom: '10px' }}>
+                    <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', margin: '0 0 4px' }}>{label}</p>
+                    <input type={type} value={honoreeEdit[key]} onChange={e => setHonoreeEdit({ ...honoreeEdit, [key]: e.target.value })}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '11px 12px', color: 'white', fontSize: '16px', boxSizing: 'border-box', colorScheme: 'dark' }} />
+                  </div>
+                ))}
+                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                  <button onClick={() => setHonoreeEdit(null)} style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'white', fontSize: '0.84rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+                  <button disabled={honoreeSaving} onClick={() => saveHonoree(activeLead.id, { honoree_relation: honoreeEdit.relation || null, honoree_name: honoreeEdit.name.trim() || null, honoree_milestone: honoreeEdit.milestone.trim() || null, honoree_date: honoreeEdit.date || null })}
+                    style={{ flex: 1, padding: '11px', borderRadius: '10px', border: 'none', background: '#5BBFBF', color: '#0D0F0F', fontSize: '0.84rem', fontWeight: 700, cursor: 'pointer', opacity: honoreeSaving ? 0.6 : 1 }}>
+                    {honoreeSaving ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Where they stand — computed stage, plus the "why" when they're
                 not booking. Monica can record a reason she heard on the phone;

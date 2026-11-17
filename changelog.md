@@ -13,6 +13,17 @@
 
 ---
 
+## Session: November 17, 2026 (night) — Who it's for + starter emails
+**AI:** Claude Code. Shawn approved the smart "who are we celebrating" system and drafts in Monica's voice.
+- Migration `20261117180000_celebration_details_and_template_drafts.sql` applied live (leads.honoree_*, email_templates slug/category/send_when/status/sort_order).
+- Inquiry form: "Who are we celebrating?" + name + Turning/due date. `submitLead` saves honoree_* (confirmed).
+- Lead sheet "Who It's For" card (Looks right / Edit); PATCH accepts honoree_* and sets honoree_confirmed.
+- 13 live leads backfilled with unconfirmed guesses from their own notes (no relationships guessed).
+- `src/lib/starterTemplates.ts`: 15 emails in Monica's voice, inserted as drafts. Templates screen grouped, Draft/On/Off, Approve/Turn off; manual send blocked for drafts and smart emails (UI + API).
+- Verified: build clean, Playwright screenshots.
+
+---
+
 ## Session: November 17, 2026 (evening) — Client lifecycle Phase A
 **AI:** Claude Code. Team meeting; Shawn approved stages, reasons, nurture-never-ends, 21-day quiet rule. Read-only audit of live Supabase data first.
 - New `src/lib/lifecycle.ts` (stage rules, reasons) + `src/lib/lifecycleData.ts` (loaders: leads with stages, clients from payments).

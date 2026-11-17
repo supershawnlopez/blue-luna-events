@@ -59,6 +59,11 @@ export type Lead = {
   vision?: string
   budget_range?: string
   referral_source?: string
+  honoree_relation?: string
+  honoree_name?: string
+  honoree_milestone?: string
+  honoree_date?: string
+  honoree_confirmed?: boolean
   status?: 'new' | 'contacted' | 'quoted' | 'booked' | 'completed'
   // Configurator fields — all optional for backwards compat with BookingSheet
   package_id?: string

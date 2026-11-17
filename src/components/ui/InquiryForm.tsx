@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Check, ArrowRight, Phone, Mail, User, Calendar, MapPin, Clock, Users, Image as ImageIcon, X, Loader2 } from 'lucide-react'
-import { INQUIRY_EVENT_TYPES, LOOKING_FOR_CATEGORIES, BUDGET_RANGES, REFERRAL_SOURCES } from '@/lib/config'
+import { INQUIRY_EVENT_TYPES, LOOKING_FOR_CATEGORIES, BUDGET_RANGES, REFERRAL_SOURCES, HONOREE_RELATIONS } from '@/lib/config'
 import { submitLead } from '@/lib/actions'
 import DateAvailabilityPicker from './DateAvailabilityPicker'
 
@@ -29,12 +29,17 @@ type FormState = {
   budget: string
   delivery: 'Yes' | 'No' | ''
   heardAbout: string
+  honoreeRelation: string
+  honoreeName: string
+  turningAge: string
+  dueDate: string
 }
 
 const initialState: FormState = {
   name: '', phone: '', email: '',
   eventType: '', eventDate: '', venue: '', setupTime: '', guestCount: '',
   lookingFor: [], vibe: '', colors: '', budget: '', delivery: '', heardAbout: '',
+  honoreeRelation: '', honoreeName: '', turningAge: '', dueDate: '',
 }
 
 function chip(active: boolean) {
@@ -55,7 +60,7 @@ function chip(active: boolean) {
   } as React.CSSProperties
 }
 
-function SectionLabel({ icon, children, optional }: { icon: React.ReactNode; children: React.ReactNode; optional?: boolean }) {
+function SectionLabel({ icon, children, optional }: { icon?: React.ReactNode; children: React.ReactNode; optional?: boolean }) {
   return (
     <label className="input-label" style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
       {icon}{children}
@@ -191,6 +196,12 @@ export default function InquiryForm() {
       source: 'inquiry',
       referrer_raw: typeof document !== 'undefined' ? (document.referrer || undefined) : undefined,
       referral_source: form.heardAbout || undefined,
+      honoree_relation: form.eventType === 'corporate' ? 'company' : form.honoreeRelation || undefined,
+      honoree_name: form.honoreeName.trim() || undefined,
+      honoree_milestone: form.eventType === 'birthday' && form.turningAge.trim()
+        ? `Turning ${form.turningAge.trim()}`
+        : undefined,
+      honoree_date: form.eventType === 'baby' && form.dueDate ? form.dueDate : undefined,
       ...attributionPayload(),
     })
 
@@ -250,6 +261,40 @@ export default function InquiryForm() {
           ))}
         </div>
       </div>
+
+      {/* Who are we celebrating? — optional, 2-3 taps. Lets Monica remember
+          the people, not just the party ("Lily's turning 17 next month"). */}
+      {form.eventType && form.eventType !== 'corporate' && (
+        <div>
+          <p className="eyebrow-text" style={{ marginBottom: 6 }}>Who are we celebrating?</p>
+          <p style={{ fontSize: 13, color: MUTED, margin: '0 0 14px' }}>Optional, but it helps Monica make it personal.</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
+            {HONOREE_RELATIONS.filter(r => r.id !== 'company').map(r => (
+              <button key={r.id} type="button" onClick={() => set('honoreeRelation', form.honoreeRelation === r.id ? '' : r.id)} style={chip(form.honoreeRelation === r.id)}>
+                {r.label}
+              </button>
+            ))}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: form.eventType === 'birthday' || form.eventType === 'baby' ? '1fr 1fr' : '1fr', gap: 14 }}>
+            <div>
+              <SectionLabel optional>{form.eventType === 'baby' ? 'Mom-to-be' : 'Their first name'}</SectionLabel>
+              <input className="input-field" placeholder={form.eventType === 'baby' ? 'e.g. Sofia' : 'e.g. Lily'} value={form.honoreeName} onChange={e => set('honoreeName', e.target.value)} />
+            </div>
+            {form.eventType === 'birthday' && (
+              <div>
+                <SectionLabel optional>Turning</SectionLabel>
+                <input className="input-field" type="number" inputMode="numeric" min={1} max={120} placeholder="e.g. 16" value={form.turningAge} onChange={e => set('turningAge', e.target.value)} />
+              </div>
+            )}
+            {form.eventType === 'baby' && (
+              <div>
+                <SectionLabel optional>Baby&apos;s due date</SectionLabel>
+                <input className="input-field" type="date" value={form.dueDate} onChange={e => set('dueDate', e.target.value)} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Date + Venue */}
       <div>
