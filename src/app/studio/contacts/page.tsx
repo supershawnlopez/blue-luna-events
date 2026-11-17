@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Search, Plus, Phone, Mail, MessageSquare, Download, X, Trash2, Send } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, Plus, Phone, Mail, MessageSquare, Download, X, Trash2, Send } from 'lucide-react'
 
 type Contact = {
   id: string
@@ -88,7 +88,7 @@ export default function StudioContacts() {
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '60px' }}>
 
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 24px) 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 24px) 20px 4px' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
             <Link href="/studio/leads" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
@@ -127,7 +127,7 @@ export default function StudioContacts() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px 20px 0' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '12px 20px 0' }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', padding: '60px 0', fontSize: '0.9rem' }}>Loading…</p>
         ) : filtered.length === 0 ? (
@@ -135,18 +135,23 @@ export default function StudioContacts() {
             {contacts.length === 0 ? 'No contacts yet — import from your estimates or add one.' : 'No matches.'}
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {filtered.map(c => (
+          // Full-width rows, iOS Contacts style — the divider starts after the
+          // initial, not under it (DESIGN_DECISIONS "STUDIO LISTS").
+          <div style={{ margin: '0 -20px' }}>
+            {filtered.map((c, i) => (
               <button key={c.id} onClick={() => setActive(c)}
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '13px 16px', cursor: 'pointer', textAlign: 'left' }}>
-                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(91,191,191,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#5BBFBF', fontSize: '0.78rem', fontWeight: 700 }}>
+                style={{ display: 'flex', alignItems: 'center', gap: '14px', width: '100%', background: 'none', border: 'none', padding: '0 20px', cursor: 'pointer', textAlign: 'left' }}>
+                <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(91,191,191,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#5BBFBF', fontSize: '0.85rem', fontWeight: 700 }}>
                   {c.name.charAt(0).toUpperCase()}
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '0.86rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>{c.name}</p>
-                  <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.4)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {[c.email, c.phone].filter(Boolean).join(' · ') || 'No contact info'}
-                  </p>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.98rem', fontWeight: 600, color: 'white', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.name}</p>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {[c.email, c.phone].filter(Boolean).join(' · ') || 'No contact info'}
+                    </p>
+                  </div>
+                  <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
                 </div>
               </button>
             ))}

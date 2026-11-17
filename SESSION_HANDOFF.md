@@ -2,6 +2,26 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: November 17, 2026 — Claude Code*
 
+## 2026-11-17 (later): Studio cleanup round 2 — full-width lists everywhere
+
+Round 1 merged (PR #1, `5d300fa`) and Shawn called it "beautiful," then approved the same full-width cleanup for the other boxed screens.
+
+**Converted to full-width rows (no boxes), same style as Estimates:**
+- **Leads**: name, then temperature icon + status · Event Type · "3 days ago". Event types now read properly ("Quinceañera", not "quinceanera"); the sheet shows a real date. No swipe-delete here on purpose: deleting a lead is permanent (no Trash), so it stays behind the confirm inside the lead's sheet.
+- **Contacts**: iOS Contacts look (initial circle, divider starts after it).
+- **Galleries**: photo thumbnail, name, "42 photos" / "Hidden"; the whole row opens the gallery, and "Copy link" is still one tap.
+- **Email Templates**: name + subject, a Duplicate icon and a **Send** pill; swipe left to Delete (still asks first).
+- **Price List (Catalog)**: tap a row to edit, swipe left to Remove (still asks first). The pencil and trash icons are gone.
+- **Home → Quick Actions**: iOS Settings-style rows.
+
+Buttons, sheets, forms and the Home stat tiles are unchanged. Verified: `npm run build` clean, Playwright iPhone 13 screenshots of all 6 screens, no horizontal overflow.
+
+**Waiting on Shawn:** grouping Sedra-style package options into one row. I explained it; he hasn't answered yet.
+
+**Shawn, test this after deploy:** open Leads, Contacts, Galleries, Email Templates (Contacts → Email Templates), Price List (Estimates → Price List) and Home. All should be clean full-width lists. Swipe a template or price-list item left: it asks before deleting.
+
+---
+
 ## 2026-11-17: Studio cleanup round 1 — Schedule, Estimates, instant updates
 
 Shawn sent iPhone screenshots: Schedule listed the same client 2–3 times, and the Estimates page looked cramped (tab labels wrapping, a box around every client, a trash can on every row). He also wanted Spa Mambo's "updates land on their own" behavior. Team meeting (Steve + Jony leading); Shawn approved both calls.

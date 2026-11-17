@@ -278,22 +278,26 @@ export default function StudioHome() {
         <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 14px' }}>
           Quick Actions
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {/* iOS Settings-style rows: icon tile, then a divider that starts
+            after the icon (DESIGN_DECISIONS "STUDIO LISTS"). */}
+        <div>
           {[
             { href: '/studio/media',         Icon: Camera,     label: 'Upload Photos',      sub: 'Add new work to your library' },
             { href: '/studio/galleries',      Icon: FolderOpen, label: 'New Client Gallery', sub: 'Share an event with your client' },
             { href: '/studio/estimates/new',  Icon: FileText,   label: 'New Estimate',       sub: 'Build an estimate for an event' },
             { href: '/studio/proposals',      Icon: ClipboardList, label: 'Proposals',       sub: 'Share luxury proposal links' },
-          ].map(({ href, Icon, label, sub }) => (
-            <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px 18px', textDecoration: 'none' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '11px', background: 'rgba(91,191,191,0.1)', border: '1px solid rgba(91,191,191,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          ].map(({ href, Icon, label, sub }, i) => (
+            <Link key={href} href={href} style={{ display: 'flex', alignItems: 'center', gap: '14px', textDecoration: 'none' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(91,191,191,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Icon size={18} color="#5BBFBF" />
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>{label}</p>
-                <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.35)', margin: 0 }}>{sub}</p>
+              <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'white', margin: '0 0 3px' }}>{label}</p>
+                  <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{sub}</p>
+                </div>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
               </div>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2.5"><path d="M9 18l6-6-6-6"/></svg>
             </Link>
           ))}
         </div>

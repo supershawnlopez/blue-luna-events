@@ -62,7 +62,7 @@ export default function StudioGalleries() {
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '120px' }}>
 
       {/* Header */}
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 20px) 20px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 20px) 20px 8px' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link href="/studio" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.5)', textDecoration: 'none' }}>
@@ -81,7 +81,7 @@ export default function StudioGalleries() {
       </div>
 
       {/* Gallery list */}
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '16px 20px' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '8px 20px' }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', padding: '60px 0' }}>Loading…</p>
         ) : galleries.length === 0 ? (
@@ -97,12 +97,12 @@ export default function StudioGalleries() {
             </button>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {galleries.map(g => (
-              <div key={g.id} style={{ background: '#161616', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
-
-                {/* Cover thumbnail */}
-                <div style={{ width: '72px', height: '72px', flexShrink: 0, background: '#1A1A1A', position: 'relative' }}>
+          // Full-width rows with a photo thumbnail (DESIGN_DECISIONS "STUDIO
+          // LISTS"). The whole row opens the gallery; Copy stays one tap.
+          <div style={{ margin: '0 -20px' }}>
+            {galleries.map((g, i) => (
+              <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '0 20px' }}>
+                <Link href={`/studio/galleries/${g.id}`} style={{ flexShrink: 0, display: 'block', width: '56px', height: '56px', borderRadius: '10px', overflow: 'hidden', background: '#1A1A1A' }}>
                   {g.cover ? (
                     <img src={g.cover.thumbnail_url || g.cover.url} alt={g.display_name}
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -111,38 +111,21 @@ export default function StudioGalleries() {
                       <Images size={20} color="rgba(255,255,255,0.15)" />
                     </div>
                   )}
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, padding: '12px 14px', minWidth: 0 }}>
-                  <p style={{ fontSize: '0.88rem', fontWeight: 600, color: 'white', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.display_name}</p>
-                  <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.25)', margin: '0 0 6px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    /{g.slug}
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>
+                </Link>
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
+                  <Link href={`/studio/galleries/${g.id}`} style={{ flex: 1, minWidth: 0, textDecoration: 'none' }}>
+                    <p style={{ fontSize: '0.98rem', fontWeight: 600, color: 'white', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.display_name}</p>
+                    <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}>
+                      {!g.is_active && <span style={{ color: 'rgba(239,68,68,0.85)', fontWeight: 600 }}>Hidden ·</span>}
                       {g.media_count} photo{g.media_count !== 1 ? 's' : ''}
-                    </span>
-                    {!g.is_active && (
-                      <span style={{ fontSize: '0.62rem', fontWeight: 700, color: '#ef4444', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '4px', padding: '1px 5px' }}>
-                        HIDDEN
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '0 12px', flexShrink: 0 }}>
-                  <button onClick={() => copyLink(g.slug)}
-                    style={{ background: copied === g.slug ? 'rgba(91,191,191,0.15)' : 'rgba(255,255,255,0.05)', border: `1px solid ${copied === g.slug ? 'rgba(91,191,191,0.4)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '8px', padding: '7px 8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <Link2 size={13} color={copied === g.slug ? '#5BBFBF' : 'rgba(255,255,255,0.4)'} />
-                    <span style={{ fontSize: '0.65rem', fontWeight: 600, color: copied === g.slug ? '#5BBFBF' : 'rgba(255,255,255,0.4)' }}>
-                      {copied === g.slug ? 'Copied!' : 'Copy'}
-                    </span>
+                    </p>
+                  </Link>
+                  <button onClick={() => copyLink(g.slug)} aria-label="Copy gallery link"
+                    style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px', background: copied === g.slug ? 'rgba(91,191,191,0.15)' : 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '99px', padding: '7px 12px', cursor: 'pointer', color: copied === g.slug ? '#5BBFBF' : 'rgba(255,255,255,0.6)', fontSize: '0.74rem', fontWeight: 600 }}>
+                    <Link2 size={13} /> {copied === g.slug ? 'Copied' : 'Copy link'}
                   </button>
-                  <Link href={`/studio/galleries/${g.id}`}
-                    style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '8px', display: 'flex', textDecoration: 'none' }}>
-                    <ChevronRight size={14} color="rgba(255,255,255,0.4)" />
+                  <Link href={`/studio/galleries/${g.id}`} aria-label={`Open ${g.display_name}`} style={{ display: 'flex', flexShrink: 0 }}>
+                    <ChevronRight size={16} color="rgba(255,255,255,0.2)" />
                   </Link>
                 </div>
               </div>

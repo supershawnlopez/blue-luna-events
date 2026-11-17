@@ -69,8 +69,9 @@ Exit criteria for Phase 1:
 
 **NEXT — Studio cleanup round 2 (Jony/Marcus, from the 2026-11-17 meeting):**
 - Shawn: test round 1 on Monica's phone (see SESSION_HANDOFF.md 2026-11-17).
-- Group package options for one client under one row ("Sedra Alwan · 2 options") — Angela.
-- Roll the flat full-width row style + `SwipeRow` swipe-to-delete out to Leads, Contacts, Galleries and the other boxed Studio lists — Marcus/Jony.
+- Group package options for one client under one row ("Sedra Alwan · 2 options") — Angela. Explained to Shawn 2026-11-17, waiting on his yes/no.
+- ~~Roll the flat full-width row style out to Leads, Contacts, Galleries, Templates, Catalog, Home quick actions~~ — done 2026-11-17 round 2.
+- Disconnect the leftover Netlify integration (still builds every PR) — Shawn, in Netlify.
 
 ---
 

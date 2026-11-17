@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { Phone, Mail, MessageSquare, Flame, Sun, Snowflake, X, FileText, ChevronRight, BookUser } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
+import { labelForEventType } from '@/lib/config'
 
 type Lead = {
   id: string
@@ -127,7 +128,7 @@ function StudioLeadsInner() {
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '120px' }}>
 
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 24px) 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 24px) 20px 8px' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', color: '#5BBFBF', textTransform: 'uppercase', margin: '0 0 4px' }}>Blue Luna Studio</p>
@@ -139,7 +140,7 @@ function StudioLeadsInner() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 20px 0' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '12px 20px 0' }}>
 
         {/* Status filter pills */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '16px', scrollbarWidth: 'none' }}>
@@ -156,25 +157,27 @@ function StudioLeadsInner() {
         ) : filtered.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', padding: '60px 0', fontSize: '0.88rem' }}>No leads here yet.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {filtered.map(l => {
+          // Full-width rows, no boxes (DESIGN_DECISIONS "STUDIO LISTS", 2026-11-17).
+          // No swipe-delete here on purpose: deleting a lead is permanent (no
+          // Trash), so it stays behind the confirm inside the lead's sheet.
+          <div style={{ margin: '0 -20px' }}>
+            {filtered.map((l, i) => {
               const temp = TEMPS.find(t => t.id === l.temperature)
+              const status = STATUSES.find(s => s.id === l.status)?.label ?? l.status
               return (
                 <button key={l.id} onClick={() => setActiveLead(l)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px 16px', cursor: 'pointer', textAlign: 'left' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: temp ? `${temp.color}1A` : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {temp ? <temp.icon size={16} color={temp.color} /> : <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>?</span>}
+                  style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: '0 20px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '15px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '0.98rem', fontWeight: 600, color: 'white', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.name}</p>
+                      <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                        {temp && <temp.icon size={13} color={temp.color} style={{ flexShrink: 0 }} />}
+                        <span style={{ color: '#5BBFBF', fontWeight: 600, whiteSpace: 'nowrap' }}>{status}</span>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>· {labelForEventType(l.event_type) || 'Event'} · {daysAgo(l.created_at)}</span>
+                      </p>
+                    </div>
+                    <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '0.88rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>{l.name}</p>
-                    <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                      {l.event_type || 'Event'} · {daysAgo(l.created_at)}
-                    </p>
-                  </div>
-                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#5BBFBF', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>
-                    {STATUSES.find(s => s.id === l.status)?.label ?? l.status}
-                  </span>
-                  <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
                 </button>
               )
             })}
@@ -190,7 +193,7 @@ function StudioLeadsInner() {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
                 <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>{activeLead.name}</p>
-                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{activeLead.event_type || 'Event'}{activeLead.event_date ? ` · ${activeLead.event_date}` : ''}</p>
+                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{labelForEventType(activeLead.event_type) || 'Event'}{activeLead.event_date ? ` · ${new Date(activeLead.event_date.slice(0, 10) + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}` : ''}</p>
               </div>
               <button onClick={() => { setActiveLead(null); setConfirmDeleteLead(false) }} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex' }}>
                 <X size={16} color="rgba(255,255,255,0.5)" />

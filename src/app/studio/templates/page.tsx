@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Plus, Send, Copy, Trash2, X, Check } from 'lucide-react'
+import { ChevronLeft, Plus, Send, Copy, X, Check } from 'lucide-react'
+import SwipeRow from '@/components/studio/SwipeRow'
 
 type Template = { id: string; name: string; subject: string; body: string; updated_at: string }
 type Contact = { id: string; name: string; email: string | null; unsubscribed: boolean }
@@ -18,6 +19,7 @@ export default function StudioTemplates() {
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [openRowId, setOpenRowId] = useState<string | null>(null)
   const [sendTemplate, setSendTemplate] = useState<Template | null>(null)
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set())
   const [sending, setSending] = useState(false)
@@ -127,7 +129,7 @@ export default function StudioTemplates() {
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '60px' }}>
 
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 24px) 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 24px) 20px 8px' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link href="/studio/contacts" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
@@ -144,31 +146,39 @@ export default function StudioTemplates() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 20px 0' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '8px 20px 0' }}>
         {loading ? (
           <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', padding: '60px 0', fontSize: '0.9rem' }}>Loading…</p>
         ) : templates.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', padding: '60px 0', fontSize: '0.88rem' }}>No templates yet — create one to start sending campaigns.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {templates.map(t => (
-              <div key={t.id} style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '16px' }}>
-                <button onClick={() => openEdit(t)} style={{ background: 'none', border: 'none', padding: 0, width: '100%', textAlign: 'left', cursor: 'pointer', marginBottom: '12px' }}>
-                  <p style={{ fontSize: '0.92rem', fontWeight: 700, color: 'white', margin: '0 0 4px' }}>{t.name}</p>
-                  <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.subject}</p>
-                </button>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button onClick={() => openSend(t)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', background: 'rgba(91,191,191,0.12)', border: '1px solid rgba(91,191,191,0.3)', borderRadius: '10px', padding: '10px', color: '#5BBFBF', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
-                    <Send size={13} /> Send Campaign
-                  </button>
-                  <button onClick={() => handleDuplicate(t)} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '10px 12px', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }}>
-                    <Copy size={13} />
-                  </button>
-                  <button onClick={() => setConfirmDeleteId(t.id)} style={{ background: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.25)', borderRadius: '10px', padding: '10px 12px', color: '#EF4444', cursor: 'pointer' }}>
-                    <Trash2 size={13} />
-                  </button>
+          // Full-width rows (DESIGN_DECISIONS "STUDIO LISTS"). Tap the name to
+          // edit, Send is one tap, swipe left to delete — deleting a template is
+          // permanent, so the swipe opens the existing confirm, not a straight delete.
+          <div style={{ margin: '0 -20px' }}>
+            {templates.map((t, i) => (
+              <SwipeRow
+                key={t.id}
+                actionLabel="Delete"
+                onAction={() => { setOpenRowId(null); setConfirmDeleteId(t.id) }}
+                open={openRowId === t.id}
+                onOpenChange={o => setOpenRowId(o ? t.id : null)}
+              >
+                <div style={{ padding: '0 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
+                    <button onClick={() => openEdit(t)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>
+                      <p style={{ fontSize: '0.98rem', fontWeight: 600, color: 'white', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</p>
+                      <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.subject}</p>
+                    </button>
+                    <button onClick={() => handleDuplicate(t)} aria-label="Duplicate template" style={{ flexShrink: 0, background: 'none', border: 'none', padding: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex' }}>
+                      <Copy size={16} />
+                    </button>
+                    <button onClick={() => openSend(t)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(91,191,191,0.12)', border: 'none', borderRadius: '99px', padding: '8px 14px', color: '#5BBFBF', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+                      <Send size={13} /> Send
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </SwipeRow>
             ))}
           </div>
         )}
