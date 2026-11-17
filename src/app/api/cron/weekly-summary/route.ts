@@ -35,11 +35,11 @@ export async function GET(req: Request) {
     { data: upcoming },
   ] = await Promise.all([
     supabase.from('leads').select('id, name').gte('created_at', sevenDaysAgo),
-    supabase.from('estimates').select('id, quoted_total').gte('created_at', sevenDaysAgo),
+    supabase.from('estimates').select('id, quoted_total').is('deleted_at', null).gte('created_at', sevenDaysAgo),
     supabase.from('estimate_payments').select('amount').gte('created_at', sevenDaysAgo),
-    supabase.from('estimates').select('id, quoted_total, discount_type, discount_value').eq('status', 'sent'),
+    supabase.from('estimates').select('id, quoted_total, discount_type, discount_value').is('deleted_at', null).eq('status', 'sent'),
     supabase.from('estimate_payments').select('estimate_id, amount'),
-    supabase.from('estimates').select('client_name, event_type, event_date, quoted_total').gte('event_date', today).lte('event_date', twoWeeksOut).order('event_date', { ascending: true }),
+    supabase.from('estimates').select('client_name, event_type, event_date, quoted_total').is('deleted_at', null).gte('event_date', today).lte('event_date', twoWeeksOut).order('event_date', { ascending: true }),
   ])
 
   if (leadsError) {

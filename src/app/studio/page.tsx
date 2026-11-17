@@ -297,6 +297,12 @@ export default function StudioHome() {
             </Link>
           ))}
         </div>
+
+        {/* Which version this phone is running — so Shawn can confirm at a
+            glance that Monica has the latest update. */}
+        <p style={{ textAlign: 'center', fontSize: '0.68rem', color: 'rgba(255,255,255,0.22)', margin: '28px 0 0', letterSpacing: '0.04em' }}>
+          Version {process.env.NEXT_PUBLIC_BUILD_DATE} · {process.env.NEXT_PUBLIC_BUILD_ID}
+        </p>
       </div>
 
       <StudioNav />

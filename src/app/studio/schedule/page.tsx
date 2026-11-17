@@ -2,11 +2,32 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight, X, Ban, CalendarDays, MapPin } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X, Ban, MapPin } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
 
-type Booked = { date: string; clientName: string; eventType: string | null; venue: string | null; estimateId: string }
+type BookingState = 'booked' | 'accepted' | 'sent'
+type Booked = { date: string; clientName: string; eventType: string | null; venue: string | null; estimateId: string; state: BookingState; optionCount: number }
 type Blocked = { id: string; startDate: string; endDate: string; reason: string | null }
+
+// Calendar dot language (Shawn, 2026-11-17), iPhone-Calendar style:
+// solid teal = deposit paid (booked), teal ring = accepted, grey ring = sent,
+// gold = blocked by Monica. Only "booked" and "blocked" lock a date publicly.
+const TEAL = '#5BBFBF'
+const GOLD = '#F59E0B'
+const STATE_META: Record<BookingState, { label: string; detail: string }> = {
+  booked:   { label: 'Booked',   detail: 'Deposit paid' },
+  accepted: { label: 'Accepted', detail: 'Waiting on deposit' },
+  sent:     { label: 'Sent',     detail: 'Estimate sent' },
+}
+const STATE_ORDER: BookingState[] = ['booked', 'accepted', 'sent']
+
+function Dot({ kind, size = 6 }: { kind: BookingState | 'blocked'; size?: number }) {
+  const style: React.CSSProperties = { width: size, height: size, borderRadius: '50%', boxSizing: 'border-box', flexShrink: 0 }
+  if (kind === 'booked') return <span style={{ ...style, background: TEAL }} />
+  if (kind === 'blocked') return <span style={{ ...style, background: GOLD }} />
+  if (kind === 'accepted') return <span style={{ ...style, border: `1.5px solid ${TEAL}` }} />
+  return <span style={{ ...style, border: '1.5px solid rgba(255,255,255,0.4)' }} />
+}
 
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December']
 const WEEKDAY_LABELS = ['S','M','T','W','T','F','S']
@@ -51,9 +72,10 @@ export default function StudioSchedule() {
 
   useEffect(() => { load() }, [])
 
+  // Every entry for a date, strongest state first (the API already sorts).
   const bookedByDate = useMemo(() => {
-    const m = new Map<string, Booked>()
-    booked.forEach(b => m.set(b.date, b))
+    const m = new Map<string, Booked[]>()
+    booked.forEach(b => m.set(b.date, [...(m.get(b.date) ?? []), b]))
     return m
   }, [booked])
 
@@ -131,11 +153,11 @@ export default function StudioSchedule() {
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', gap: '16px', marginBottom: '14px' }}>
-          {[{ color: '#5BBFBF', label: 'Booked' }, { color: '#F59E0B', label: 'Blocked' }].map(l => (
-            <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: l.color }} />
-              <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)' }}>{l.label}</span>
+        <div style={{ display: 'flex', flexWrap: 'wrap', columnGap: '16px', rowGap: '8px', marginBottom: '14px' }}>
+          {([['booked', 'Booked'], ['accepted', 'Accepted'], ['sent', 'Sent'], ['blocked', 'Blocked']] as const).map(([kind, label]) => (
+            <div key={kind} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Dot kind={kind} size={8} />
+              <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)' }}>{label}</span>
             </div>
           ))}
         </div>
@@ -152,16 +174,27 @@ export default function StudioSchedule() {
           {cells.map((dateStr, i) => {
             if (!dateStr) return <div key={i} />
             const day = Number(dateStr.slice(-2))
-            const bookedItem = bookedByDate.get(dateStr)
+            const entries = bookedByDate.get(dateStr) ?? []
+            const bookedItem = entries[0]
             const blockedItem = blockedDateSet.get(dateStr)
             const past = isPast(dateStr, todayStr)
             const isToday = dateStr === todayStr
-            const bg = bookedItem ? 'rgba(91,191,191,0.16)' : blockedItem ? 'rgba(245,158,11,0.14)' : 'rgba(255,255,255,0.03)'
-            const border = isToday ? '1.5px solid #5BBFBF' : bookedItem ? '1px solid rgba(91,191,191,0.35)' : blockedItem ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(255,255,255,0.05)'
+            const isBooked = entries.some(e => e.state === 'booked')
+            const dots: (BookingState | 'blocked')[] = [
+              ...STATE_ORDER.filter(st => entries.some(e => e.state === st)),
+              ...(blockedItem ? ['blocked' as const] : []),
+            ]
+            // Only a locked date (deposit paid, or blocked) gets a tinted square;
+            // everything else is told by the dots alone.
+            const bg = isBooked ? 'rgba(91,191,191,0.14)' : blockedItem ? 'rgba(245,158,11,0.10)' : 'rgba(255,255,255,0.03)'
+            const border = isToday ? `1.5px solid ${TEAL}` : '1px solid transparent'
 
             const content = (
-              <div style={{ aspectRatio: '1/1', borderRadius: '10px', background: bg, border, opacity: past ? 0.3 : 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: past ? 'default' : 'pointer' }}>
-                <span style={{ fontSize: '0.78rem', fontWeight: isToday ? 800 : 600, color: 'white' }}>{day}</span>
+              <div style={{ aspectRatio: '1/1', borderRadius: '10px', background: bg, border, boxSizing: 'border-box', opacity: past ? 0.3 : 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '5px', cursor: past ? 'default' : 'pointer' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: isToday ? 800 : 600, color: isToday ? TEAL : 'white', lineHeight: 1 }}>{day}</span>
+                <span style={{ display: 'flex', gap: '3px', height: '6px', alignItems: 'center' }}>
+                  {dots.map(k => <Dot key={k} kind={k} />)}
+                </span>
               </div>
             )
 
@@ -177,29 +210,35 @@ export default function StudioSchedule() {
           })}
         </div>
 
-        {/* Bookings this month — mirrors the calendar's current page, same
-            idea as iOS Calendar's agenda list under the month grid. */}
+        {/* This month's events — mirrors the month on screen, like the agenda
+            list under iOS Calendar's grid. Full-width rows, no boxes. */}
         {!loading && bookingsThisMonth.length > 0 && (
           <>
-            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 14px' }}>
-              Bookings — {MONTH_NAMES[month]}
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 4px' }}>
+              {MONTH_NAMES[month]}
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '28px' }}>
-              {bookingsThisMonth.map(b => (
-                <Link key={b.estimateId} href={`/studio/estimates/${b.estimateId}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(91,191,191,0.06)', border: '1px solid rgba(91,191,191,0.2)', borderRadius: '14px', padding: '14px 16px', textDecoration: 'none' }}>
-                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(91,191,191,0.14)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <CalendarDays size={16} color="#5BBFBF" />
+            <div style={{ marginBottom: '28px' }}>
+              {bookingsThisMonth.map((b, i) => (
+                <Link key={b.estimateId} href={`/studio/estimates/${b.estimateId}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)', textDecoration: 'none' }}>
+                  <div style={{ width: '44px', flexShrink: 0, textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.08em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', margin: 0 }}>
+                      {new Date(b.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short' })}
+                    </p>
+                    <p style={{ fontSize: '1.25rem', fontWeight: 700, color: 'white', margin: 0, lineHeight: 1.15 }}>{Number(b.date.slice(-2))}</p>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '0.86rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>{formatShort(b.date)} — {b.clientName}</p>
-                    {b.venue ? (
-                      <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.4)', margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <MapPin size={11} /> {b.venue}
+                    <p style={{ fontSize: '0.95rem', fontWeight: 600, color: 'white', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.clientName}</p>
+                    <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.45)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Dot kind={b.state} size={7} />
+                      <span style={{ whiteSpace: 'nowrap' }}>{STATE_META[b.state].label}{b.optionCount > 1 ? ` · ${b.optionCount} estimates` : ''}</span>
+                    </p>
+                    {b.venue && (
+                      <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.35)', margin: '3px 0 0', display: 'flex', alignItems: 'center', gap: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <MapPin size={11} style={{ flexShrink: 0 }} /> <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.venue}</span>
                       </p>
-                    ) : (
-                      <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.3)', margin: 0 }}>No venue on file</p>
                     )}
                   </div>
+                  <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
                 </Link>
               ))}
             </div>
@@ -209,16 +248,16 @@ export default function StudioSchedule() {
         {/* Upcoming blocks list */}
         {!loading && blocked.length > 0 && (
           <>
-            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 14px' }}>Blocked Dates</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {blocked.map(b => (
-                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px 16px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', margin: '0 0 4px' }}>Blocked Dates</p>
+            <div>
+              {blocked.map((b, i) => (
+                <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
                   <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'rgba(245,158,11,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Ban size={16} color="#F59E0B" />
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: '0.86rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>
-                      {b.startDate === b.endDate ? b.startDate : `${b.startDate} → ${b.endDate}`}
+                      {b.startDate === b.endDate ? formatShort(b.startDate) : `${formatShort(b.startDate)} → ${formatShort(b.endDate)}`}
                     </p>
                     <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{b.reason || 'Unavailable'}</p>
                   </div>

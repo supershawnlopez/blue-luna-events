@@ -13,6 +13,22 @@
 
 ---
 
+## Session: November 17, 2026 — Studio cleanup round 1
+**AI:** Claude Code. Shawn's iPhone screenshots: Schedule duplicates + cramped Estimates page + wanted Spa Mambo's instant updates. Team meeting (Steve/Jony lead, Craig/Chris/Angela/Marcus); Shawn approved.
+
+### Completed This Session
+- `src/lib/availability.ts`: one source of truth for date state (booked = paid, accepted, sent); excludes Trash + drafts; one entry per client per day with `optionCount`; public calendar only blocks paid + manual blocks.
+- Trash filter (`deleted_at is null`) added to Today, stats, weekly summary, contacts import.
+- `src/app/studio/schedule/page.tsx`: status dots under dates, 4-item legend, flat agenda + blocked lists.
+- `src/app/studio/estimates/page.tsx`: segmented control, flat full-width rows, `labelForEventType`, short dates, 2-decimal cents, statuses aligned with calendar, invoices sorted by event date, swipe-to-delete via new `src/components/studio/SwipeRow.tsx`.
+- Stay-current: `next.config.mjs` build ID (Vercel commit SHA → git SHA → `dev`, never a timestamp — a timestamp gave server/client different IDs and caused a reload loop, caught in testing), `/api/version`, `src/components/studio/StayCurrent.tsx` (once-per-version reload guard), version on Studio Home, `src/app/studio/error.tsx`, SW `updateViaCache: 'none'` + no-cache headers.
+- Read Spa Mambo's update approach (`admin/sw.js`, `admin/index.html` build check) for reference; nothing changed in that repo.
+
+### Verification
+- `npm run build` clean. Availability logic tested with fake data mirroring the screenshots. Playwright iPhone 13 screenshots, no horizontal overflow. Swipe-to-delete tested. Live data not checked.
+
+---
+
 ## Session: September 9, 2026 — Full-discount invoice total guard
 **AI:** Codex. Shawn showed a Studio invoice where subtotal was $1,260 but total / amount owed / deposit were all $0.
 

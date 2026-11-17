@@ -67,7 +67,19 @@ Exit criteria for Phase 1:
 
 **All 6 phases of the originally-scoped Studio Intelligence rebuild are now shipped** (Camera, Calendar/Booking, Leads/Contacts/Email/SMS, Social captions). What's left is real-device confirmation from Shawn, plus whatever he wants to scope next.
 
+**NEXT — Studio cleanup round 2 (Jony/Marcus, from the 2026-11-17 meeting):**
+- Shawn: test round 1 on Monica's phone (see SESSION_HANDOFF.md 2026-11-17).
+- Group package options for one client under one row ("Sedra Alwan · 2 options") — Angela.
+- Roll the flat full-width row style + `SwipeRow` swipe-to-delete out to Leads, Contacts, Galleries and the other boxed Studio lists — Marcus/Jony.
+
 ---
+
+## DONE (2026-11-17 — Studio cleanup round 1)
+- Fixed Schedule duplicates (Trash, drafts, and multiple estimates per client were all counted as bookings); trashed estimates also removed from public calendar, Today, stats, weekly email, contacts import.
+- New calendar states: Booked (deposit paid, solid teal) / Accepted (teal ring) / Sent (grey ring) / Blocked (gold). Only Booked + manual blocks lock a public date.
+- Schedule dots under dates + full-width agenda list. Estimates page rebuilt: segmented tabs, full-width rows, readable event names/dates/cents, swipe-to-delete.
+- Spa Mambo-style stay-current updates (`/api/version` + `StayCurrent`), version on Studio Home, Studio crash screen, SW never cached.
+- Verification: `npm run build` clean; logic test + Playwright iPhone screenshots + swipe test. Live data not checked (no Supabase keys in session).
 
 ## DONE (2026-09-09 — Estimate deposit percent presets)
 - Fixed urgent Studio estimate deposit override issue where the checkout deposit could get stuck at $0 after changing the percent.

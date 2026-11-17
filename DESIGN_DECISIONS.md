@@ -12,6 +12,16 @@ Why: The site must feel like a luxury brand, not a local balloon company. Teal r
 
 ---
 
+## STUDIO LISTS — FULL WIDTH, NO BOXES (LOCKED — 2026-11-17)
+
+**Studio lists are full-width rows with thin dividers (Apple Mail / Settings style) — no outer wrapper card, no box per row. Delete is swipe-left, not a per-row trash icon. Tabs are an iPhone segmented control with counts as small badges.**
+Approved by: Jony Ive + Steve Jobs + Shawn
+Why: Shawn: "Do we really need a wrapper for each card… use the full width of the phone so nothing's cramped." Row anatomy: line 1 = name (max 2 lines) + amount; line 2 = status dot + label · Event Type · short date. Say each thing once (no "Unpaid" next to "Sent", no "Paid in full" twice). Reusable `SwipeRow` component. Estimates and Schedule done; other Studio lists follow in round 2.
+
+**Calendar dots (iPhone Calendar pattern):** small dots under the date number — solid teal Booked, teal ring Accepted, grey ring Sent, amber Blocked (pre-existing color Shawn likes). Only locked dates (booked / blocked) get a tinted square.
+
+---
+
 ## DIGITAL PROPOSALS — LUXURY PRESENTATION, NOT ESTIMATE UI (LOCKED — 2026-08-28)
 
 **Resort/corporate proposal pages use a polished editorial presentation with generous whitespace, co-branding where appropriate, package cards, unit pricing, and PDF download. They should not look like the normal estimate/payment page.**

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import PwaRegister from '@/components/studio/PwaRegister'
+import StayCurrent from '@/components/studio/StayCurrent'
 
 // Scoped to this layout on purpose — everything here only applies under
 // /studio, so installing "Blue Luna Studio" to a home screen never touches
@@ -36,6 +37,7 @@ export default function StudioLayout({ children }: { children: React.ReactNode }
       WebkitFontSmoothing: 'antialiased',
     }}>
       <PwaRegister />
+      <StayCurrent />
       {children}
     </div>
   )

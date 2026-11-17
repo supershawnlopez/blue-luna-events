@@ -15,7 +15,7 @@ export async function GET() {
     db.from('gallery_media').select('*', { count: 'exact', head: true }),
     db.from('gallery_media').select('*', { count: 'exact', head: true }).eq('show_on_website', true),
     db.from('client_galleries').select('*', { count: 'exact', head: true }).eq('is_active', true),
-    db.from('estimates').select('*', { count: 'exact', head: true }).in('status', ['draft', 'sent', 'deposit_paid']),
+    db.from('estimates').select('*', { count: 'exact', head: true }).is('deleted_at', null).in('status', ['draft', 'sent', 'deposit_paid']),
   ])
 
   return NextResponse.json({

@@ -1,6 +1,38 @@
 # SESSION_HANDOFF.md — Blue Luna Events Current Truth
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
-*Last updated: September 9, 2026 — Codex*
+*Last updated: November 17, 2026 — Claude Code*
+
+## 2026-11-17: Studio cleanup round 1 — Schedule, Estimates, instant updates
+
+Shawn sent iPhone screenshots: Schedule listed the same client 2–3 times, and the Estimates page looked cramped (tab labels wrapping, a box around every client, a trash can on every row). He also wanted Spa Mambo's "updates land on their own" behavior. Team meeting (Steve + Jony leading); Shawn approved both calls.
+
+**Duplicate bookings — root cause + fix:** the calendar counted *every* dated estimate as a booking, including ones in **Trash**, drafts, and every package option sent to the same client. The same logic fed the **public website calendar**, so deleted/never-sent estimates were blocking real dates for real customers. Trash was also leaking into Today, Studio stats, the weekly summary email, and contacts import — all fixed.
+
+**New date rules (Shawn, locked in DECISIONS.md):**
+- **Booked** = deposit paid → solid teal dot. The ONLY thing (plus Monica's manual blocks) that blocks a date on the public site.
+- **Accepted** = client agreed, deposit not paid → teal ring.
+- **Sent** = estimate out, not accepted → grey ring.
+- **Blocked** = gold dot. Drafts and Trash never show.
+- One row per client per day; extra estimates for the same day show as "· 2 estimates".
+- The word is **"estimate"**, not "quote."
+
+**Schedule:** iPhone-Calendar-style dots under each date number, 4-item legend, full-width agenda list (big date on the left, status dot, venue), full-width blocked list with readable dates.
+
+**Estimates:** iPhone segmented control (`Estimates 12 | Invoices 7 | 🗑 9`, counts as badges — no wrapping). No outer box, no per-client boxes: full-width rows with thin dividers. Row = name + price, then status dot · Event Type · date. Proper event names ("Baby Shower" not "baby"), real dates ("Dec 5" not `2026-12-05`), cents fixed (`$242.50` not `$242.5`), "Added Nov 4" removed, "Unpaid"/"Paid in full" repetition removed. Invoices sort soonest event first. Status names match the calendar (Sent / Accepted / Deposit Paid / Paid in Full). **Trash can on every row removed → swipe left to Delete** (still goes to Trash, restorable).
+
+**Stability (Spa Mambo pattern):** every deploy gets a build number (git commit). Studio checks `/api/version` when it comes back on screen, on every screen change, and every 5 min; if newer, it refreshes itself on the same screen — never while a sheet is open or Monica is typing. Guard: reloads at most once per version (no loop possible). Version shown at the bottom of Studio Home. Service worker now always re-fetched fresh. New crash screen with a **Reload** button instead of a blank page (auto-reloads once if the crash is a stale-version file).
+
+Verified: `npm run build` clean; booking-state/dedupe logic tested against sample data copying the screenshots (trashed Donna gone, Marisela's draft gone, 2 sent → 1 row, only paid dates block the public calendar); Playwright iPhone 13 screenshots of Schedule/Estimates/Invoices with no horizontal overflow; swipe-to-delete tested (reveals Delete, doesn't open the estimate, sends DELETE). **Not verified against live data** — this session had no Supabase keys, so check the real December screen after deploy.
+
+**Shawn, test this after deploy:**
+1. Studio → Schedule → December: Donna, Marisela, U of A should each appear **once**; dots under the 5th/12th/17th match the legend.
+2. Open the public Event Questionnaire date picker: only deposit-paid dates (and Monica's blocks) should be crossed out.
+3. Studio → Estimates: tabs on one line, rows full width, no boxes. Swipe a test row left → Delete → it shows in the Trash tab → Restore.
+4. Bottom of Studio Home shows "Version 2026.11.17 · abc1234". After the *next* deploy, leave Studio open in the background, come back — it should refresh itself and the version should change.
+
+**Next on the list (not done yet):** group package options under one client ("Sedra Alwan · 2 options"); roll the flat full-width row style + swipe to Leads, Contacts and the other ~15 boxed lists in Studio.
+
+---
 
 ## 2026-09-09: Full-discount invoice total fix
 
