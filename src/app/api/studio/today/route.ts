@@ -26,6 +26,7 @@ export async function GET() {
       .limit(20),
     db.from('estimates')
       .select('id, client_name, event_type, event_date, quoted_total, discount_type, discount_value, share_token, status')
+      .is('deleted_at', null)
       .not('event_date', 'is', null)
       .order('event_date', { ascending: true })
       .limit(50),

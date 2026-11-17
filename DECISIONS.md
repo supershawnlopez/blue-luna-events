@@ -15,6 +15,14 @@
 
 ## CORE PRODUCT DECISIONS
 
+**[2026-11-17] — A date is "Booked" only when a deposit is paid. Calendar states: Booked / Accepted / Sent / Blocked. The word is "estimate," not "quote."**
+Approved by: Shawn (live) + Steve Jobs + Jony Ive
+Why: Shawn: "we can't lock them down till that deposit has been paid." Matches the 2026-08-30 rule (accepting doesn't lock the date; the deposit does). Booked = any payment recorded (solid teal) — the only state, with Monica's manual blocks, that takes a date off the public calendar. Accepted = agreed, unpaid (teal ring — "getting ready to pay"). Sent = out, not accepted (grey ring). Drafts and Trash never appear. One entry per client per day. Root cause this fixed: every dated estimate (incl. Trash, drafts, duplicate package options) counted as a booking, on Studio's Schedule AND the public calendar. Estimates list status names match (Sent / Accepted / Deposit Paid / Paid in Full).
+
+**[2026-11-17] — Studio updates itself (Spa Mambo pattern).**
+Approved by: Shawn + Craig Federighi + Chris (mobile)
+Why: Monica minimizes Studio instead of closing it. Each deploy has a build number (commit SHA); Studio checks `/api/version` on return to the app, on every screen change, and every 5 min, and reloads on the same screen when newer — never over an open sheet or while typing, and at most once per version. Version shown on Studio Home. No "update ready" prompt for now — Blue Luna has one user, so a silent refresh is enough.
+
 **[2026-08-31] — Public proposal pages track recipient engagement (opens, time on page, clicks), shown in Studio, with a phone alert on open.**
 Approved by: Shawn (live) + Marcus Webb + Priya Nair + Angela Ahrendts
 Why: Shawn sends a proposal link (e.g. Westin La Paloma to a single contact) and needs to know if it was opened, how engaged the reader is, and what they looked at — the same visibility estimates already have. Design: a `proposal_events` table logs anonymous per-session activity; a client tracker fires `view` + 15s `heartbeat`s carrying accumulated *tab-visible* seconds + scroll marks; existing controls (package select, adjust panel, print, terms, submit) log click events. Internal Studio previews are excluded both client-side (`?preview=studio` / `/studio` referrer) and server-side (`/studio` referer) so the data stays honest. Monica gets a PWA push on first open of a session and on submit. Studio → Proposals shows a per-visit timeline. The link stays a single shared URL for now (not per-recipient tokenized) — acceptable because in practice one link goes to one contact; revisit if proposals start going to multiple recipients at once.

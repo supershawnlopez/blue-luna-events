@@ -5,7 +5,7 @@ export async function POST() {
   const db = serverClient()
 
   const [{ data: estimates }, { data: existing }] = await Promise.all([
-    db.from('estimates').select('client_name, client_email, client_phone, status').not('status', 'eq', 'declined'),
+    db.from('estimates').select('client_name, client_email, client_phone, status').is('deleted_at', null).not('status', 'eq', 'declined'),
     db.from('contacts').select('email, phone'),
   ])
 
