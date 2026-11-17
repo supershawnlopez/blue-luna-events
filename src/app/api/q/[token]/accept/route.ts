@@ -22,12 +22,21 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   // honest even if it was still sitting at 'draft'.
   const { data, error } = await supabase
     .from('estimates')
-    .update({ accepted_at: new Date().toISOString(), ...(est.status === 'draft' ? { status: 'sent' } : {}) })
+    .update({
+      accepted_at: new Date().toISOString(),
+      // A client who said "not right now" and came back: they're back in.
+      ...(est.status === 'draft' || est.status === 'declined' ? { status: 'sent' } : {}),
+      ...(est.status === 'declined' ? { declined_reason: null, declined_note: null, declined_at: null } : {}),
+    })
     .eq('id', est.id)
     .select('accepted_at')
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  if (est.status === 'declined' && est.lead_id) {
+    await supabase.from('leads').update({ lost_reason: null, lost_note: null, lost_at: null, lost_by: null }).eq('id', est.lead_id).eq('lost_by', 'client')
+  }
 
   try {
     await syncLeadOnEstimateAccepted(supabase, est.lead_id)

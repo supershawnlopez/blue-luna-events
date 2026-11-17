@@ -2,6 +2,53 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: November 17, 2026 — Claude Code*
 
+## 2026-11-17 (evening): Client lifecycle — Phase A built (not merged)
+
+Shawn: the Leads list "goes back 105 days... when does it stop?" Contacts should really be Clients (people who paid), every "no" needs a reason, and nurture never ends. Team meeting held; Shawn approved the plan and the **21-day** "gone quiet" rule.
+
+**Audit of real data (read-only, via the Supabase service key Shawn saved on the environment):** 14 leads, 28 estimates (9 in Trash), 9 payments, 5 paying clients. U of A and Ava/Dunkin' each booked twice. 4 leads never got an estimate; 3 got one and their date passed. Nobody has ever received a follow-up email (0 templates, 0 campaign sends). Referrals are 3 of 14 leads; 1 visitor came from ChatGPT.
+
+**Built (Phase A):**
+- `src/lib/lifecycle.ts`: ONE function decides each person's stage, computed live, never stored: New / Estimate Sent / Client (paid, event ahead) / Past Client / Not Now (a reason recorded, declined, event date passed unbooked, or quiet 21+ days). Paying always wins. Reasons: Price, Timing, Found someone cheaper, Went with someone else, Quality or style, Event changed or cancelled, Just looking, Other.
+- **Leads**: Active / Not Now segmented control (Active = New + Estimate Sent). On live data that's **2 Active, 8 Not Now** instead of 14 in one list. The row shows the stage and why ("Event date passed", "Quiet 69 days"). The lead sheet has "Where They Stand" + **Add a reason** (chips + optional note) / Clear reason. The old manual status buttons are gone; stages replace them.
+- **Clients** (the old Contacts screen, same route): built automatically from payments, grouped by email. Live: Upcoming 2 (Donna, U of A with 2 events), Past 3. Client sheet: Call/Text/Email + every event with what was paid. "Import from Estimates" removed; "Added by you" keeps hand-added people.
+- **Client estimate page `/q/…`**: a quiet **Not right now** link under Accept opens the reason picker → saves the reason on the estimate + lead and pushes Monica "Estimate declined: Price — note". If they come back and Accept, the decline clears.
+- When the inquiry said "Other", the lead shows the estimate's event type instead.
+
+**Database: done.** Shawn saved a Supabase personal access token (`sbp_…`) on the environment (the first key was the wrong type). Claude applied, via the Management API, `20261117120000_lifecycle_lost_reasons.sql` **plus the 3 migrations pending since August** (`20260826010840_marketing_attribution_report_fields`, `20260826150500_stripe_payment_reliability` (checked: no duplicate Stripe payments first), `20260826162000_estimate_activity_tracking`). Verified the columns exist and a write/revert on the trashed test estimate works. Shawn does not want to run SQL himself, ever: Claude applies future migrations with this token.
+
+Verified: `npm run build` clean; lifecycle run against live data (results above); Playwright iPhone screenshots of Leads (Active/Not Now/sheet) and Clients (list/sheet), no overflow. **Not visually checked:** the `/q` "Not right now" panel (that page needs the live DB to render). Check it on the Vercel preview after the migration.
+
+**Shawn, test after the migration + deploy:**
+1. Studio → Leads: Active should show only Malak and Sedra; Not Now shows the rest with a reason.
+2. Open a Not Now lead → Add why they didn't book → tap Price → it shows "Reason: Price (you added this)".
+3. Tap **Clients** (top right of Leads): Upcoming Donna + U of A (2 events), Past Ari, Ava (2 events), Daniella.
+4. Open the Shawn Lopez test estimate link `/q/6644927be9376058f4b3fa5dac11f034` → **Not right now** → pick a reason → Monica's phone gets a push. Then Accept it to confirm the decline clears.
+
+**Next (Phase B):** the drip engine (daily job + send log + guardrails) and sequences: Monica nudge on New after 2 days; Estimate Sent day 3 / day 7; Client journey (thank you, 2 weeks out, review ask). Then Phase C: seasonal nurture, birthday/first-birthday emails, referral ask, "what changed?" email, Growth report. Twilio paused (Shawn).
+
+---
+
+## 2026-11-17 (later): Studio cleanup round 2 — full-width lists everywhere
+
+Round 1 merged (PR #1, `5d300fa`) and Shawn called it "beautiful," then approved the same full-width cleanup for the other boxed screens.
+
+**Converted to full-width rows (no boxes), same style as Estimates:**
+- **Leads**: name, then temperature icon + status · Event Type · "3 days ago". Event types now read properly ("Quinceañera", not "quinceanera"); the sheet shows a real date. No swipe-delete here on purpose: deleting a lead is permanent (no Trash), so it stays behind the confirm inside the lead's sheet.
+- **Contacts**: iOS Contacts look (initial circle, divider starts after it).
+- **Galleries**: photo thumbnail, name, "42 photos" / "Hidden"; the whole row opens the gallery, and "Copy link" is still one tap.
+- **Email Templates**: name + subject, a Duplicate icon and a **Send** pill; swipe left to Delete (still asks first).
+- **Price List (Catalog)**: tap a row to edit, swipe left to Remove (still asks first). The pencil and trash icons are gone.
+- **Home → Quick Actions**: iOS Settings-style rows.
+
+Buttons, sheets, forms and the Home stat tiles are unchanged. Verified: `npm run build` clean, Playwright iPhone 13 screenshots of all 6 screens, no horizontal overflow.
+
+**Waiting on Shawn:** grouping Sedra-style package options into one row. I explained it; he hasn't answered yet.
+
+**Shawn, test this after deploy:** open Leads, Contacts, Galleries, Email Templates (Contacts → Email Templates), Price List (Estimates → Price List) and Home. All should be clean full-width lists. Swipe a template or price-list item left: it asks before deleting.
+
+---
+
 ## 2026-11-17: Studio cleanup round 1 — Schedule, Estimates, instant updates
 
 Shawn sent iPhone screenshots: Schedule listed the same client 2–3 times, and the Estimates page looked cramped (tab labels wrapping, a box around every client, a trash can on every row). He also wanted Spa Mambo's "updates land on their own" behavior. Team meeting (Steve + Jony leading); Shawn approved both calls.

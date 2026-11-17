@@ -7,6 +7,7 @@ import { Check, Copy, CreditCard, Download, MessageCircle, Phone, PartyPopper } 
 import { SITE_CONFIG, labelForAddOn, labelForEventType } from '@/lib/config'
 import { computeBalance, lineItemSavings, type EstimatePayment, type CustomItem } from '@/lib/estimateBalance'
 import { getDocumentLabel, isAccepted } from '@/lib/documentLabel'
+import { LOST_REASONS } from '@/lib/lifecycle'
 
 type Estimate = {
   id: string
@@ -24,6 +25,7 @@ type Estimate = {
   deposit_type?: string | null
   deposit_value?: number | null
   accepted_at?: string | null
+  declined?: boolean
   payments: EstimatePayment[]
 }
 
@@ -53,6 +55,13 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
   const [termsMessage, setTermsMessage] = useState('')
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'checking' | 'confirmed' | 'processing' | 'error'>('idle')
   const [paymentStatusMessage, setPaymentStatusMessage] = useState('')
+  // "Not right now" — the client tells Monica why (Shawn, 2026-11-17).
+  const [declineOpen, setDeclineOpen] = useState(false)
+  const [declineReason, setDeclineReason] = useState('')
+  const [declineNote, setDeclineNote] = useState('')
+  const [declineSaving, setDeclineSaving] = useState(false)
+  const [declineError, setDeclineError] = useState('')
+  const [declined, setDeclined] = useState(!!initialEstimate.declined)
   const first = firstName(est.client_name)
   const addOns = parseAddOns(est.add_ons)
   const customItems = est.custom_items ?? []
@@ -136,6 +145,23 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
     sessionStorage.setItem(key, '1')
     logClientActivity('invoice_viewed')
   }, [shouldSuppressTracking, token])
+
+  async function handleDecline() {
+    if (!declineReason) { setDeclineError('Please pick the closest reason.'); return }
+    setDeclineSaving(true)
+    setDeclineError('')
+    const res = await fetch(`/api/q/${token}/decline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: declineReason, note: declineNote }),
+    })
+    setDeclineSaving(false)
+    if (res.ok) { setDeclined(true); setDeclineOpen(false) }
+    else {
+      const data = await res.json().catch(() => null)
+      setDeclineError(data?.error || 'Something went wrong. Please try again.')
+    }
+  }
 
   async function handleAccept() {
     if (!termsAccepted) {
@@ -401,6 +427,51 @@ export default function ClientEstimateView({ estimate: initialEstimate, token }:
             <Check size={18} />
             {accepting ? 'One sec…' : 'Accept This Estimate'}
           </button>
+        )}
+        {!accepted && !hasPaidAnything && !declined && !declineOpen && (
+          <button
+            onClick={() => setDeclineOpen(true)}
+            style={{ display: 'block', margin: '0 auto 16px', background: 'none', border: 'none', color: '#6B7280', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'underline', textUnderlineOffset: '3px', cursor: 'pointer', padding: '6px' }}
+          >
+            Not right now
+          </button>
+        )}
+        {declineOpen && !declined && (
+          <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '18px', marginBottom: '14px' }}>
+            <p style={{ fontSize: '0.98rem', fontWeight: 700, color: '#0D0F0F', margin: '0 0 4px' }}>No problem, {first}.</p>
+            <p style={{ fontSize: '0.84rem', color: '#6B7280', margin: '0 0 14px', lineHeight: 1.5 }}>Mind sharing why? It helps Monica, and she won&apos;t pressure you.</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
+              {LOST_REASONS.map(r => {
+                const on = declineReason === r.id
+                return (
+                  <button key={r.id} onClick={() => { setDeclineReason(r.id); setDeclineError('') }}
+                    style={{ padding: '9px 13px', borderRadius: '999px', border: on ? '1.5px solid #3A8F8F' : '1px solid #D1D5DB', background: on ? 'rgba(91,191,191,0.14)' : 'white', color: on ? '#1F5F5F' : '#374151', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
+                    {r.label}
+                  </button>
+                )
+              })}
+            </div>
+            <textarea
+              value={declineNote}
+              onChange={e => setDeclineNote(e.target.value)}
+              placeholder="Anything else? (optional)"
+              rows={2}
+              style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #D1D5DB', borderRadius: '10px', padding: '10px 12px', fontSize: '16px', color: '#111827', resize: 'vertical', marginBottom: '12px', fontFamily: 'inherit' }}
+            />
+            {declineError && <p style={{ color: '#B91C1C', fontSize: '12px', margin: '0 0 10px' }}>{declineError}</p>}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => setDeclineOpen(false)} style={{ flex: 1, padding: '13px', borderRadius: '12px', border: '1px solid #D1D5DB', background: 'white', color: '#374151', fontWeight: 600, fontSize: '0.9rem', cursor: 'pointer' }}>Back</button>
+              <button onClick={handleDecline} disabled={declineSaving} style={{ flex: 1, padding: '13px', borderRadius: '12px', border: 'none', background: '#0D0F0F', color: 'white', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', opacity: declineSaving ? 0.6 : 1 }}>
+                {declineSaving ? 'Sending…' : 'Send to Monica'}
+              </button>
+            </div>
+          </div>
+        )}
+        {declined && !hasPaidAnything && (
+          <div style={{ background: 'white', borderRadius: '14px', border: '1px solid #E5E7EB', padding: '18px', marginBottom: '14px', textAlign: 'center' }}>
+            <p style={{ fontSize: '0.98rem', fontWeight: 700, color: '#0D0F0F', margin: '0 0 6px' }}>Thanks for letting us know.</p>
+            <p style={{ fontSize: '0.84rem', color: '#6B7280', margin: 0, lineHeight: 1.5 }}>If anything changes, this estimate is still here, and Monica would love to help with your next celebration.</p>
+          </div>
         )}
         {accepted && !balance.isPaidInFull && (
           <button

@@ -13,6 +13,24 @@
 
 ---
 
+## Session: November 17, 2026 (evening) — Client lifecycle Phase A
+**AI:** Claude Code. Team meeting; Shawn approved stages, reasons, nurture-never-ends, 21-day quiet rule. Read-only audit of live Supabase data first.
+- New `src/lib/lifecycle.ts` (stage rules, reasons) + `src/lib/lifecycleData.ts` (loaders: leads with stages, clients from payments).
+- `GET /api/studio/leads` returns stages; `PATCH /api/studio/leads/[id]` accepts lost_reason/lost_note (stamps lost_at/lost_by=monica); new `GET /api/studio/clients`; new public `POST /api/q/[token]/decline`; `/accept` clears a prior decline.
+- Leads page: Active/Not Now, stage rows, reason picker; manual status buttons removed. Contacts page → Clients (computed). `/q` page: "Not right now" + reasons.
+- Migration `20261117120000_lifecycle_lost_reasons.sql` written, **not applied** (Management token 401).
+- Verified: build clean, live-data stage run, Playwright screenshots.
+
+---
+
+## Session: November 17, 2026 (later) — Studio cleanup round 2
+**AI:** Claude Code. Round 1 merged (`5d300fa`). Shawn approved the full-width style for the remaining boxed lists.
+- Flat full-width rows: `studio/leads`, `studio/contacts`, `studio/galleries`, `studio/templates` (+ SwipeRow → confirm), `studio/catalog` (+ SwipeRow → confirm, tap to edit), Home quick actions.
+- Leads use `labelForEventType`; the lead sheet shows a formatted event date.
+- Verified: build clean, Playwright screenshots of all 6 screens, no overflow.
+
+---
+
 ## Session: November 17, 2026 — Studio cleanup round 1
 **AI:** Claude Code. Shawn's iPhone screenshots: Schedule duplicates + cramped Estimates page + wanted Spa Mambo's instant updates. Team meeting (Steve/Jony lead, Craig/Chris/Angela/Marcus); Shawn approved.
 

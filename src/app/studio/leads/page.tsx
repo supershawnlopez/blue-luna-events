@@ -3,8 +3,10 @@
 import { useState, useEffect, useMemo, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { Phone, Mail, MessageSquare, Flame, Sun, Snowflake, X, FileText, ChevronRight, BookUser } from 'lucide-react'
+import { Phone, Mail, MessageSquare, Flame, Sun, Snowflake, X, FileText, ChevronRight, Users } from 'lucide-react'
 import StudioNav from '@/components/studio/StudioNav'
+import { labelForEventType } from '@/lib/config'
+import { LOST_REASONS, lostReasonLabel, STAGE_LABELS, type Stage } from '@/lib/lifecycle'
 
 type Lead = {
   id: string
@@ -25,15 +27,25 @@ type Lead = {
   guest_count: string | null
   looking_for: string[] | null
   inspo_photos: string[] | null
+  // Lifecycle, computed by the API (src/lib/lifecycle.ts)
+  stage: Stage
+  stage_note: string
+  stage_reason: string | null
+  lost_reason?: string | null
+  lost_note?: string | null
+  lost_by?: 'client' | 'monica' | null
 }
 
-const STATUSES: { id: Lead['status']; label: string }[] = [
-  { id: 'new', label: 'New' },
-  { id: 'contacted', label: 'Contacted' },
-  { id: 'quoted', label: 'Quoted' },
-  { id: 'booked', label: 'Booked' },
-  { id: 'completed', label: 'Completed' },
-]
+type LeadView = 'active' | 'not_now'
+const ACTIVE_STAGES: Stage[] = ['new', 'estimate_sent']
+// Same dot language as Schedule/Estimates.
+const STAGE_COLORS: Record<Stage, string> = {
+  new: '#C9A96E',
+  estimate_sent: '#5BBFBF',
+  client: '#8DD4D4',
+  past_client: '#4ade80',
+  not_now: 'rgba(255,255,255,0.4)',
+}
 
 const TEMPS: { id: NonNullable<Lead['temperature']>; label: string; icon: typeof Flame; color: string }[] = [
   { id: 'hot', label: 'Hot', icon: Flame, color: '#EF4444' },
@@ -58,7 +70,10 @@ function StudioLeadsInner() {
   const searchParams = useSearchParams()
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
-  const [statusFilter, setStatusFilter] = useState<Lead['status'] | 'all'>('all')
+  const [view, setView] = useState<LeadView>('active')
+  const [pickingReason, setPickingReason] = useState(false)
+  const [reasonNote, setReasonNote] = useState('')
+  const [reasonError, setReasonError] = useState('')
   const [activeLead, setActiveLead] = useState<Lead | null>(null)
   const [confirmDeleteLead, setConfirmDeleteLead] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -83,18 +98,14 @@ function StudioLeadsInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const filtered = useMemo(
-    () => statusFilter === 'all' ? leads : leads.filter(l => l.status === statusFilter),
-    [leads, statusFilter]
-  )
+  // The Leads page only shows people Monica should act on. Clients live on
+  // the Clients page; everyone else is under "Not Now" and keeps getting
+  // nurture emails — nobody is ever lost (DECISIONS.md "CLIENT LIFECYCLE").
+  const activeLeads = useMemo(() => leads.filter(l => ACTIVE_STAGES.includes(l.stage)), [leads])
+  const notNowLeads = useMemo(() => leads.filter(l => l.stage === 'not_now'), [leads])
+  const filtered = view === 'active' ? activeLeads : notNowLeads
 
-  const counts = useMemo(() => {
-    const c: Record<string, number> = { all: leads.length }
-    for (const s of STATUSES) c[s.id] = leads.filter(l => l.status === s.id).length
-    return c
-  }, [leads])
-
-  async function updateLead(id: string, patch: Partial<Pick<Lead, 'status' | 'temperature'>>) {
+  async function updateLead(id: string, patch: Partial<Pick<Lead, 'temperature'>>) {
     setLeads(prev => prev.map(l => l.id === id ? { ...l, ...patch } : l))
     setActiveLead(prev => prev && prev.id === id ? { ...prev, ...patch } : prev)
     await fetch(`/api/studio/leads/${id}`, {
@@ -102,6 +113,36 @@ function StudioLeadsInner() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(patch),
     })
+  }
+
+  // Monica records why a lead isn't booking (or clears it: reason = null).
+  // The stage is recomputed by the server, so reload from it afterwards.
+  async function saveReason(id: string, reason: string | null) {
+    setReasonError('')
+    const res = await fetch(`/api/studio/leads/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lost_reason: reason, lost_note: reason ? reasonNote.trim() || null : null }),
+    })
+    if (!res.ok) {
+      setReasonError("Couldn't save that. Please try again.")
+      return
+    }
+    const fresh: Lead[] = await fetch('/api/studio/leads').then(r => r.ok ? r.json() : [])
+    if (Array.isArray(fresh)) {
+      setLeads(fresh)
+      setActiveLead(fresh.find(l => l.id === id) ?? null)
+    }
+    setPickingReason(false)
+    setReasonNote('')
+  }
+
+  function closeSheet() {
+    setActiveLead(null)
+    setConfirmDeleteLead(false)
+    setPickingReason(false)
+    setReasonNote('')
+    setReasonError('')
   }
 
   async function deleteLead(id: string) {
@@ -127,54 +168,68 @@ function StudioLeadsInner() {
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '120px' }}>
 
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 24px) 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 24px) 20px 8px' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <p style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', color: '#5BBFBF', textTransform: 'uppercase', margin: '0 0 4px' }}>Blue Luna Studio</p>
             <h1 style={{ fontSize: '1.3rem', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.01em' }}>Leads</h1>
           </div>
-          <Link href="/studio/contacts" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '9px 13px', color: 'rgba(255,255,255,0.6)', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>
-            <BookUser size={14} /> Contacts
+          <Link href="/studio/contacts" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '9px 13px', color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none' }}>
+            <Users size={14} /> Clients
           </Link>
         </div>
       </div>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 20px 0' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '12px 20px 0' }}>
 
-        {/* Status filter pills */}
-        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '16px', scrollbarWidth: 'none' }}>
-          {[{ id: 'all' as const, label: 'All' }, ...STATUSES].map(s => (
-            <button key={s.id} onClick={() => setStatusFilter(s.id)}
-              style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '7px 14px', borderRadius: '999px', border: statusFilter === s.id ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: statusFilter === s.id ? 'rgba(91,191,191,0.12)' : 'transparent', color: statusFilter === s.id ? '#5BBFBF' : 'rgba(255,255,255,0.4)', fontSize: '0.76rem', fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-              {s.label} ({counts[s.id] ?? 0})
-            </button>
-          ))}
+        {/* Active / Not Now — same segmented control as Estimates */}
+        <div role="tablist" style={{ display: 'flex', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', padding: '3px', marginBottom: '8px' }}>
+          {([
+            { id: 'active', label: 'Active', count: activeLeads.length },
+            { id: 'not_now', label: 'Not Now', count: notNowLeads.length },
+          ] as const).map(t => {
+            const on = view === t.id
+            return (
+              <button key={t.id} role="tab" aria-selected={on} onClick={() => setView(t.id)}
+                style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '9px 6px', borderRadius: '9px', border: 'none', cursor: 'pointer', background: on ? 'rgba(255,255,255,0.12)' : 'transparent', color: on ? 'white' : 'rgba(255,255,255,0.5)', fontSize: '0.84rem', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                {t.label}
+                <span style={{ minWidth: '20px', padding: '1px 6px', borderRadius: '99px', fontSize: '0.7rem', fontWeight: 700, background: on ? 'rgba(91,191,191,0.22)' : 'rgba(255,255,255,0.08)', color: on ? '#8DD4D4' : 'rgba(255,255,255,0.45)' }}>{t.count}</span>
+              </button>
+            )
+          })}
         </div>
+        <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', margin: '0 2px 8px' }}>
+          {view === 'active'
+            ? 'New inquiries and open estimates. After 21 quiet days they move to Not Now.'
+            : 'Not booking right now — they still get the occasional email so they remember Blue Luna.'}
+        </p>
 
         {loading ? (
           <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.2)', padding: '60px 0', fontSize: '0.9rem' }}>Loading…</p>
         ) : filtered.length === 0 ? (
-          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', padding: '60px 0', fontSize: '0.88rem' }}>No leads here yet.</p>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', padding: '60px 0', fontSize: '0.88rem' }}>{view === 'active' ? "You're all caught up — no open leads." : 'Nobody here yet.'}</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {filtered.map(l => {
+          // Full-width rows, no boxes (DESIGN_DECISIONS "STUDIO LISTS", 2026-11-17).
+          // No swipe-delete here on purpose: deleting a lead is permanent (no
+          // Trash), so it stays behind the confirm inside the lead's sheet.
+          <div style={{ margin: '0 -20px' }}>
+            {filtered.map((l, i) => {
               const temp = TEMPS.find(t => t.id === l.temperature)
               return (
                 <button key={l.id} onClick={() => setActiveLead(l)}
-                  style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '14px 16px', cursor: 'pointer', textAlign: 'left' }}>
-                  <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: temp ? `${temp.color}1A` : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {temp ? <temp.icon size={16} color={temp.color} /> : <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', fontWeight: 700 }}>?</span>}
+                  style={{ display: 'block', width: '100%', background: 'none', border: 'none', padding: '0 20px', cursor: 'pointer', textAlign: 'left' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '15px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '0.98rem', fontWeight: 600, color: 'white', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.name}</p>
+                      <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                        {temp && view === 'active' && <temp.icon size={13} color={temp.color} style={{ flexShrink: 0 }} />}
+                        <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: STAGE_COLORS[l.stage], flexShrink: 0 }} />
+                        <span style={{ color: STAGE_COLORS[l.stage], fontWeight: 600, whiteSpace: 'nowrap' }}>{view === 'active' ? STAGE_LABELS[l.stage] : l.stage_note}</span>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>· {labelForEventType(l.event_type) || 'Event'} · {daysAgo(l.created_at)}</span>
+                      </p>
+                    </div>
+                    <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '0.88rem', fontWeight: 600, color: 'white', margin: '0 0 2px' }}>{l.name}</p>
-                    <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>
-                      {l.event_type || 'Event'} · {daysAgo(l.created_at)}
-                    </p>
-                  </div>
-                  <span style={{ fontSize: '0.68rem', fontWeight: 700, color: '#5BBFBF', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0 }}>
-                    {STATUSES.find(s => s.id === l.status)?.label ?? l.status}
-                  </span>
-                  <ChevronRight size={16} color="rgba(255,255,255,0.2)" style={{ flexShrink: 0 }} />
                 </button>
               )
             })}
@@ -185,14 +240,14 @@ function StudioLeadsInner() {
       {/* Lead detail sheet */}
       {activeLead && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => { setActiveLead(null); setConfirmDeleteLead(false) }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={closeSheet} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxHeight: '88vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
                 <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>{activeLead.name}</p>
-                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{activeLead.event_type || 'Event'}{activeLead.event_date ? ` · ${activeLead.event_date}` : ''}</p>
+                <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.4)', margin: 0 }}>{labelForEventType(activeLead.event_type) || 'Event'}{activeLead.event_date ? ` · ${new Date(activeLead.event_date.slice(0, 10) + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}` : ''}</p>
               </div>
-              <button onClick={() => { setActiveLead(null); setConfirmDeleteLead(false) }} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex' }}>
+              <button onClick={closeSheet} style={{ background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '8px', padding: '8px', cursor: 'pointer', display: 'flex' }}>
                 <X size={16} color="rgba(255,255,255,0.5)" />
               </button>
             </div>
@@ -281,19 +336,64 @@ function StudioLeadsInner() {
               })}
             </div>
 
-            {/* Status */}
-            <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Status</p>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '24px' }}>
-              {STATUSES.map(s => {
-                const active = activeLead.status === s.id
-                return (
-                  <button key={s.id} onClick={() => updateLead(activeLead.id, { status: s.id })}
-                    style={{ padding: '8px 14px', borderRadius: '999px', border: active ? '1.5px solid #5BBFBF' : '1px solid rgba(255,255,255,0.1)', background: active ? 'rgba(91,191,191,0.12)' : 'transparent', color: active ? '#5BBFBF' : 'rgba(255,255,255,0.4)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer' }}>
-                    {s.label}
-                  </button>
-                )
-              })}
+            {/* Where they stand — computed stage, plus the "why" when they're
+                not booking. Monica can record a reason she heard on the phone;
+                a reason the client picked on their estimate shows here too. */}
+            <p style={{ fontSize: '0.7rem', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Where They Stand</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: STAGE_COLORS[activeLead.stage] }} />
+              <span style={{ fontSize: '0.92rem', fontWeight: 700, color: 'white' }}>{STAGE_LABELS[activeLead.stage]}</span>
+              <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.45)' }}>· {activeLead.stage_note}</span>
             </div>
+            {activeLead.lost_reason && (
+              <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>
+                Reason: <strong style={{ color: 'white' }}>{lostReasonLabel(activeLead.lost_reason)}</strong>
+                {activeLead.lost_by === 'client' ? ' (they picked this)' : ' (you added this)'}
+                {activeLead.lost_note ? ` — "${activeLead.lost_note}"` : ''}
+              </p>
+            )}
+
+            {(activeLead.stage === 'new' || activeLead.stage === 'estimate_sent' || activeLead.stage === 'not_now') && !pickingReason && (
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '8px 0 24px' }}>
+                {!activeLead.lost_reason && (
+                  <button onClick={() => setPickingReason(true)}
+                    style={{ padding: '9px 14px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.14)', background: 'transparent', color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+                    {activeLead.stage === 'not_now' ? 'Add why they didn\u2019t book' : 'Not booking? Add a reason'}
+                  </button>
+                )}
+                {activeLead.lost_reason && activeLead.lost_by !== 'client' && (
+                  <button onClick={() => saveReason(activeLead.id, null)}
+                    style={{ padding: '9px 14px', borderRadius: '999px', border: '1px solid rgba(91,191,191,0.35)', background: 'rgba(91,191,191,0.08)', color: '#5BBFBF', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+                    Clear reason
+                  </button>
+                )}
+              </div>
+            )}
+
+            {pickingReason && (
+              <div style={{ margin: '10px 0 24px', padding: '14px', borderRadius: '14px', background: 'rgba(255,255,255,0.04)' }}>
+                <p style={{ fontSize: '0.82rem', color: 'white', fontWeight: 600, margin: '0 0 10px' }}>Why aren&apos;t they booking?</p>
+                <input
+                  value={reasonNote}
+                  onChange={e => setReasonNote(e.target.value)}
+                  placeholder="Optional note, e.g. what they said on the phone"
+                  style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '11px 12px', color: 'white', fontSize: '16px', boxSizing: 'border-box', marginBottom: '10px' }}
+                />
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {LOST_REASONS.map(r => (
+                    <button key={r.id} onClick={() => saveReason(activeLead.id, r.id)}
+                      style={{ padding: '9px 13px', borderRadius: '999px', border: '1px solid rgba(255,255,255,0.14)', background: 'transparent', color: 'rgba(255,255,255,0.8)', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}>
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+                {reasonError && <p style={{ color: '#f87171', fontSize: '0.76rem', margin: '10px 0 0' }}>{reasonError}</p>}
+                <button onClick={() => { setPickingReason(false); setReasonNote(''); setReasonError('') }}
+                  style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer', padding: '10px 0 0' }}>
+                  Cancel
+                </button>
+              </div>
+            )}
 
             <Link href={estimateHref(activeLead)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: '#5BBFBF', color: '#0D0F0F', borderRadius: '12px', padding: '15px', fontWeight: 700, fontSize: '0.9rem', textDecoration: 'none', marginBottom: '12px' }}>
               <FileText size={16} /> Create Estimate

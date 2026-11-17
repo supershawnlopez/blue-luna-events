@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, Plus, Trash2, Pencil, X, Check, Tag } from 'lucide-react'
+import { ChevronLeft, Plus, X, Check, Tag } from 'lucide-react'
+import SwipeRow from '@/components/studio/SwipeRow'
 import { CATALOG_UNITS } from '@/lib/config'
 
 type CatalogItem = {
@@ -29,6 +30,7 @@ export default function StudioCatalog() {
   const [form, setForm] = useState(EMPTY)
   const [saving, setSaving] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [openRowId, setOpenRowId] = useState<string | null>(null)
 
   function load() {
     setLoading(true)
@@ -97,7 +99,7 @@ export default function StudioCatalog() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0D0F0F', paddingBottom: '60px' }}>
-      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 20px) 24px 20px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ padding: 'calc(env(safe-area-inset-top, 44px) + 20px) 20px 8px' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Link href="/studio/estimates" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '8px', display: 'flex', color: 'rgba(255,255,255,0.6)', textDecoration: 'none' }}>
@@ -116,7 +118,7 @@ export default function StudioCatalog() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '20px 24px 0' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '12px 20px 0' }}>
         <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.4)', marginBottom: '20px', lineHeight: 1.6 }}>
           Items you add here show up when you&apos;re building an estimate — pick one and it fills in the name, description, and price for you. Editing or removing something here never changes an estimate you already sent.
         </p>
@@ -198,26 +200,28 @@ export default function StudioCatalog() {
             <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.2)' }}>Add your first priced item to start building your price list</p>
           </div>
         ) : (
-          <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', overflow: 'hidden' }}>
+          // Full-width rows (DESIGN_DECISIONS "STUDIO LISTS"): tap a row to
+          // edit, swipe left to remove (still asks first — removal is permanent).
+          <div style={{ margin: '0 -20px' }}>
             {items.map((item, i) => (
-              <div key={item.id} style={{ padding: '14px 18px', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+              <SwipeRow
+                key={item.id}
+                actionLabel="Remove"
+                onAction={() => { setOpenRowId(null); setConfirmDeleteId(item.id) }}
+                open={openRowId === item.id}
+                onOpenChange={o => setOpenRowId(o ? item.id : null)}
+              >
+              <div style={{ padding: '0 20px' }}>
+              <div style={{ padding: '14px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
+                <button onClick={() => openEdit(item)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', width: '100%', background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>
                   <div style={{ minWidth: 0 }}>
-                    <p style={{ fontSize: '0.9rem', fontWeight: 600, color: 'white', margin: 0 }}>{item.label}</p>
-                    {item.description && <p style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', margin: '2px 0 0' }}>{item.description}</p>}
+                    <p style={{ fontSize: '0.98rem', fontWeight: 600, color: 'white', margin: 0 }}>{item.label}</p>
+                    {item.description && <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: '3px 0 0' }}>{item.description}</p>}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                    <p style={{ fontSize: '0.9rem', fontWeight: 700, color: '#5BBFBF', margin: 0, whiteSpace: 'nowrap' }}>
-                      {fmt(item.price)}{item.pricing_type === 'per_unit' ? `/${item.unit}` : ''}
-                    </p>
-                    <button onClick={() => openEdit(item)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', padding: '4px' }}>
-                      <Pencil size={14} />
-                    </button>
-                    <button onClick={() => setConfirmDeleteId(item.id)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.25)', cursor: 'pointer', padding: '4px' }}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
+                  <p style={{ fontSize: '0.95rem', fontWeight: 700, color: 'white', margin: 0, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                    {fmt(item.price)}{item.pricing_type === 'per_unit' ? <span style={{ fontWeight: 500, color: 'rgba(255,255,255,0.45)' }}>/{item.unit}</span> : ''}
+                  </p>
+                </button>
                 {confirmDeleteId === item.id && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px', padding: '10px', background: 'rgba(239,68,68,0.08)', borderRadius: '8px' }}>
                     <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', margin: 0, flex: 1 }}>Remove this from your price list?</p>
@@ -226,6 +230,8 @@ export default function StudioCatalog() {
                   </div>
                 )}
               </div>
+              </div>
+              </SwipeRow>
             ))}
           </div>
         )}

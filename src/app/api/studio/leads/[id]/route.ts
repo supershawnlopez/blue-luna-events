@@ -1,11 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
+import { LOST_REASONS } from '@/lib/lifecycle'
 
-const ALLOWED = ['status', 'temperature']
+const ALLOWED = ['status', 'temperature', 'lost_reason', 'lost_note']
+const REASON_IDS: string[] = LOST_REASONS.map(r => r.id)
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const body = await req.json()
-  const update = Object.fromEntries(Object.entries(body).filter(([k]) => ALLOWED.includes(k)))
+  const update: Record<string, unknown> = Object.fromEntries(Object.entries(body).filter(([k]) => ALLOWED.includes(k)))
+  // Monica recording why a lead isn't booking (or clearing it to move them
+  // back to Active). Stamped server-side so who/when can't be faked.
+  if ('lost_reason' in update) {
+    const reason = update.lost_reason
+    if (reason !== null && !REASON_IDS.includes(String(reason))) {
+      return NextResponse.json({ error: 'Unknown reason' }, { status: 400 })
+    }
+    update.lost_at = reason ? new Date().toISOString() : null
+    update.lost_by = reason ? 'monica' : null
+    if (!reason) update.lost_note = null
+  }
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
   }
