@@ -20,6 +20,14 @@ export async function POST(req: NextRequest) {
   ])
 
   if (!template) return NextResponse.json({ error: 'Template not found' }, { status: 404 })
+  if (template.status === 'draft') {
+    return NextResponse.json({ error: 'This email is still a draft. Approve it first.' }, { status: 400 })
+  }
+  // Starter emails use smart fill-ins ({{honoree}}, {{date}}…) that only the
+  // automatic sender knows how to fill — never send them by hand half-empty.
+  if (/\{\{\s*(?!name\s*\}\})[a-z_]+\s*\}\}/i.test(`${template.subject} ${template.body}`)) {
+    return NextResponse.json({ error: 'This email sends automatically at the right time, so it can’t be sent by hand.' }, { status: 400 })
+  }
 
   const host = req.headers.get('host') ?? 'bluelunaevents.com'
   const protocol = host.includes('localhost') ? 'http' : 'https'

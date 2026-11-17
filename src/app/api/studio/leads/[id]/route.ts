@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
 import { LOST_REASONS } from '@/lib/lifecycle'
 
-const ALLOWED = ['status', 'temperature', 'lost_reason', 'lost_note']
+const ALLOWED = ['status', 'temperature', 'lost_reason', 'lost_note', 'honoree_relation', 'honoree_name', 'honoree_milestone', 'honoree_date']
 const REASON_IDS: string[] = LOST_REASONS.map(r => r.id)
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -10,6 +10,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   const update: Record<string, unknown> = Object.fromEntries(Object.entries(body).filter(([k]) => ALLOWED.includes(k)))
   // Monica recording why a lead isn't booking (or clearing it to move them
   // back to Active). Stamped server-side so who/when can't be faked.
+  // Anything Monica saves about who it's for counts as confirmed (no longer
+  // just our guess from their notes).
+  if (['honoree_relation', 'honoree_name', 'honoree_milestone', 'honoree_date'].some(k => k in update)) {
+    for (const k of ['honoree_relation', 'honoree_name', 'honoree_milestone', 'honoree_date']) {
+      if (k in update && (update[k] === '' || update[k] === undefined)) update[k] = null
+    }
+    update.honoree_confirmed = true
+  }
   if ('lost_reason' in update) {
     const reason = update.lost_reason
     if (reason !== null && !REASON_IDS.includes(String(reason))) {

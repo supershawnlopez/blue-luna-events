@@ -53,6 +53,12 @@ export async function submitLead(data: Lead) {
     utm_campaign: data.utm_campaign ?? null,
     utm_content: data.utm_content ?? null,
     utm_term: data.utm_term ?? null,
+    // Who the celebration is for — typed by the client, so it's confirmed.
+    honoree_relation: data.honoree_relation ?? null,
+    honoree_name: data.honoree_name ?? null,
+    honoree_milestone: data.honoree_milestone ?? null,
+    honoree_date: data.honoree_date ?? null,
+    honoree_confirmed: !!(data.honoree_relation || data.honoree_name || data.honoree_milestone || data.honoree_date),
   }
 
   let { data: inserted, error } = await supabase

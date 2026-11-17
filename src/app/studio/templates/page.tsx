@@ -5,7 +5,25 @@ import Link from 'next/link'
 import { ChevronLeft, Plus, Send, Copy, X, Check } from 'lucide-react'
 import SwipeRow from '@/components/studio/SwipeRow'
 
-type Template = { id: string; name: string; subject: string; body: string; updated_at: string }
+type Template = {
+  id: string; name: string; subject: string; body: string; updated_at: string
+  // Starter emails (src/lib/starterTemplates.ts) carry these:
+  slug?: string | null
+  category?: 'not_booked' | 'client' | 'stay_in_touch' | null
+  send_when?: string | null
+  status?: 'draft' | 'approved' | 'off'
+  sort_order?: number | null
+}
+
+// Any fill-in besides {{name}} means the automatic sender handles it.
+const isAutomatic = (t: Template) => /\{\{\s*(?!name\s*\}\})[a-z_]+\s*\}\}/i.test(`${t.subject} ${t.body}`) || !!t.slug
+
+const SECTIONS: { id: Template['category'] | 'own'; title: string; note: string }[] = [
+  { id: 'not_booked', title: "Haven't booked yet", note: 'Gentle follow-ups after an estimate.' },
+  { id: 'client', title: 'Clients', note: 'From the deposit to the thank-you.' },
+  { id: 'stay_in_touch', title: 'Staying in touch', note: 'Birthdays, first birthdays, anniversaries and seasons, so they remember Blue Luna.' },
+  { id: 'own', title: 'Your own emails', note: 'Send these to anyone, anytime.' },
+]
 type Contact = { id: string; name: string; email: string | null; unsubscribed: boolean }
 
 const EMPTY = { name: '', subject: '', body: '' }
@@ -20,6 +38,7 @@ export default function StudioTemplates() {
   const [saving, setSaving] = useState(false)
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [openRowId, setOpenRowId] = useState<string | null>(null)
+  const [statusSaving, setStatusSaving] = useState(false)
   const [sendTemplate, setSendTemplate] = useState<Template | null>(null)
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set())
   const [sending, setSending] = useState(false)
@@ -54,6 +73,22 @@ export default function StudioTemplates() {
   function openEdit(t: Template) {
     setForm({ name: t.name, subject: t.subject, body: t.body })
     setEditing(t)
+  }
+
+  // Approve a draft (or turn an approved one off / back on). Nothing in
+  // Draft or Off is ever sent.
+  async function setStatus(t: Template, status: 'approved' | 'off' | 'draft') {
+    setStatusSaving(true)
+    const res = await fetch(`/api/studio/templates/${t.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...(editing && editing.id === t.id ? form : {}), status }),
+    })
+    setStatusSaving(false)
+    if (res.ok) {
+      setEditing(null)
+      load()
+    }
   }
 
   async function handleSave() {
@@ -152,35 +187,60 @@ export default function StudioTemplates() {
         ) : templates.length === 0 ? (
           <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', padding: '60px 0', fontSize: '0.88rem' }}>No templates yet — create one to start sending campaigns.</p>
         ) : (
-          // Full-width rows (DESIGN_DECISIONS "STUDIO LISTS"). Tap the name to
-          // edit, Send is one tap, swipe left to delete — deleting a template is
-          // permanent, so the swipe opens the existing confirm, not a straight delete.
-          <div style={{ margin: '0 -20px' }}>
-            {templates.map((t, i) => (
-              <SwipeRow
-                key={t.id}
-                actionLabel="Delete"
-                onAction={() => { setOpenRowId(null); setConfirmDeleteId(t.id) }}
-                open={openRowId === t.id}
-                onOpenChange={o => setOpenRowId(o ? t.id : null)}
-              >
-                <div style={{ padding: '0 20px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
-                    <button onClick={() => openEdit(t)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>
-                      <p style={{ fontSize: '0.98rem', fontWeight: 600, color: 'white', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</p>
-                      <p style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.subject}</p>
-                    </button>
-                    <button onClick={() => handleDuplicate(t)} aria-label="Duplicate template" style={{ flexShrink: 0, background: 'none', border: 'none', padding: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex' }}>
-                      <Copy size={16} />
-                    </button>
-                    <button onClick={() => openSend(t)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(91,191,191,0.12)', border: 'none', borderRadius: '99px', padding: '8px 14px', color: '#5BBFBF', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
-                      <Send size={13} /> Send
-                    </button>
+          // Grouped by when each email goes out. Full-width rows
+          // (DESIGN_DECISIONS "STUDIO LISTS"); swipe left to delete (asks first).
+          <>
+            {SECTIONS.map(section => {
+              const list = templates
+                .filter(t => (section.id === 'own' ? !t.category : t.category === section.id))
+                .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999))
+              if (!list.length) return null
+              return (
+                <div key={section.id ?? 'own'} style={{ marginBottom: '22px' }}>
+                  <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', margin: '0 0 2px' }}>{section.title}</p>
+                  <p style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.3)', margin: '0 0 4px' }}>{section.note}</p>
+                  <div style={{ margin: '0 -20px' }}>
+                    {list.map((t, i) => {
+                      const auto = isAutomatic(t)
+                      return (
+                        <SwipeRow
+                          key={t.id}
+                          actionLabel="Delete"
+                          onAction={() => { setOpenRowId(null); setConfirmDeleteId(t.id) }}
+                          open={openRowId === t.id}
+                          onOpenChange={o => setOpenRowId(o ? t.id : null)}
+                        >
+                          <div style={{ padding: '0 20px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 0', borderTop: i === 0 ? 'none' : '1px solid rgba(255,255,255,0.07)' }}>
+                              <button onClick={() => openEdit(t)} style={{ flex: 1, minWidth: 0, background: 'none', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer' }}>
+                                <p style={{ fontSize: '0.98rem', fontWeight: 600, color: 'white', margin: '0 0 4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</p>
+                                <p style={{ fontSize: '0.76rem', color: 'rgba(255,255,255,0.45)', margin: 0, display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
+                                  {t.status === 'draft' && <span style={{ color: '#C9A96E', fontWeight: 700, flexShrink: 0 }}>Draft ·</span>}
+                                  {t.status === 'off' && <span style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 700, flexShrink: 0 }}>Off ·</span>}
+                                  {t.status === 'approved' && auto && <span style={{ color: '#5BBFBF', fontWeight: 700, flexShrink: 0 }}>On ·</span>}
+                                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.send_when || t.subject}</span>
+                                </p>
+                              </button>
+                              {!auto && (
+                                <>
+                                  <button onClick={() => handleDuplicate(t)} aria-label="Duplicate template" style={{ flexShrink: 0, background: 'none', border: 'none', padding: '8px', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex' }}>
+                                    <Copy size={16} />
+                                  </button>
+                                  <button onClick={() => openSend(t)} style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(91,191,191,0.12)', border: 'none', borderRadius: '99px', padding: '8px 14px', color: '#5BBFBF', fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer' }}>
+                                    <Send size={13} /> Send
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </SwipeRow>
+                      )
+                    })}
                   </div>
                 </div>
-              </SwipeRow>
-            ))}
-          </div>
+              )
+            })}
+          </>
         )}
       </div>
 
@@ -189,7 +249,19 @@ export default function StudioTemplates() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 60 }}>
           <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.8)' }} onClick={() => { setCreating(false); setEditing(null) }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: '#161616', borderRadius: '24px 24px 0 0', padding: '20px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxHeight: '88vh', overflowY: 'auto' }}>
-            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '0 0 20px' }}>{editing ? 'Edit Template' : 'New Template'}</p>
+            <p style={{ fontSize: '1.1rem', fontWeight: 700, color: 'white', margin: '0 0 6px' }}>{editing ? editing.name : 'New Template'}</p>
+            {editing?.send_when && (
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', margin: '0 0 6px' }}>Sends: {editing.send_when}</p>
+            )}
+            {editing?.status === 'draft' && (
+              <p style={{ fontSize: '0.78rem', color: '#C9A96E', margin: '0 0 6px' }}>Draft. Read it over, change anything, then tap Approve. It never sends while it&apos;s a draft.</p>
+            )}
+            {editing && isAutomatic(editing) && (
+              <p style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)', margin: '0 0 16px', lineHeight: 1.5 }}>
+                Words in {'{{ }}'} fill in by themselves: {'{{name}}'} their first name, {'{{honoree}}'} who it was for, {'{{event}}'} the party, {'{{date}}'} the date, {'{{link}}'} their estimate. If we don&apos;t know who it was for, it uses general wording.
+              </p>
+            )}
+            {!editing?.send_when && <div style={{ height: '14px' }} />}
 
             <label style={{ fontSize: '0.72rem', fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Template Name (just for you)</label>
             <input placeholder="Spring Promo 2027" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
@@ -207,7 +279,9 @@ export default function StudioTemplates() {
               rows={6}
               style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '12px 14px', color: 'white', fontSize: '0.85rem', boxSizing: 'border-box', marginBottom: '8px', resize: 'vertical', fontFamily: 'inherit', lineHeight: 1.5 }}
             />
-            <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', margin: '0 0 20px' }}>Use <code>{'{{name}}'}</code> anywhere you want the client's first name.</p>
+            {!(editing && isAutomatic(editing)) && (
+              <p style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', margin: '0 0 20px' }}>Use <code>{'{{name}}'}</code> anywhere you want the client's first name.</p>
+            )}
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button onClick={() => { setCreating(false); setEditing(null) }} style={{ flex: 1, padding: '15px 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'white', fontSize: '0.9rem', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
@@ -215,6 +289,21 @@ export default function StudioTemplates() {
                 {saving ? 'Saving…' : 'Save Template'}
               </button>
             </div>
+            {editing?.slug && (
+              <div style={{ marginTop: '12px' }}>
+                {editing.status !== 'approved' ? (
+                  <button onClick={() => setStatus(editing, 'approved')} disabled={statusSaving}
+                    style={{ width: '100%', padding: '15px 0', borderRadius: '12px', border: 'none', background: '#C9A96E', color: '#0D0F0F', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', opacity: statusSaving ? 0.6 : 1 }}>
+                    {statusSaving ? 'Saving…' : editing.status === 'off' ? 'Turn back on' : 'Looks good — Approve'}
+                  </button>
+                ) : (
+                  <button onClick={() => setStatus(editing, 'off')} disabled={statusSaving}
+                    style={{ width: '100%', padding: '13px 0', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
+                    Turn this email off
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}

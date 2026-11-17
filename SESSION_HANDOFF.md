@@ -2,6 +2,29 @@
 ### Start here after `brief.md`. Keep this short, current, and plain-English.
 *Last updated: November 17, 2026 — Claude Code*
 
+## 2026-11-17 (night): Smart "who it's for" + 15 follow-up emails in Monica's voice (drafts)
+
+Phase A (lifecycle) and round 2 are **live** (PR #2 merged, `204a417`). Shawn then saw the Email Templates screen was empty and asked for a smart system: the party may have been for a niece, a grandbaby, a daughter's baby shower, so later emails should know who to celebrate. Team meeting; Shawn: "Yes to everything. Approved."
+
+**Built:**
+- **Database** (applied live by Claude, `20261117180000_celebration_details_and_template_drafts.sql`): `leads.honoree_relation / honoree_name / honoree_milestone / honoree_date / honoree_confirmed`; `email_templates.slug / category / send_when / status (draft|approved|off) / sort_order`.
+- **Inquiry form**: after "What are you celebrating?", an optional **"Who are we celebrating?"** (Me / My child / My grandchild / Another family member / A friend), their first name, plus "Turning __" for birthdays or "Baby's due date" for baby showers. Corporate is set to "company" automatically.
+- **Studio → lead sheet → "Who It's For"** card: shows who/milestone/date; a gold "Our guess from what they wrote. Is it right?" line with **Looks right** / **Edit**. Anything Monica saves counts as confirmed.
+- **Guesses prefilled on 13 live leads, only from their own words**, all unconfirmed (e.g. Lauren "Turning 60", Katie "Sweet 16", Gus "70th wedding anniversary", Donna "Baby boy on the way", Sedra "Nikah" + wedding date, U of A/Daniella/Ari/Nereida = company). No relationship was guessed.
+- **15 starter emails in Monica's voice** (`src/lib/starterTemplates.ts`), loaded as **Drafts**, grouped on the Templates screen: Haven't booked yet (4), Clients (4), Staying in touch (7: birthday coming up, baby's first birthday, anniversary, corporate holiday season, planning another celebration, graduation season, New Year). Each shows when it sends. Smart fill-ins: `{{name}} {{honoree}} {{honoree_s}} {{milestone}} {{event}} {{date}} {{link}} {{review_link}} {{share_link}} {{reason_buttons}}`. Unknown who-it's-for → general wording, never a guess.
+- **Safety**: drafts can't be sent (API refuses); smart emails can't be sent by hand half-empty (no Send button, API refuses). Editor has **Looks good — Approve** / **Turn this email off**.
+
+**Not built yet (Phase B):** the automatic sender itself (daily job that picks who gets which approved email, fills the blanks, capitalizes, 1 email/week cap, stops on book/accept/decline/unsubscribe, Monica Pause). Nothing sends automatically today. Replies already go to monica@bluelunaevents.com.
+
+Verified: `npm run build` clean; Playwright iPhone screenshots of Templates (grouped drafts), the editor (Approve), the lead "Who It's For" card + editor, and the inquiry form section; no overflow.
+
+**Shawn, test after deploy:**
+1. Studio → Clients → Email Templates: 15 drafts in 3 groups. Open one, read it, tap **Looks good — Approve** (it switches to "On").
+2. Studio → Leads → Not Now → Lauren Munsey → "Who It's For" shows "Turning 60" with "Is it right?" → tap **Edit**, add a name/relationship if you know it → Save.
+3. `/event-questionnaire` → tap Baby Shower → "Who are we celebrating?" appears with Mom-to-be + Baby's due date.
+
+---
+
 ## 2026-11-17 (evening): Client lifecycle — Phase A built (not merged)
 
 Shawn: the Leads list "goes back 105 days... when does it stop?" Contacts should really be Clients (people who paid), every "no" needs a reason, and nurture never ends. Team meeting held; Shawn approved the plan and the **21-day** "gone quiet" rule.

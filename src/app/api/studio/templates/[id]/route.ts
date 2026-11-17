@@ -3,10 +3,13 @@ import { serverClient } from '@/lib/supabase'
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const body = await req.json()
-  const allowed = ['name', 'subject', 'body']
+  const allowed = ['name', 'subject', 'body', 'status']
   const update = Object.fromEntries(Object.entries(body).filter(([k]) => allowed.includes(k)))
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+  }
+  if ('status' in update && !['draft', 'approved', 'off'].includes(String(update.status))) {
+    return NextResponse.json({ error: 'Unknown status' }, { status: 400 })
   }
   update.updated_at = new Date().toISOString()
 

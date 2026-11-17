@@ -69,6 +69,7 @@ Exit criteria for Phase 1:
 
 **NOW-ish — Client lifecycle (approved 2026-11-17, DECISIONS.md "CLIENT LIFECYCLE"):**
 - Phase A built on `claude/bold-maxwell-b3ppgc` (stages, Leads Active/Not Now, Clients, reasons, client "Not right now"). Migration applied 2026-11-17 (plus the 3 August ones). Waiting on Shawn's "push".
+- DONE 2026-11-17 night: who-it's-for fields (form + Studio card + 13 unconfirmed guesses) and 15 starter emails in Monica's voice as drafts. Shawn + Monica: read and approve the drafts in Studio.
 - Phase B: drip engine (daily cron, send log, 1 email/week cap, one sequence at a time, unsubscribe) + sequences: New→Monica nudge (2 days), Estimate Sent (day 3, day 7), Client journey (thank you, 2 weeks out, day-after review ask). Email via Resend; Twilio paused.
 - Phase C: seasonal nurture (4–6/yr), birthday anniversary + baby shower → first birthday, corporate quarterly/holiday check-in, referral "share this link", "what changed?" email with one-tap reasons, Growth report (inquiries → estimates → bookings, lost-reason chart).
 - Campaign blasts still send to the `contacts` table only. Phase B moves the email audience to everyone (leads + clients) minus unsubscribes.

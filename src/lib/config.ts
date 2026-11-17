@@ -417,6 +417,22 @@ export const INQUIRY_EVENT_TYPES = [
   { id: 'other',      label: 'Other',          emoji: '🎉' },
 ] as const
 
+// "Who are we celebrating?" (Shawn, 2026-11-17). Drives follow-up emails
+// like "Lily's 17th is coming up" or "your grandson's first birthday".
+export const HONOREE_RELATIONS = [
+  { id: 'self',       label: 'Me' },
+  { id: 'child',      label: 'My child' },
+  { id: 'grandchild', label: 'My grandchild' },
+  { id: 'family',     label: 'Another family member' },
+  { id: 'friend',     label: 'A friend' },
+  { id: 'company',    label: 'My company or group' },
+] as const
+
+export function labelForRelation(id?: string | null): string {
+  if (!id) return ''
+  return HONOREE_RELATIONS.find(r => r.id === id)?.label ?? id
+}
+
 export const BUDGET_RANGES = [
   'Under $500',
   '$500 – $1,000',
