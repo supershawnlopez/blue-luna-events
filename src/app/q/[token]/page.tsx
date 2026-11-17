@@ -46,6 +46,8 @@ async function getEstimate(token: string) {
     deposit_type: data.deposit_type,
     deposit_value: data.deposit_value,
     accepted_at: data.accepted_at,
+    // Lets the page show "Thanks for letting us know" after a decline.
+    declined: data.status === 'declined',
     payments: payments ?? [],
   }
 }

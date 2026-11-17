@@ -67,6 +67,12 @@ Exit criteria for Phase 1:
 
 **All 6 phases of the originally-scoped Studio Intelligence rebuild are now shipped** (Camera, Calendar/Booking, Leads/Contacts/Email/SMS, Social captions). What's left is real-device confirmation from Shawn, plus whatever he wants to scope next.
 
+**NOW-ish — Client lifecycle (approved 2026-11-17, DECISIONS.md "CLIENT LIFECYCLE"):**
+- Phase A built on `claude/bold-maxwell-b3ppgc` (stages, Leads Active/Not Now, Clients, reasons, client "Not right now"). **Blocked on the migration** `20261117120000_lifecycle_lost_reasons.sql`: needs a valid Supabase personal access token (`sbp_…`) or Shawn runs it in the SQL editor.
+- Phase B: drip engine (daily cron, send log, 1 email/week cap, one sequence at a time, unsubscribe) + sequences: New→Monica nudge (2 days), Estimate Sent (day 3, day 7), Client journey (thank you, 2 weeks out, day-after review ask). Email via Resend; Twilio paused.
+- Phase C: seasonal nurture (4–6/yr), birthday anniversary + baby shower → first birthday, corporate quarterly/holiday check-in, referral "share this link", "what changed?" email with one-tap reasons, Growth report (inquiries → estimates → bookings, lost-reason chart).
+- Campaign blasts still send to the `contacts` table only. Phase B moves the email audience to everyone (leads + clients) minus unsubscribes.
+
 **NEXT — Studio cleanup round 2 (Jony/Marcus, from the 2026-11-17 meeting):**
 - Shawn: test round 1 on Monica's phone (see SESSION_HANDOFF.md 2026-11-17).
 - Group package options for one client under one row ("Sedra Alwan · 2 options") — Angela. Explained to Shawn 2026-11-17, waiting on his yes/no.

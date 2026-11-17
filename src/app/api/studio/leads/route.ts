@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server'
 import { serverClient } from '@/lib/supabase'
+import { loadLeadsWithStages } from '@/lib/lifecycleData'
 
 export const dynamic = 'force-dynamic'
 
+// Every lead, with its lifecycle stage computed live (src/lib/lifecycle.ts).
 export async function GET() {
-  const db = serverClient()
-  const { data, error } = await db
-    .from('leads')
-    .select('id, created_at, name, phone, email, event_type, event_date, venue, vision, budget_range, status, temperature, source, referral_source, setup_time, guest_count, looking_for, inspo_photos')
-    .order('created_at', { ascending: false })
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+  try {
+    return NextResponse.json(await loadLeadsWithStages(serverClient()))
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Could not load leads' }, { status: 500 })
+  }
 }
